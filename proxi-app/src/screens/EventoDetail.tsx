@@ -43,16 +43,16 @@ function StatoInfo({ stato }: { stato: StatoEvento }) {
 export function EventoDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { data: evento, isLoading } = useEvento(Number(id))
+  const { data: evento, isLoading, error } = useEvento(Number(id))
 
   if (isLoading) {
     return <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Caricamento…</div>
   }
 
-  if (!evento) {
+  if (error || !evento) {
     return (
       <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>
-        Evento non trovato
+        {error ? (error as Error).message : 'Evento non trovato'}
         <br />
         <button onClick={() => navigate('/eventi')} style={{ marginTop: 12, cursor: 'pointer' }}>
           ← Torna agli eventi

@@ -6,11 +6,12 @@ import { useNavigate } from 'react-router-dom'
 import { X, ChevronLeft, Search, Navigation, MapPin, Plus } from 'lucide-react'
 import { Avatar } from '../components/Avatar'
 import {
-  MOCK_PERSONE, MOCK_LUOGHI, MOCK_EVENTI,
+  MOCK_PERSONE,
   MACRO_CATEGORIE, TIPI_EVENTO,
   tipoLabel, hueToColor,
 } from '../lib/mock-data'
 import { useCreateEvento } from '../hooks/useEventi'
+import { useLuoghi } from '../hooks/useLuoghi'
 import { api } from '../lib/api-client'
 import type { Luogo } from '../types'
 
@@ -53,12 +54,6 @@ function fmtDistanza(m: number): string {
   return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`
 }
 
-// Conta quante volte una persona è stata in un luogo (dai mock)
-function scorePersonaPerLuogo(personaId: number, luogoId: number): number {
-  return MOCK_EVENTI.filter(
-    e => e.luogo_id === luogoId && e.persone?.some(p => p.id === personaId)
-  ).length
-}
 
 // ─── stato wizard ──────────────────────────────────────────────────────────
 
@@ -105,6 +100,7 @@ export function NuovoEventoScreen() {
   })
 
   const createEvento = useCreateEvento()
+  const { data: luoghi = [] } = useLuoghi()
 
   function set<K extends keyof WizardState>(key: K, val: WizardState[K]) {
     setForm(f => ({ ...f, [key]: val }))
@@ -253,9 +249,9 @@ export function NuovoEventoScreen() {
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {step === 0 && <StepTipo    form={form} set={set} />}
         {step === 1 && <StepQuando  form={form} set={set} />}
-        {step === 2 && <StepLuoghi  form={form} set={set} />}
+        {step === 2 && <StepLuoghi  form={form} set={set} luoghi={luoghi} />}
         {step === 3 && <StepPersone form={form} togglePersona={togglePersona} />}
-        {step === 4 && <StepNote    form={form} set={set} />}
+        {step === 4 && <StepNote    form={form} set={set} luoghi={luoghi} />}
       </div>
 
       {/* ── FOOTER ── */}
@@ -461,7 +457,7 @@ function nextOra(ora: string, minuti = 30): string {
   return `${String(Math.floor(tot / 60) % 24).padStart(2,'0')}:${String(tot % 60).padStart(2,'0')}`
 }
 
-function StepLuoghi({ form, set }: { form: WizardState; set: SetFn }) {
+function StepLuoghi({ form, set, luoghi }: { form: WizardState; set: SetFn; luoghi: Luogo[] }) {
   const [query,    setQuery]    = useState('')
   const [geoState, setGeoState] = useState<GeoState>('idle')
   const [userPos,  setUserPos]  = useState<{ lat: number; lng: number } | null>(null)
@@ -480,7 +476,7 @@ function StepLuoghi({ form, set }: { form: WizardState; set: SetFn }) {
   }, [])
 
   // Distanze e ordinamento
-  const luoghiOrdinati: LuogoConDistanza[] = MOCK_LUOGHI.map(l => ({
+  const luoghiOrdinati: LuogoConDistanza[] = luoghi.map(l => ({
     ...l,
     distanzaM: (userPos && l.lat != null && l.lng != null)
       ? distanzaM(userPos.lat, userPos.lng, l.lat!, l.lng!)
@@ -531,7 +527,7 @@ function StepLuoghi({ form, set }: { form: WizardState; set: SetFn }) {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {form.soste.map((sosta, i) => {
-              const luogo = sosta.luogoId ? MOCK_LUOGHI.find(l => l.id === sosta.luogoId) : null
+              const luogo = sosta.luogoId ? luoghi.find(l => l.id === sosta.luogoId) : null
               return (
                 <div key={i} style={{
                   background: 'var(--prox-surface)',
@@ -686,23 +682,8 @@ function StepPersone({
 
   const utenti = MOCK_PERSONE.filter(p => p.ruolo === 'utente')
 
-  // Score persona = somma delle presenze in tutti i luoghi delle soste
-  const conScore = utenti.map(p => ({
-    ...p,
-    score: form.soste.reduce((tot, s) =>
-      tot + (s.luogoId ? scorePersonaPerLuogo(p.id, s.luogoId) : 0), 0
-    ),
-  }))
-
-  // Separa suggerite (score > 0) da tutte le altre
-  const suggerite = conScore
-    .filter(p => p.score > 0)
-    .sort((a, b) => b.score - a.score)
-
-  const altre = conScore.filter(p => p.score === 0)
-
   // Filtra per ricerca
-  function matches(p: typeof conScore[0]) {
+  function matches(p: typeof utenti[0]) {
     if (!query) return true
     const q = query.toLowerCase()
     return p.nome?.toLowerCase().includes(q)
@@ -710,14 +691,8 @@ function StepPersone({
       || p.tag?.some(t => t.includes(q))
   }
 
-  const suggeriteFiltrate = suggerite.filter(matches)
-  const altreFiltrate     = altre.filter(matches)
+  const filtratiPersone = utenti.filter(matches)
   const nSel = form.personeIds.length
-
-  const luoghiNomi = form.soste
-    .map(s => s.luogoId ? MOCK_LUOGHI.find(l => l.id === s.luogoId)?.nome : null)
-    .filter(Boolean)
-  const luogoNome = luoghiNomi.length > 0 ? luoghiNomi.join(', ') : null
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -739,29 +714,10 @@ function StepPersone({
         </p>
       </div>
 
-      {/* Suggerite dal luogo */}
-      {suggeriteFiltrate.length > 0 && (
+      {filtratiPersone.length > 0 && (
         <>
-          <SectionDivider
-            label={luogoNome ? `Frequentano ${luogoNome}` : 'Frequenti in questo luogo'}
-          />
-          {suggeriteFiltrate.map(p => (
-            <PersonaRow
-              key={p.id}
-              persona={p}
-              score={p.score}
-              selected={form.personeIds.includes(p.id)}
-              onToggle={() => togglePersona(p.id)}
-            />
-          ))}
-        </>
-      )}
-
-      {/* Tutte le altre */}
-      {altreFiltrate.length > 0 && (
-        <>
-          <SectionDivider label={suggeriteFiltrate.length > 0 ? 'Altre persone' : 'Persone'} />
-          {altreFiltrate.map(p => (
+          <SectionDivider label="Persone" />
+          {filtratiPersone.map(p => (
             <PersonaRow
               key={p.id}
               persona={p}
@@ -773,7 +729,7 @@ function StepPersone({
         </>
       )}
 
-      {suggeriteFiltrate.length === 0 && altreFiltrate.length === 0 && (
+      {filtratiPersone.length === 0 && (
         <div style={{ padding: '40px 16px', textAlign: 'center', color: 'var(--prox-ink3)', fontSize: 14 }}>
           Nessun risultato per "{query}"
         </div>
@@ -786,11 +742,11 @@ function StepPersone({
 
 // ─── STEP 5: NOTE & RIEPILOGO ──────────────────────────────────────────────
 
-function StepNote({ form, set }: { form: WizardState; set: SetFn }) {
+function StepNote({ form, set, luoghi }: { form: WizardState; set: SetFn; luoghi: Luogo[] }) {
   const luoghiRep = form.soste.length === 0
     ? 'Nessuno'
     : form.soste.map(s => {
-        const n = s.luogoId ? (MOCK_LUOGHI.find(l => l.id === s.luogoId)?.nome ?? '?') : 'Esterno'
+        const n = s.luogoId ? (luoghi.find(l => l.id === s.luogoId)?.nome ?? '?') : 'Esterno'
         return `${n} ${s.dalle}–${s.alle}`
       }).join(', ')
   const nPers = form.personeIds.length
