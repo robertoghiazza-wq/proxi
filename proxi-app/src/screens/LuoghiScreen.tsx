@@ -5,6 +5,7 @@ import { useNavigate, useMatch, Outlet } from 'react-router-dom'
 import { Search, MapPin, Users, Calendar, Plus } from 'lucide-react'
 import { MobileLayout } from '../components/MobileLayout'
 import { Drawer } from '../components/Drawer'
+import { Modal } from '../components/Modal'
 import { TIPO_LUOGO_LABEL } from '../lib/mock-data'
 import { useLuoghi } from '../hooks/useLuoghi'
 import type { TipoLuogo } from '../types'
@@ -19,7 +20,9 @@ const TIPO_COLOR: Record<TipoLuogo, string> = {
 
 export function LuoghiScreen() {
   const navigate = useNavigate()
-  const isDetailOpen = !!useMatch('/luoghi/:id')
+  const isNuovoOpen  = !!useMatch('/luoghi/nuovo')
+  const hasIdMatch   = !!useMatch('/luoghi/:id')
+  const isDetailOpen = hasIdMatch && !isNuovoOpen
   const [query, setQuery] = useState('')
 
   const { data: tuttiLuoghi = [], isLoading, isError } = useLuoghi()
@@ -123,9 +126,15 @@ export function LuoghiScreen() {
           )
         })}
       </div>
-      <Drawer open={isDetailOpen} onClose={() => navigate('/luoghi')}>
-        <Outlet />
-      </Drawer>
+      {isNuovoOpen ? (
+        <Modal open onClose={() => navigate('/luoghi')}>
+          <Outlet />
+        </Modal>
+      ) : (
+        <Drawer open={isDetailOpen} onClose={() => navigate('/luoghi')}>
+          <Outlet />
+        </Drawer>
+      )}
     </MobileLayout>
   )
 }

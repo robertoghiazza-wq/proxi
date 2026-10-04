@@ -42,16 +42,16 @@ class LuogoController extends Controller
         return response()->json($luogo, 201);
     }
 
-    public function show(Request $request, Luogo $luogo): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
-        abort_if($request->user()->institution_id !== $luogo->institution_id, 403);
+        $luogo = Luogo::forInstitution($request->user()->institution_id)->findOrFail($id);
 
         return response()->json($luogo->load('eventi'));
     }
 
-    public function update(Request $request, Luogo $luogo): JsonResponse
+    public function update(Request $request, int $id): JsonResponse
     {
-        abort_if($request->user()->institution_id !== $luogo->institution_id, 403);
+        $luogo = Luogo::forInstitution($request->user()->institution_id)->findOrFail($id);
 
         $data = $request->validate([
             'nome'      => 'string|max:255',
@@ -69,9 +69,9 @@ class LuogoController extends Controller
         return response()->json($luogo);
     }
 
-    public function destroy(Request $request, Luogo $luogo): JsonResponse
+    public function destroy(Request $request, int $id): JsonResponse
     {
-        abort_if($request->user()->institution_id !== $luogo->institution_id, 403);
+        $luogo = Luogo::forInstitution($request->user()->institution_id)->findOrFail($id);
         $luogo->delete();
 
         return response()->json(null, 204);

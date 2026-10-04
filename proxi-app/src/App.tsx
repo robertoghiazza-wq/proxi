@@ -10,6 +10,7 @@ import { EventoDetail }      from './screens/EventoDetail'
 import { NuovoEventoScreen } from './screens/NuovoEventoScreen'
 import { LuoghiScreen }      from './screens/LuoghiScreen'
 import { LuogoDetail }       from './screens/LuogoDetail'
+import { NuovoLuogoScreen }  from './screens/NuovoLuogoScreen'
 import { ProfiloScreen }     from './screens/ProfiloScreen'
 import { LoginScreen }       from './screens/LoginScreen'
 
@@ -50,8 +51,9 @@ export default function App() {
             <Route path=":id"   element={<EventoDetail />} />
           </Route>
 
-          {/* Luoghi: lista + drawer dettaglio */}
+          {/* Luoghi: lista + modal nuovo + drawer dettaglio */}
           <Route path="/luoghi" element={<Auth><LuoghiScreen /></Auth>}>
+            <Route path="nuovo" element={<NuovoLuogoScreen />} />
             <Route path=":id" element={<LuogoDetail />} />
           </Route>
 
