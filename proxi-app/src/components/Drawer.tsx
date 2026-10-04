@@ -18,6 +18,8 @@ export function Drawer({ open, onClose, children, width = 480 }: DrawerProps) {
         position: 'fixed', inset: 0,
         background: 'var(--prox-bg)',
         zIndex: 200, overflowY: 'auto',
+        paddingTop: 'var(--sat)', paddingBottom: 'var(--sab)',
+        boxSizing: 'border-box',
       }}>
         {children}
       </div>

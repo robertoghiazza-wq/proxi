@@ -41,7 +41,7 @@ export function LuoghiScreen() {
         padding: '20px 16px 12px',
         background: 'var(--prox-surface)',
         borderBottom: '1px solid var(--prox-line)',
-        position: 'sticky', top: 0, zIndex: 10,
+        position: 'sticky', top: 'var(--sat)', zIndex: 10,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div className="prox-display" style={{ fontSize: 22, fontWeight: 700 }}>

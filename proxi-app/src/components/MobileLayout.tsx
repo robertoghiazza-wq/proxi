@@ -106,7 +106,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
       minHeight: '100svh', background: 'var(--prox-bg)',
       width: '100%',
     }}>
-      <div style={{ flex: 1, paddingBottom: 60 }}>
+      <div style={{ flex: 1, paddingBottom: 'calc(60px + var(--sab))' }}>
         {children}
       </div>
 
@@ -118,7 +118,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
         zIndex: 99,
-        paddingBottom: 'env(safe-area-inset-bottom, 0)',
+        paddingBottom: 'var(--sab)',
       }}>
         {TABS.map(({ path, icon: Icon, label }) => {
           const active = pathname === path

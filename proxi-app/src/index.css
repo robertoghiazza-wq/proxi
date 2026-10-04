@@ -3,6 +3,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700&display=swap');
 
 :root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+
   /* Superfici e testo */
   --prox-bg:        #f1f2f4;
   --prox-surface:   #ffffff;
@@ -54,6 +57,11 @@
   to   { transform: scale(1)    translateY(0);   opacity: 1; }
 }
 
+html, body {
+  overscroll-behavior-y: none;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   min-height: 100svh;
   background: var(--prox-bg);
@@ -61,6 +69,17 @@ body {
 
 #root {
   min-height: 100svh;
+  padding-top: var(--sat);
+}
+
+/* Fascia sotto la status bar (iOS standalone/notch): resta fissa sopra a tutto */
+body::before {
+  content: '';
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--sat);
+  background: var(--prox-accent);
+  z-index: 1000;
+  pointer-events: none;
 }
 
 /* Utility classes dal design handoff */

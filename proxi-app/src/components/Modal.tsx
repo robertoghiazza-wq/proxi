@@ -25,6 +25,8 @@ export function Modal({ open, onClose, children, width = 600 }: ModalProps) {
         position: 'fixed', inset: 0, zIndex: 100,
         background: 'var(--prox-bg)',
         display: 'flex', flexDirection: 'column',
+        paddingTop: 'var(--sat)', paddingBottom: 'var(--sab)',
+        boxSizing: 'border-box',
       }}>
         {children}
       </div>
