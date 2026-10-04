@@ -49,16 +49,18 @@ class EventoController extends Controller
         return response()->json($evento->load(['luogo', 'persone']), 201);
     }
 
-    public function show(Request $request, Evento $evento): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
-        abort_if($request->user()->institution_id !== $evento->institution_id, 403);
+        $evento = Evento::forInstitution($request->user()->institution_id)
+            ->with(['luogo', 'persone', 'educatore:id,name'])
+            ->findOrFail($id);
 
-        return response()->json($evento->load(['luogo', 'persone', 'educatore:id,name']));
+        return response()->json($evento);
     }
 
-    public function update(Request $request, Evento $evento): JsonResponse
+    public function update(Request $request, int $id): JsonResponse
     {
-        abort_if($request->user()->institution_id !== $evento->institution_id, 403);
+        $evento = Evento::forInstitution($request->user()->institution_id)->findOrFail($id);
 
         $data = $request->validate([
             'luogo_id'   => 'nullable|exists:luoghi,id',
@@ -75,17 +77,17 @@ class EventoController extends Controller
         return response()->json($evento->load(['luogo', 'persone']));
     }
 
-    public function destroy(Request $request, Evento $evento): JsonResponse
+    public function destroy(Request $request, int $id): JsonResponse
     {
-        abort_if($request->user()->institution_id !== $evento->institution_id, 403);
+        $evento = Evento::forInstitution($request->user()->institution_id)->findOrFail($id);
         $evento->delete();
 
         return response()->json(null, 204);
     }
 
-    public function syncPersone(Request $request, Evento $evento): JsonResponse
+    public function syncPersone(Request $request, int $id): JsonResponse
     {
-        abort_if($request->user()->institution_id !== $evento->institution_id, 403);
+        $evento = Evento::forInstitution($request->user()->institution_id)->findOrFail($id);
 
         $request->validate(['persone_ids' => 'present|array', 'persone_ids.*' => 'exists:persone,id']);
 

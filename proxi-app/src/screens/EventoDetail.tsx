@@ -5,7 +5,6 @@ import { ChevronLeft, MapPin, Clock, FileText, Edit, CheckCircle, Circle, PlayCi
 import { Avatar } from '../components/Avatar'
 import { Tag } from '../components/Tag'
 import { Card } from '../components/Card'
-import { ErrorBoundary } from '../components/ErrorBoundary'
 import { colorForTipo, tipoLabel } from '../lib/mock-data'
 import { useEvento } from '../hooks/useEventi'
 import type { StatoEvento } from '../types'
@@ -62,14 +61,11 @@ export function EventoDetail() {
     )
   }
 
-  console.log('[EventoDetail] data:', JSON.stringify(evento))
-
   const color     = colorForTipo(evento.tipo)
   const luogo     = evento.luogo ?? null
   const educatore = evento.educatore ?? null
 
   return (
-    <ErrorBoundary>
     <div style={{ background: 'var(--prox-bg)', minHeight: '100svh' }}>
 
       {/* HEADER con barra colore */}
@@ -215,7 +211,6 @@ export function EventoDetail() {
         </button>
       </div>
     </div>
-    </ErrorBoundary>
   )
 }
 
