@@ -5,7 +5,8 @@ import { ChevronLeft, MapPin, Clock, FileText, Edit, CheckCircle, Circle, PlayCi
 import { Avatar } from '../components/Avatar'
 import { Tag } from '../components/Tag'
 import { Card } from '../components/Card'
-import { MOCK_EVENTI, colorForTipo, tipoLabel, luogoById, MOCK_PERSONE } from '../lib/mock-data'
+import { colorForTipo, tipoLabel } from '../lib/mock-data'
+import { useEvento } from '../hooks/useEventi'
 import type { StatoEvento } from '../types'
 
 function minToHM(m: number) {
@@ -42,7 +43,11 @@ function StatoInfo({ stato }: { stato: StatoEvento }) {
 export function EventoDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const evento = MOCK_EVENTI.find(e => e.id === Number(id))
+  const { data: evento, isLoading } = useEvento(Number(id))
+
+  if (isLoading) {
+    return <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Caricamento…</div>
+  }
 
   if (!evento) {
     return (
@@ -56,9 +61,9 @@ export function EventoDetail() {
     )
   }
 
-  const color  = colorForTipo(evento.tipo)
-  const luogo  = evento.luogo_id ? luogoById(evento.luogo_id) : null
-  const educatore = MOCK_PERSONE.find(p => p.id === evento.educatore_id)
+  const color     = colorForTipo(evento.tipo)
+  const luogo     = evento.luogo ?? null
+  const educatore = evento.educatore ?? null
 
   return (
     <div style={{ background: 'var(--prox-bg)', minHeight: '100svh' }}>
@@ -187,8 +192,8 @@ export function EventoDetail() {
           <Card padding="14px 16px">
             <div className="prox-label" style={{ marginBottom: 10 }}>Registrato da</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Avatar nome={educatore.nome} size={32} />
-              <span style={{ fontSize: 14, fontWeight: 500 }}>{educatore.nome}</span>
+              <Avatar nome={educatore.name} size={32} />
+              <span style={{ fontSize: 14, fontWeight: 500 }}>{educatore.name}</span>
             </div>
           </Card>
         )}

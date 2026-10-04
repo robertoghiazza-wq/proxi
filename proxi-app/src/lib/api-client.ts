@@ -12,6 +12,20 @@ export function setToken(token: string) {
 
 export function clearToken() {
   localStorage.removeItem('proxi_token')
+  localStorage.removeItem('proxi_user')
+}
+
+export function setCurrentUser(user: { id: number; name: string; role: string }) {
+  localStorage.setItem('proxi_user', JSON.stringify(user))
+}
+
+export function getCurrentUser(): { id: number; name: string; role: string } | null {
+  try {
+    const raw = localStorage.getItem('proxi_user')
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
 }
 
 async function request<T>(

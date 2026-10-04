@@ -6,11 +6,12 @@ import { Avatar } from '../components/Avatar'
 import { Tag } from '../components/Tag'
 import { Card } from '../components/Card'
 import { EventTypeDot } from '../components/EventTypeDot'
-import { MOCK_PERSONE, MOCK_EVENTI, colorForTipo, luogoById } from '../lib/mock-data'
+import { colorForTipo } from '../lib/mock-data'
+import { usePersona } from '../hooks/usePersone'
 
 const TAG_VULNERABILI = ['senza fissa dimora', 'minore', 'dipendenza', 'prostituzione']
 
-function displayName(p: ReturnType<typeof MOCK_PERSONE[0]['nome'] extends null ? never : () => string> | any): string {
+function displayName(p: { nome?: string | null; soprannome?: string | null; anonimo?: boolean }): string {
   if (p.soprannome && p.anonimo) return `"${p.soprannome}"`
   if (p.nome) return p.nome
   if (p.soprannome) return `"${p.soprannome}"`
@@ -32,7 +33,11 @@ function fmtData(d: string) {
 export function PersonaDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const persona = MOCK_PERSONE.find(p => p.id === Number(id))
+  const { data: persona, isLoading } = usePersona(Number(id))
+
+  if (isLoading) {
+    return <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Caricamento…</div>
+  }
 
   if (!persona) {
     return (
@@ -46,9 +51,7 @@ export function PersonaDetail() {
     )
   }
 
-  const eventi = MOCK_EVENTI
-    .filter(e => e.persone?.some(p => p.id === persona.id))
-    .sort((a, b) => b.data.localeCompare(a.data))
+  const eventi = (persona.eventi ?? []).slice().sort((a, b) => b.data.localeCompare(a.data))
 
   const isVuln = persona.tag?.some(t => TAG_VULNERABILI.includes(t))
   const name = displayName(persona)
@@ -174,7 +177,7 @@ export function PersonaDetail() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {eventi.map(e => {
                   const color = colorForTipo(e.tipo)
-                  const luogo = e.luogo_id ? luogoById(e.luogo_id) : null
+                  const luogo = e.luogo ?? null
                   return (
                     <div
                       key={e.id}

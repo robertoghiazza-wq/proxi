@@ -19,6 +19,7 @@ class PersonaController extends Controller
                     $q->where('nome', 'like', "%{$search}%")
                       ->orWhere('soprannome', 'like', "%{$search}%")
                 ))
+            ->when($request->ruolo, fn ($q, $r) => $q->where('ruolo', $r))
             ->orderBy('nome')
             ->get();
 
@@ -53,7 +54,7 @@ class PersonaController extends Controller
     {
         $this->authorizeInstitution($request, $persona->institution_id);
 
-        return response()->json($persona->load('eventi'));
+        return response()->json($persona->load(['eventi.luogo']));
     }
 
     public function update(Request $request, Persona $persona): JsonResponse

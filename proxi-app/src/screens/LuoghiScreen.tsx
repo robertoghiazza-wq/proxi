@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, MapPin, Users, Calendar, Plus } from 'lucide-react'
 import { MobileLayout } from '../components/MobileLayout'
-import { MOCK_LUOGHI, TIPO_LUOGO_LABEL } from '../lib/mock-data'
+import { TIPO_LUOGO_LABEL } from '../lib/mock-data'
+import { useLuoghi } from '../hooks/useLuoghi'
 import type { TipoLuogo } from '../types'
 
 const TIPO_COLOR: Record<TipoLuogo, string> = {
@@ -19,7 +20,9 @@ export function LuoghiScreen() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
 
-  const luoghi = MOCK_LUOGHI.filter(l => {
+  const { data: tuttiLuoghi = [], isLoading, isError } = useLuoghi()
+
+  const luoghi = tuttiLuoghi.filter(l => {
     if (!query) return true
     const q = query.toLowerCase()
     return l.nome.toLowerCase().includes(q) || l.indirizzo?.toLowerCase().includes(q)
@@ -62,6 +65,12 @@ export function LuoghiScreen() {
 
       {/* Lista */}
       <div style={{ padding: '8px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {isLoading
+          ? <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-ink3)', fontSize: 14 }}>Caricamento…</div>
+          : isError
+            ? <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-accent)', fontSize: 14 }}>Errore di caricamento</div>
+            : null
+        }
         {luoghi.map(l => {
           const color = TIPO_COLOR[l.tipo]
           return (

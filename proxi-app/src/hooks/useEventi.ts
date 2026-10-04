@@ -5,12 +5,16 @@ import type { Evento } from '../types'
 interface EventiFilters {
   data?: string
   stato?: string
+  persona_id?: number
+  luogo_id?: number
 }
 
 export function useEventi(filters: EventiFilters = {}) {
   const params = new URLSearchParams()
-  if (filters.data)  params.set('data',  filters.data)
-  if (filters.stato) params.set('stato', filters.stato)
+  if (filters.data)       params.set('data',       filters.data)
+  if (filters.stato)      params.set('stato',      filters.stato)
+  if (filters.persona_id) params.set('persona_id', String(filters.persona_id))
+  if (filters.luogo_id)   params.set('luogo_id',   String(filters.luogo_id))
   const qs = params.toString()
 
   return useQuery<Evento[]>({

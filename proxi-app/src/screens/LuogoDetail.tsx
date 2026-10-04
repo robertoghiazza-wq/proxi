@@ -5,7 +5,9 @@ import { ChevronLeft, MapPin, Users, Calendar, Clock, Plus, Edit } from 'lucide-
 import { Card } from '../components/Card'
 import { Tag } from '../components/Tag'
 import { EventTypeDot } from '../components/EventTypeDot'
-import { MOCK_LUOGHI, MOCK_EVENTI, TIPO_LUOGO_LABEL, colorForTipo } from '../lib/mock-data'
+import { TIPO_LUOGO_LABEL, colorForTipo } from '../lib/mock-data'
+import { useLuogo } from '../hooks/useLuoghi'
+import { useEventi } from '../hooks/useEventi'
 import type { TipoLuogo } from '../types'
 
 const TIPO_COLOR: Record<TipoLuogo, string> = {
@@ -70,7 +72,13 @@ function MapPlaceholder({ color }: { color: string }) {
 export function LuogoDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const luogo = MOCK_LUOGHI.find(l => l.id === Number(id))
+  const { data: luogo, isLoading } = useLuogo(Number(id))
+  const { data: eventiTutti = [] } = useEventi({ luogo_id: Number(id) })
+  const eventiRecenti = eventiTutti.slice(0, 5)
+
+  if (isLoading) {
+    return <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Caricamento…</div>
+  }
 
   if (!luogo) {
     return (
@@ -85,10 +93,6 @@ export function LuogoDetail() {
   }
 
   const color = TIPO_COLOR[luogo.tipo]
-  const eventiRecenti = MOCK_EVENTI
-    .filter(e => e.luogo_id === luogo.id)
-    .sort((a, b) => b.data.localeCompare(a.data))
-    .slice(0, 5)
 
   return (
     <div style={{ background: 'var(--prox-bg)', minHeight: '100svh' }}>

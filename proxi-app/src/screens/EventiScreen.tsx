@@ -5,7 +5,8 @@ import { useNavigate } from 'react-router-dom'
 import { MobileLayout } from '../components/MobileLayout'
 import { EventTypeDot } from '../components/EventTypeDot'
 import { Avatar } from '../components/Avatar'
-import { MOCK_EVENTI, colorForTipo, luogoById } from '../lib/mock-data'
+import { colorForTipo } from '../lib/mock-data'
+import { useEventi } from '../hooks/useEventi'
 import type { StatoEvento } from '../types'
 import { Plus } from 'lucide-react'
 
@@ -33,9 +34,10 @@ export function EventiScreen() {
   const navigate = useNavigate()
   const [filtro, setFiltro] = useState<Filtro>('tutti')
 
-  const filtrati = MOCK_EVENTI
+  const { data: tuttiEventi = [], isLoading } = useEventi({})
+
+  const filtrati = tuttiEventi
     .filter(e => filtro === 'tutti' || e.stato === filtro)
-    .sort((a, b) => b.data.localeCompare(a.data) || (a.ora_inizio ?? '').localeCompare(b.ora_inizio ?? ''))
 
   // Raggruppa per giorno
   const giorni = [...new Set(filtrati.map(e => e.data))]
@@ -80,6 +82,12 @@ export function EventiScreen() {
 
       {/* Lista per giorno */}
       <div style={{ padding: '8px 16px' }}>
+        {isLoading && (
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-ink3)', fontSize: 14 }}>Caricamento…</div>
+        )}
+        {!isLoading && filtrati.length === 0 && (
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-ink3)', fontSize: 14 }}>Nessun evento</div>
+        )}
         {giorni.map(data => {
           const eventiGiorno = filtrati.filter(e => e.data === data)
           const totMin = eventiGiorno.reduce((s, e) => s + e.durata_min, 0)
@@ -105,7 +113,7 @@ export function EventiScreen() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                 {eventiGiorno.map(e => {
                   const color = colorForTipo(e.tipo)
-                  const luogo = e.luogo_id ? luogoById(e.luogo_id) : null
+                  const luogo = e.luogo ?? null
 
                   return (
                     <div

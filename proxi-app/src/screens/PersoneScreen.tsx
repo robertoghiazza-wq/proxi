@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { Search, AlertTriangle, Plus } from 'lucide-react'
 import { MobileLayout } from '../components/MobileLayout'
 import { Avatar } from '../components/Avatar'
-import { MOCK_PERSONE } from '../lib/mock-data'
+import { usePersone } from '../hooks/usePersone'
 import type { Persona, RuoloPersona } from '../types'
 
 const TAG_VULNERABILI = ['senza fissa dimora', 'minore', 'dipendenza']
@@ -84,7 +84,9 @@ export function PersoneScreen() {
   const [query, setQuery]   = useState('')
   const [filtro, setFiltro] = useState<Filtro>('tutti')
 
-  const persone = MOCK_PERSONE
+  const { data: tuttePersone = [], isLoading, isError } = usePersone()
+
+  const persone = tuttePersone
     .filter(p => filtro === 'tutti' || p.ruolo === filtro)
     .filter(p => {
       if (!query) return true
@@ -97,10 +99,10 @@ export function PersoneScreen() {
     })
 
   const counts: Record<string, number> = {
-    tutti:      MOCK_PERSONE.length,
-    utente:     MOCK_PERSONE.filter(p => p.ruolo === 'utente').length,
-    dipendente: MOCK_PERSONE.filter(p => p.ruolo === 'dipendente').length,
-    rete:       MOCK_PERSONE.filter(p => p.ruolo === 'rete').length,
+    tutti:      tuttePersone.length,
+    utente:     tuttePersone.filter(p => p.ruolo === 'utente').length,
+    dipendente: tuttePersone.filter(p => p.ruolo === 'dipendente').length,
+    rete:       tuttePersone.filter(p => p.ruolo === 'rete').length,
   }
 
   return (
@@ -165,11 +167,13 @@ export function PersoneScreen() {
 
       {/* Lista */}
       <div style={{ background: 'var(--prox-surface)' }}>
-        {persone.length === 0
-          ? <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-ink3)', fontSize: 14 }}>
-              Nessun risultato
-            </div>
-          : persone.map(p => <PersonaRow key={p.id} persona={p} />)
+        {isLoading
+          ? <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-ink3)', fontSize: 14 }}>Caricamento…</div>
+          : isError
+            ? <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-accent)', fontSize: 14 }}>Errore di caricamento</div>
+            : persone.length === 0
+              ? <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-ink3)', fontSize: 14 }}>Nessun risultato</div>
+              : persone.map(p => <PersonaRow key={p.id} persona={p} />)
         }
       </div>
     </MobileLayout>

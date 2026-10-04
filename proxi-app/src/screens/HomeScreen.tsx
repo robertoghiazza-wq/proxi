@@ -4,12 +4,14 @@ import { MobileLayout } from '../components/MobileLayout'
 import { Card } from '../components/Card'
 import { Avatar } from '../components/Avatar'
 import { EventTypeDot } from '../components/EventTypeDot'
-import { colorForTipo, eventiDelGiorno, minutiLavoratiOggi, luogoById } from '../lib/mock-data'
+import { colorForTipo } from '../lib/mock-data'
+import { useEventi } from '../hooks/useEventi'
+import { getCurrentUser } from '../lib/api-client'
 import type { Evento } from '../types'
 import { useNavigate } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 
-const TODAY = '2026-05-31'
+const TODAY = new Date().toISOString().slice(0, 10)
 
 function minToHM(m: number) {
   const h = Math.floor(m / 60)
@@ -18,10 +20,11 @@ function minToHM(m: number) {
 }
 
 function greeting() {
+  const user = getCurrentUser()
+  const name = user?.name?.split(' ')[0] ?? ''
   const h = new Date().getHours()
-  if (h < 12) return 'Buongiorno, Giulia'
-  if (h < 18) return 'Buon pomeriggio, Giulia'
-  return 'Buonasera, Giulia'
+  const saluto = h < 12 ? 'Buongiorno' : h < 18 ? 'Buon pomeriggio' : 'Buonasera'
+  return name ? `${saluto}, ${name}` : saluto
 }
 
 function StatoBadge({ stato }: { stato: Evento['stato'] }) {
@@ -46,7 +49,7 @@ function StatoBadge({ stato }: { stato: Evento['stato'] }) {
 function EventRow({ evento }: { evento: Evento }) {
   const navigate = useNavigate()
   const color = colorForTipo(evento.tipo)
-  const luogo = evento.luogo_id ? luogoById(evento.luogo_id) : null
+  const luogo = evento.luogo ?? null
 
   return (
     <div
@@ -110,8 +113,8 @@ function EventRow({ evento }: { evento: Evento }) {
 
 export function HomeScreen() {
   const navigate = useNavigate()
-  const eventi = eventiDelGiorno(TODAY)
-  const minuti = minutiLavoratiOggi(TODAY)
+  const { data: eventi = [], isLoading } = useEventi({ data: TODAY })
+  const minuti = eventi.reduce((s, e) => s + e.durata_min, 0)
   const chiusi = eventi.filter(e => e.stato === 'completato').length
   const aperti = eventi.filter(e => e.stato !== 'completato').length
 
@@ -122,7 +125,7 @@ export function HomeScreen() {
         <div style={{ padding: '20px 2px 16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: 12.5, color: 'var(--prox-ink3)', fontWeight: 500 }}>
-              Domenica 31 maggio
+              {new Date().toLocaleDateString('it-CH', { weekday: 'long', day: 'numeric', month: 'long' })}
             </div>
             <div className="prox-display" style={{
               fontSize: 24, fontWeight: 600, letterSpacing: -0.5, marginTop: 2,
@@ -171,7 +174,12 @@ export function HomeScreen() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {eventi.map(e => <EventRow key={e.id} evento={e} />)}
+          {isLoading
+            ? <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)', fontSize: 14 }}>Caricamento…</div>
+            : eventi.length === 0
+              ? <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)', fontSize: 14 }}>Nessun evento oggi</div>
+              : eventi.map(e => <EventRow key={e.id} evento={e} />)
+          }
         </div>
       </div>
     </MobileLayout>

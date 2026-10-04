@@ -38,8 +38,9 @@ export interface Persona {
   note: string | null
   telefono: string | null
   email: string | null
-  // calcolato dal backend
+  // calcolato/caricato dal backend
   eventi_count?: number
+  eventi?: Evento[]
 }
 
 export type TipoLuogo = 'strada' | 'informale' | 'diurno' | 'sanitario' | 'ufficio'

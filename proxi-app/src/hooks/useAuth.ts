@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { api, setToken, clearToken } from '../lib/api-client'
+import { api, setToken, clearToken, setCurrentUser } from '../lib/api-client'
 
 interface LoginPayload { email: string; password: string }
 interface LoginResponse { token: string; user: { id: number; name: string; role: string } }
@@ -7,7 +7,10 @@ interface LoginResponse { token: string; user: { id: number; name: string; role:
 export function useLogin() {
   return useMutation({
     mutationFn: (data: LoginPayload) => api.post<LoginResponse>('/auth/login', data),
-    onSuccess: ({ token }) => setToken(token),
+    onSuccess: ({ token, user }) => {
+      setToken(token)
+      setCurrentUser(user)
+    },
   })
 }
 

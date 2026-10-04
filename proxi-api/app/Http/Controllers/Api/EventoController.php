@@ -18,6 +18,10 @@ class EventoController extends Controller
             ->when($request->data, fn ($q, $d) => $q->whereDate('data', $d))
             ->when($request->stato, fn ($q, $s) => $q->where('stato', $s))
             ->when($request->educatore_id, fn ($q, $id) => $q->where('educatore_id', $id))
+            ->when($request->luogo_id, fn ($q, $id) => $q->where('luogo_id', $id))
+            ->when($request->persona_id, fn ($q, $id) =>
+                $q->whereHas('persone', fn ($q) => $q->where('persone.id', $id))
+            )
             ->orderByDesc('data')
             ->orderBy('ora_inizio')
             ->get();
