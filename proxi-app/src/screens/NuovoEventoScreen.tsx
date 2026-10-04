@@ -139,12 +139,12 @@ export function NuovoEventoScreen() {
     setSaving(true)
     // TODO: PATCH /api/eventi/:id
     await new Promise(r => setTimeout(r, 400))
-    navigate(-1)
+    navigate('/eventi')
   }
 
   // Chiude senza salvare ulteriori arricchimenti (evento già creato)
   function handleChiudi() {
-    navigate(-1)
+    navigate('/eventi')
   }
 
   // Avanza o crea
@@ -162,8 +162,9 @@ export function NuovoEventoScreen() {
 
   return (
     <div style={{
-      background: 'var(--prox-bg)', minHeight: '100svh',
-      display: 'flex', flexDirection: 'column', width: '100%',
+      background: 'var(--prox-bg)',
+      flex: 1, display: 'flex', flexDirection: 'column', width: '100%',
+      overflow: 'hidden',
     }}>
 
       {/* ── HEADER ── */}
@@ -175,7 +176,7 @@ export function NuovoEventoScreen() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <button
-            onClick={() => step === 0 ? navigate(-1) : setStep(s => s - 1)}
+            onClick={() => step === 0 ? navigate('/eventi') : setStep(s => s - 1)}
             style={ghostBtn}
           >
             {step === 0 ? <X size={20} strokeWidth={1.75}/> : <ChevronLeft size={20} strokeWidth={1.75}/>}

@@ -44,10 +44,10 @@ export default function App() {
             <Route path=":id" element={<PersonaDetail />} />
           </Route>
 
-          {/* Eventi: nuovo come pagina autonoma, lista + drawer dettaglio */}
-          <Route path="/eventi/nuovo" element={<Auth><NuovoEventoScreen /></Auth>} />
+          {/* Eventi: lista + modal nuovo + drawer dettaglio */}
           <Route path="/eventi" element={<Auth><EventiScreen /></Auth>}>
-            <Route path=":id" element={<EventoDetail />} />
+            <Route path="nuovo" element={<NuovoEventoScreen />} />
+            <Route path=":id"   element={<EventoDetail />} />
           </Route>
 
           {/* Luoghi: lista + drawer dettaglio */}

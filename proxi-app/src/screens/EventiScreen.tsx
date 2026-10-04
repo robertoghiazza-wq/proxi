@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useNavigate, useMatch, Outlet } from 'react-router-dom'
 import { MobileLayout } from '../components/MobileLayout'
 import { Drawer } from '../components/Drawer'
+import { Modal } from '../components/Modal'
 import { EventTypeDot } from '../components/EventTypeDot'
 import { Avatar } from '../components/Avatar'
 import { colorForTipo } from '../lib/mock-data'
@@ -33,7 +34,9 @@ function fmtData(d: string) {
 
 export function EventiScreen() {
   const navigate = useNavigate()
-  const isDetailOpen = !!useMatch('/eventi/:id')
+  const isNuovoOpen  = !!useMatch('/eventi/nuovo')
+  const hasIdMatch   = !!useMatch('/eventi/:id')
+  const isDetailOpen = hasIdMatch && !isNuovoOpen
   const [filtro, setFiltro] = useState<Filtro>('tutti')
 
   const { data: tuttiEventi = [], isLoading } = useEventi({})
@@ -189,9 +192,15 @@ export function EventiScreen() {
           )
         })}
       </div>
-      <Drawer open={isDetailOpen} onClose={() => navigate('/eventi')}>
-        <Outlet />
-      </Drawer>
+      {isNuovoOpen ? (
+        <Modal open onClose={() => navigate('/eventi')}>
+          <Outlet />
+        </Modal>
+      ) : (
+        <Drawer open={isDetailOpen} onClose={() => navigate('/eventi')}>
+          <Outlet />
+        </Drawer>
+      )}
     </MobileLayout>
   )
 }
