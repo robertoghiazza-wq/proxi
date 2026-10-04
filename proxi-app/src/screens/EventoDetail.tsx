@@ -102,7 +102,7 @@ export function EventoDetail() {
         {/* Data e orario */}
         <div style={{ fontSize: 13, color: 'var(--prox-ink3)', textTransform: 'capitalize' }}>
           {fmtData(evento.data)}
-          {evento.ora_inizio && ` · ore ${evento.ora_inizio}`}
+          {evento.ora_inizio && ` · ore ${evento.ora_inizio.slice(0, 5)}`}
         </div>
       </div>
 

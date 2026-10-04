@@ -140,7 +140,7 @@ export function EventiScreen() {
                           color: 'var(--prox-ink2)', fontFamily: 'ui-monospace, monospace',
                           flexShrink: 0, paddingTop: 1,
                         }}>
-                          {e.ora_inizio ?? '—'}
+                          {e.ora_inizio ? e.ora_inizio.slice(0, 5) : '—'}
                         </div>
 
                         <div style={{ flex: 1, minWidth: 0 }}>

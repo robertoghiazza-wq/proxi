@@ -20,6 +20,12 @@ class Evento extends Model
         'durata_min' => 'integer',
     ];
 
+    // MySQL TIME restituisce HH:MM:SS — tronca a HH:MM
+    public function getOraInizioAttribute(?string $value): ?string
+    {
+        return $value ? substr($value, 0, 5) : null;
+    }
+
     public function institution(): BelongsTo
     {
         return $this->belongsTo(Institution::class);
