@@ -1,51 +1,21 @@
 // Profilo educatore — ore lavorate + impostazioni
 
-import { useNavigate } from 'react-router-dom'
 import {
   Download, Bell, Shield, Tag, FileText, LogOut, ChevronRight,
 } from 'lucide-react'
 import { MobileLayout } from '../components/MobileLayout'
 import { Avatar } from '../components/Avatar'
 import { Card } from '../components/Card'
-import { MOCK_EVENTI } from '../lib/mock-data'
+import { getCurrentUser } from '../lib/api-client'
+import { useEventi } from '../hooks/useEventi'
+import { useLogout } from '../hooks/useAuth'
 
-// Calcola minuti lavorati per un range di date
-function minutiRange(dataInizio: string, dataFine: string, educatoreId = 6) {
-  return MOCK_EVENTI
-    .filter(e =>
-      e.educatore_id === educatoreId &&
-      e.data >= dataInizio &&
-      e.data <= dataFine &&
-      (e.stato === 'completato' || e.stato === 'in_corso')
-    )
-    .reduce((s, e) => s + e.durata_min, 0)
-}
+const TODAY = new Date().toISOString().slice(0, 10)
 
 function minToHM(m: number) {
   const h = Math.floor(m / 60)
   const r = m % 60
   return { h, m: r }
-}
-
-function getSettimana() {
-  // Lunedì della settimana corrente
-  const now = new Date('2026-05-31')
-  const day = now.getDay() === 0 ? 6 : now.getDay() - 1
-  const lun = new Date(now); lun.setDate(now.getDate() - day)
-  const dom = new Date(lun); dom.setDate(lun.getDate() + 6)
-  return {
-    inizio: lun.toISOString().slice(0, 10),
-    fine:   dom.toISOString().slice(0, 10),
-  }
-}
-
-function getMese() {
-  const now = new Date('2026-05-31')
-  const y = now.getFullYear(), m = now.getMonth() + 1
-  return {
-    inizio: `${y}-${String(m).padStart(2,'0')}-01`,
-    fine:   now.toISOString().slice(0, 10),
-  }
 }
 
 interface OreBoxProps { label: string; minuti: number; accent?: boolean }
@@ -113,14 +83,11 @@ function Voce({ icon, label, sublabel, danger, onClick }: VoceProps) {
 }
 
 export function ProfiloScreen() {
-  const navigate  = useNavigate()
-  const oggi      = '2026-05-31'
-  const sett      = getSettimana()
-  const mese      = getMese()
+  const user      = getCurrentUser()
+  const logout    = useLogout()
+  const { data: eventiOggi = [] } = useEventi({ data: TODAY })
 
-  const minOggi   = minutiRange(oggi, oggi)
-  const minSett   = minutiRange(sett.inizio, sett.fine)
-  const minMese   = minutiRange(mese.inizio, mese.fine)
+  const minOggi = eventiOggi.reduce((s, e) => s + e.durata_min, 0)
 
   return (
     <MobileLayout>
@@ -128,13 +95,13 @@ export function ProfiloScreen() {
 
         {/* HERO */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <Avatar nome="Giulia Mazza" size={56} />
+          <Avatar nome={user?.name} size={56} />
           <div>
             <div className="prox-display" style={{ fontSize: 20, fontWeight: 700 }}>
-              Giulia Mazza
+              {user?.name ?? '—'}
             </div>
             <div style={{ fontSize: 13, color: 'var(--prox-ink3)', marginTop: 2 }}>
-              Educatrice · Prometheus · Équipe A
+              {user?.role ?? ''} · Prometheus
             </div>
           </div>
         </div>
@@ -158,11 +125,7 @@ export function ProfiloScreen() {
           </div>
 
           <div style={{ display: 'flex', borderTop: '1px solid var(--prox-line2)' }}>
-            <OreBox label="Oggi"      minuti={minOggi} accent />
-            <div style={{ width: 1, background: 'var(--prox-line)' }} />
-            <OreBox label="Settimana" minuti={minSett} />
-            <div style={{ width: 1, background: 'var(--prox-line)' }} />
-            <OreBox label="Mese"      minuti={minMese} />
+            <OreBox label="Oggi" minuti={minOggi} accent />
           </div>
         </Card>
 
@@ -220,10 +183,7 @@ export function ProfiloScreen() {
             icon={<LogOut size={18} strokeWidth={1.75} />}
             label="Esci"
             danger
-            onClick={() => {
-              localStorage.removeItem('proxi_token')
-              navigate('/login')
-            }}
+            onClick={() => logout.mutate()}
           />
         </Card>
 

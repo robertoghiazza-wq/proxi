@@ -39,15 +39,21 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Auth><HomeScreen /></Auth>} />
 
-          <Route path="/persone"    element={<Auth><PersoneScreen /></Auth>} />
-          <Route path="/persone/:id" element={<Auth><PersonaDetail /></Auth>} />
+          {/* Persone: lista + drawer dettaglio */}
+          <Route path="/persone" element={<Auth><PersoneScreen /></Auth>}>
+            <Route path=":id" element={<PersonaDetail />} />
+          </Route>
 
-          <Route path="/eventi"         element={<Auth><EventiScreen /></Auth>} />
-          <Route path="/eventi/nuovo"   element={<Auth><NuovoEventoScreen /></Auth>} />
-          <Route path="/eventi/:id"     element={<Auth><EventoDetail /></Auth>} />
+          {/* Eventi: nuovo come pagina autonoma, lista + drawer dettaglio */}
+          <Route path="/eventi/nuovo" element={<Auth><NuovoEventoScreen /></Auth>} />
+          <Route path="/eventi" element={<Auth><EventiScreen /></Auth>}>
+            <Route path=":id" element={<EventoDetail />} />
+          </Route>
 
-          <Route path="/luoghi"     element={<Auth><LuoghiScreen /></Auth>} />
-          <Route path="/luoghi/:id" element={<Auth><LuogoDetail /></Auth>} />
+          {/* Luoghi: lista + drawer dettaglio */}
+          <Route path="/luoghi" element={<Auth><LuoghiScreen /></Auth>}>
+            <Route path=":id" element={<LuogoDetail />} />
+          </Route>
 
           <Route path="/profilo" element={<Auth><ProfiloScreen /></Auth>} />
 

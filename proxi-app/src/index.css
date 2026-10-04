@@ -41,6 +41,11 @@
   padding: 0;
 }
 
+@keyframes drawerIn {
+  from { transform: translateX(24px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
 body {
   min-height: 100svh;
   background: var(--prox-bg);

@@ -1,9 +1,10 @@
 // Persone — lista con ricerca e filtri per ruolo
 
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useMatch, Outlet } from 'react-router-dom'
 import { Search, AlertTriangle, Plus } from 'lucide-react'
 import { MobileLayout } from '../components/MobileLayout'
+import { Drawer } from '../components/Drawer'
 import { Avatar } from '../components/Avatar'
 import { usePersone } from '../hooks/usePersone'
 import type { Persona, RuoloPersona } from '../types'
@@ -81,6 +82,7 @@ const FILTRI: { key: Filtro; label: string }[] = [
 
 export function PersoneScreen() {
   const navigate = useNavigate()
+  const isDetailOpen = !!useMatch('/persone/:id')
   const [query, setQuery]   = useState('')
   const [filtro, setFiltro] = useState<Filtro>('tutti')
 
@@ -176,6 +178,9 @@ export function PersoneScreen() {
               : persone.map(p => <PersonaRow key={p.id} persona={p} />)
         }
       </div>
+      <Drawer open={isDetailOpen} onClose={() => navigate('/persone')}>
+        <Outlet />
+      </Drawer>
     </MobileLayout>
   )
 }
