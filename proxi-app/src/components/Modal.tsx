@@ -46,7 +46,7 @@ export function Modal({ open, onClose, children, width = 600 }: ModalProps) {
           background: 'var(--prox-bg)',
           borderRadius: 20,
           width: `min(${width}px, calc(100vw - 48px))`,
-          maxHeight: '90vh',
+          height: 'min(720px, 92vh)',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
           boxShadow: '0 24px 64px rgba(0,0,0,0.25)',

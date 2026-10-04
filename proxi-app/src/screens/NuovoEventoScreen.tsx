@@ -10,6 +10,8 @@ import {
   MACRO_CATEGORIE, TIPI_EVENTO,
   tipoLabel, hueToColor,
 } from '../lib/mock-data'
+import { useCreateEvento } from '../hooks/useEventi'
+import { api } from '../lib/api-client'
 import type { Luogo } from '../types'
 
 // ─── util ──────────────────────────────────────────────────────────────────
@@ -90,6 +92,7 @@ export function NuovoEventoScreen() {
   const navigate = useNavigate()
   const [step,   setStep]   = useState(0)
   const [saving, setSaving] = useState(false)
+  const [errore, setErrore] = useState<string | null>(null)
   const [form,   setForm]   = useState<WizardState>({
     tipo:       null,
     data:       todayISO(),
@@ -100,6 +103,8 @@ export function NuovoEventoScreen() {
     note:       '',
     savedId:    null,
   })
+
+  const createEvento = useCreateEvento()
 
   function set<K extends keyof WizardState>(key: K, val: WizardState[K]) {
     setForm(f => ({ ...f, [key]: val }))
@@ -120,29 +125,55 @@ export function NuovoEventoScreen() {
     true,                 // step 4 — note facoltative
   ][step]
 
-  const isEnrichment = form.savedId !== null   // evento già creato
+  const isEnrichment = form.savedId !== null
   const isLast = step === STEPS.length - 1
 
-  // Crea l'evento (step STEP_CREA) e continua per arricchirlo
+  // Primo luogo delle soste con un luogo reale (non transito)
+  function primoLuogoId(): number | null {
+    return form.soste.find(s => s.luogoId !== null)?.luogoId ?? null
+  }
+
   async function handleCrea() {
     setSaving(true)
-    // TODO: POST /api/eventi → riceve ID
-    await new Promise(r => setTimeout(r, 600))
-    const fakeId = Date.now()
-    setForm(f => ({ ...f, savedId: fakeId }))
-    setSaving(false)
-    setStep(s => s + 1)
+    setErrore(null)
+    try {
+      const evento = await createEvento.mutateAsync({
+        tipo:       form.tipo!,
+        data:       form.data,
+        ora_inizio: form.oraInizio || undefined,
+        durata_min: form.durata,
+        luogo_id:   primoLuogoId(),
+        stato:      'completato',
+      })
+      setForm(f => ({ ...f, savedId: evento.id }))
+      setStep(s => s + 1)
+    } catch (e: unknown) {
+      setErrore(e instanceof Error ? e.message : 'Errore di rete')
+    } finally {
+      setSaving(false)
+    }
   }
 
-  // Salva arricchimenti (persone, note) e chiude
   async function handleSalva() {
     setSaving(true)
-    // TODO: PATCH /api/eventi/:id
-    await new Promise(r => setTimeout(r, 400))
-    navigate('/eventi')
+    setErrore(null)
+    try {
+      if (form.savedId) {
+        if (form.note) {
+          await api.patch(`/eventi/${form.savedId}`, { note: form.note })
+        }
+        if (form.personeIds.length > 0) {
+          await api.post(`/eventi/${form.savedId}/persone`, { persone_ids: form.personeIds })
+        }
+      }
+      navigate('/eventi')
+    } catch {
+      navigate('/eventi')
+    } finally {
+      setSaving(false)
+    }
   }
 
-  // Chiude senza salvare ulteriori arricchimenti (evento già creato)
   function handleChiudi() {
     navigate('/eventi')
   }
@@ -207,6 +238,16 @@ export function NuovoEventoScreen() {
 
         <ProgressBar current={step} total={STEPS.length} created={isEnrichment} />
       </div>
+
+      {errore && (
+        <div style={{
+          padding: '8px 16px', fontSize: 13, fontWeight: 500,
+          background: 'oklch(0.96 0.04 25)', color: 'var(--prox-danger)',
+          borderBottom: '1px solid var(--prox-line)',
+        }}>
+          {errore}
+        </div>
+      )}
 
       {/* ── CONTENUTO ── */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
