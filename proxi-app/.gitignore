@@ -8,7 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
+# dist — incluso nel repo per deploy Plesk senza SSH
 dist-ssr
 *.local
 
