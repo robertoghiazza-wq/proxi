@@ -2,19 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
-import markerIcon from 'leaflet/dist/images/marker-icon.png'
-import markerShadow from 'leaflet/dist/images/marker-shadow.png'
-import { Search, Loader2 } from 'lucide-react'
+import type L from 'leaflet'
+import { BASEMAPS, BaseMapSwitch, type BaseKey } from './MapBase'
+import { Search, Loader2, LocateFixed } from 'lucide-react'
 
-delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl
-L.Icon.Default.mergeOptions({
-  iconUrl: markerIcon,
-  iconRetinaUrl: markerIcon2x,
-  shadowUrl: markerShadow,
-})
 
 export interface LatLng { lat: number; lng: number }
 
@@ -27,23 +18,6 @@ interface Risultato { label: string; lat: number; lng: number }
 
 const CENTRO_TICINO: [number, number] = [46.0, 8.95]
 const GEO = 'https://api3.geo.admin.ch/rest/services'
-
-const BASEMAPS = {
-  swisstopo: {
-    label: 'Swisstopo',
-    url: 'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg',
-    attribution: '&copy; <a href="https://www.swisstopo.admin.ch">swisstopo</a>',
-    maxZoom: 19,
-  },
-  osm: {
-    label: 'OSM (POI)',
-    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; OpenStreetMap',
-    maxZoom: 19,
-  },
-} as const
-
-type BaseKey = keyof typeof BASEMAPS
 
 const stripTags = (s: string) => s.replace(/<[^>]*>/g, '')
 
@@ -101,6 +75,8 @@ export function MapPicker({ value, onChange }: Props) {
   const [risultati, setRisultati] = useState<Risultato[]>([])
   const [loading, setLoading] = useState(false)
   const [flyTarget, setFlyTarget] = useState<LatLng | null>(value)
+  const [gps, setGps] = useState<'idle' | 'busy'>('idle')
+  const [gpsErr, setGpsErr] = useState('')
   const abortRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
@@ -131,6 +107,27 @@ export function MapPicker({ value, onChange }: Props) {
     onChange(pos)
     const ind = await indirizzoDa(pos)
     if (ind) onChange(pos, ind)
+  }
+
+  function locate() {
+    if (!navigator.geolocation) { setGpsErr('GPS non disponibile su questo dispositivo'); return }
+    setGps('busy')
+    setGpsErr('')
+    navigator.geolocation.getCurrentPosition(
+      p => {
+        const pos = { lat: p.coords.latitude, lng: p.coords.longitude }
+        setFlyTarget(pos)
+        setGps('idle')
+        clickMappa(pos)
+      },
+      err => {
+        setGps('idle')
+        setGpsErr(err.code === err.PERMISSION_DENIED
+          ? 'Permesso di localizzazione negato'
+          : 'Posizione non disponibile, riprova all\'aperto')
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+    )
   }
 
   const bm = BASEMAPS[base]
@@ -198,30 +195,29 @@ export function MapPicker({ value, onChange }: Props) {
           )}
         </MapContainer>
 
-        <div style={{
-          position: 'absolute', top: 8, right: 8, zIndex: 500,
-          display: 'flex', background: 'var(--prox-surface)', borderRadius: 999,
-          padding: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
-        }}>
-          {(Object.keys(BASEMAPS) as BaseKey[]).map(k => (
-            <button
-              key={k}
-              onClick={() => setBase(k)}
-              style={{
-                border: 'none', cursor: 'pointer', borderRadius: 999,
-                padding: '4px 10px', fontSize: 11.5, fontWeight: 600,
-                background: base === k ? 'var(--prox-accent)' : 'transparent',
-                color: base === k ? '#fff' : 'var(--prox-ink2)',
-              }}
-            >
-              {BASEMAPS[k].label}
-            </button>
-          ))}
-        </div>
+        <BaseMapSwitch value={base} onChange={setBase} />
+
+        <button
+          onClick={locate}
+          disabled={gps === 'busy'}
+          aria-label="Usa la mia posizione"
+          style={{
+            position: 'absolute', bottom: 24, right: 8, zIndex: 500,
+            width: 38, height: 38, borderRadius: 999, border: 'none', cursor: 'pointer',
+            background: 'var(--prox-surface)', boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          {gps === 'busy'
+            ? <Loader2 size={18} color="var(--prox-accent)" className="spin" />
+            : <LocateFixed size={18} color="var(--prox-accent)" strokeWidth={2} />}
+        </button>
       </div>
 
       <div style={{ fontSize: 11.5, color: 'var(--prox-ink3)', marginTop: 6 }}>
-        {value
+        {gpsErr
+          ? <span style={{ color: 'var(--prox-danger)' }}>{gpsErr}</span>
+          : value
           ? `${value.lat.toFixed(5)}, ${value.lng.toFixed(5)} — tocca la mappa o trascina il pin per correggere`
           : 'Cerca un indirizzo o tocca la mappa per posizionare il pin'}
       </div>

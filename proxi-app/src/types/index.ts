@@ -59,6 +59,7 @@ export interface Luogo {
   // calcolati
   persone_count?: number
   eventi_settimana?: number
+  eventi_totali?: number
 }
 
 export type StatoEvento = 'pianificato' | 'in_corso' | 'completato'

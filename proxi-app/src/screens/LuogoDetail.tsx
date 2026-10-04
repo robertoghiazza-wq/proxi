@@ -3,6 +3,7 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { ChevronLeft, MapPin, Users, Calendar, Clock, Plus, Edit } from 'lucide-react'
 import { Card } from '../components/Card'
+import { LuogoMap } from '../components/LuogoMap'
 import { Tag } from '../components/Tag'
 import { EventTypeDot } from '../components/EventTypeDot'
 import { TIPO_LUOGO_LABEL, colorForTipo } from '../lib/mock-data'
@@ -28,45 +29,6 @@ function minToHM(m: number) {
   const h = Math.floor(m / 60)
   const r = m % 60
   return h > 0 ? `${h}h ${r > 0 ? r + 'm' : ''}` : `${r}m`
-}
-
-// Placeholder mappa stilizzata (verrà sostituita con Leaflet + map.geo.admin.ch)
-function MapPlaceholder({ color }: { color: string }) {
-  return (
-    <div style={{
-      height: 200, background: '#e8ebe8',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      gap: 8, position: 'relative', overflow: 'hidden',
-    }}>
-      {/* Griglia strade stilizzata */}
-      <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0, opacity: 0.25 }}>
-        {[0, 40, 80, 120, 160, 200].map(y => (
-          <line key={`h${y}`} x1="0" y1={y} x2="100%" y2={y} stroke="#888" strokeWidth="1" />
-        ))}
-        {[0, 60, 120, 180, 240, 300, 360, 420].map(x => (
-          <line key={`v${x}`} x1={x} y1="0" x2={x} y2="100%" stroke="#888" strokeWidth="1" />
-        ))}
-        {/* Strade principali */}
-        <line x1="0" y1="70" x2="100%" y2="90" stroke="#bbb" strokeWidth="4" />
-        <line x1="120" y1="0" x2="140" y2="100%" stroke="#bbb" strokeWidth="4" />
-      </svg>
-      {/* Pin */}
-      <div style={{
-        width: 40, height: 40, borderRadius: '50% 50% 50% 0',
-        transform: 'rotate(-45deg)',
-        background: color,
-        boxShadow: '0 3px 10px rgba(0,0,0,0.25)',
-        position: 'relative', zIndex: 1,
-      }} />
-      <span style={{
-        fontSize: 11, color: '#555', fontWeight: 500,
-        position: 'relative', zIndex: 1, marginTop: 4,
-      }}>
-        Mappa — integrazione map.geo.admin.ch
-      </span>
-    </div>
-  )
 }
 
 export function LuogoDetail() {
@@ -99,7 +61,17 @@ export function LuogoDetail() {
 
       {/* MAPPA HEADER */}
       <div style={{ position: 'relative' }}>
-        <MapPlaceholder color={color} />
+        {luogo.lat != null && luogo.lng != null
+          ? <LuogoMap lat={luogo.lat} lng={luogo.lng} />
+          : (
+            <div style={{
+              height: 120, background: 'var(--prox-surface2)', color: 'var(--prox-ink3)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 13, paddingTop: 36,
+            }}>
+              Posizione non impostata
+            </div>
+          )}
 
         {/* Back button sovrapposto alla mappa */}
         <button
@@ -154,7 +126,7 @@ export function LuogoDetail() {
 
         {/* Action row */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-          <button style={{
+          <button onClick={() => navigate('/eventi/nuovo', { state: { luogoId: luogo.id } })} style={{
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
             background: 'var(--prox-accent)', color: '#fff',
             border: 'none', borderRadius: 999, padding: '11px 0',
@@ -163,7 +135,7 @@ export function LuogoDetail() {
             <Plus size={16} strokeWidth={2.5} />
             Nuovo evento qui
           </button>
-          <button style={iconBtnStyle}>
+          <button onClick={() => navigate(`/luoghi/${luogo.id}/modifica`)} style={iconBtnStyle} aria-label="Modifica luogo">
             <Edit size={18} strokeWidth={1.75} color="var(--prox-ink2)" />
           </button>
         </div>
@@ -176,13 +148,13 @@ export function LuogoDetail() {
         <Card padding={0}>
           <div style={{ display: 'flex' }}>
             <StatBox icon={<Users size={16} strokeWidth={1.75} color={color} />}
-              value={luogo.persone_count ?? 0} label="Persone" />
+              value={Number(luogo.persone_count ?? 0)} label="Persone" />
             <div style={{ width: 1, background: 'var(--prox-line)' }} />
             <StatBox icon={<Calendar size={16} strokeWidth={1.75} color={color} />}
-              value={luogo.eventi_settimana ?? 0} label="Eventi/sett" />
+              value={Number(luogo.eventi_settimana ?? 0)} label="Eventi/sett" />
             <div style={{ width: 1, background: 'var(--prox-line)' }} />
             <StatBox icon={<Calendar size={16} strokeWidth={1.75} color={color} />}
-              value={eventiRecenti.length} label="Storici" />
+              value={Number(luogo.eventi_totali ?? eventiTutti.length)} label="Totali" />
           </div>
         </Card>
 

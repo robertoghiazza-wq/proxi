@@ -14,6 +14,7 @@ class LuogoController extends Controller
         $instId = $request->user()->institution_id;
 
         $luoghi = Luogo::forInstitution($instId)
+            ->withStats()
             ->attivi()
             ->when($request->q, fn ($q, $search) =>
                 $q->where('nome', 'like', "%{$search}%"))
@@ -44,9 +45,11 @@ class LuogoController extends Controller
 
     public function show(Request $request, int $id): JsonResponse
     {
-        $luogo = Luogo::forInstitution($request->user()->institution_id)->findOrFail($id);
+        $luogo = Luogo::forInstitution($request->user()->institution_id)
+            ->withStats()
+            ->findOrFail($id);
 
-        return response()->json($luogo->load('eventi'));
+        return response()->json($luogo);
     }
 
     public function update(Request $request, int $id): JsonResponse

@@ -2,7 +2,7 @@
 // 1 Tipo | 2 Quando | 3 Luogo (GPS) | 4 Persone (suggerite dal luogo) | 5 Note
 
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { X, ChevronLeft, Search, Navigation, MapPin, Plus } from 'lucide-react'
 import { Avatar } from '../components/Avatar'
 import {
@@ -85,6 +85,7 @@ type SetFn = <K extends keyof WizardState>(key: K, val: WizardState[K]) => void
 
 export function NuovoEventoScreen() {
   const navigate = useNavigate()
+  const preLuogoId = (useLocation().state as { luogoId?: number } | null)?.luogoId ?? null
   const [step,   setStep]   = useState(0)
   const [saving, setSaving] = useState(false)
   const [errore, setErrore] = useState<string | null>(null)
@@ -93,7 +94,9 @@ export function NuovoEventoScreen() {
     data:       todayISO(),
     oraInizio:  nowRounded(),
     durata:     30,
-    soste:      [],
+    soste:      preLuogoId !== null
+      ? [{ luogoId: preLuogoId, dalle: nowRounded(), alle: calcFine(nowRounded(), 30) }]
+      : [],
     personeIds: [],
     note:       '',
     savedId:    null,

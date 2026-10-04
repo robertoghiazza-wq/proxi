@@ -54,6 +54,7 @@ export default function App() {
           {/* Luoghi: lista + modal nuovo + drawer dettaglio */}
           <Route path="/luoghi" element={<Auth><LuoghiScreen /></Auth>}>
             <Route path="nuovo" element={<NuovoLuogoScreen />} />
+            <Route path=":id/modifica" element={<NuovoLuogoScreen />} />
             <Route path=":id" element={<LuogoDetail />} />
           </Route>
 

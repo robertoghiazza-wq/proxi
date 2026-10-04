@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -37,6 +38,22 @@ class Luogo extends Model
     public function scopeForInstitution($query, int $institutionId)
     {
         return $query->where('institution_id', $institutionId);
+    }
+
+    public function scopeWithStats($query)
+    {
+        $persone = DB::table('evento_persona')
+            ->join('eventi', 'eventi.id', '=', 'evento_persona.evento_id')
+            ->whereColumn('eventi.luogo_id', 'luoghi.id')
+            ->selectRaw('count(distinct evento_persona.persona_id)');
+
+        return $query
+            ->select('luoghi.*')
+            ->selectSub($persone, 'persone_count')
+            ->withCount([
+                'eventi as eventi_settimana' => fn ($q) => $q->where('data', '>=', now()->subDays(7)->toDateString()),
+                'eventi as eventi_totali',
+            ]);
     }
 
     public function scopeAttivi($query)

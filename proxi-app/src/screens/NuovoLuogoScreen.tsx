@@ -1,25 +1,51 @@
 // Nuovo luogo — form singola pagina con selettore su mappa
 
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { X } from 'lucide-react'
 import { MapPicker, type LatLng } from '../components/MapPicker'
 import { TIPO_LUOGO_LABEL } from '../lib/mock-data'
-import { useCreateLuogo } from '../hooks/useLuoghi'
-import type { TipoLuogo } from '../types'
+import { useCreateLuogo, useLuogo, useUpdateLuogo } from '../hooks/useLuoghi'
+import type { Luogo, TipoLuogo } from '../types'
 
 const TIPI = Object.keys(TIPO_LUOGO_LABEL) as TipoLuogo[]
 
 export function NuovoLuogoScreen() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const { data: luogo, isLoading } = useLuogo(Number(id))
+
+  if (!id) return <LuogoForm />
+  if (isLoading) {
+    return <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Caricamento…</div>
+  }
+  if (!luogo) {
+    return (
+      <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>
+        Luogo non trovato
+        <br />
+        <button onClick={() => navigate('/luoghi')} style={{ marginTop: 12, cursor: 'pointer' }}>← Torna alla lista</button>
+      </div>
+    )
+  }
+  return <LuogoForm luogo={luogo} />
+}
+
+function LuogoForm({ luogo }: { luogo?: Luogo }) {
   const navigate = useNavigate()
   const create = useCreateLuogo()
+  const update = useUpdateLuogo(luogo?.id ?? 0)
+  const mutation = luogo ? update : create
+  const chiudi = () => navigate(luogo ? `/luoghi/${luogo.id}` : '/luoghi')
 
-  const [nome, setNome] = useState('')
-  const [tipo, setTipo] = useState<TipoLuogo>('strada')
-  const [indirizzo, setIndirizzo] = useState('')
-  const [orari, setOrari] = useState('')
-  const [note, setNote] = useState('')
-  const [pos, setPos] = useState<LatLng | null>(null)
+  const [nome, setNome] = useState(luogo?.nome ?? '')
+  const [tipo, setTipo] = useState<TipoLuogo>(luogo?.tipo ?? 'strada')
+  const [indirizzo, setIndirizzo] = useState(luogo?.indirizzo ?? '')
+  const [orari, setOrari] = useState(luogo?.orari ?? '')
+  const [note, setNote] = useState(luogo?.note ?? '')
+  const [pos, setPos] = useState<LatLng | null>(
+    luogo?.lat != null && luogo?.lng != null ? { lat: luogo.lat, lng: luogo.lng } : null,
+  )
   const [errore, setErrore] = useState('')
 
   function onMapChange(p: LatLng, ind?: string) {
@@ -31,7 +57,7 @@ export function NuovoLuogoScreen() {
     if (!nome.trim()) { setErrore('Il nome è obbligatorio'); return }
     setErrore('')
     try {
-      await create.mutateAsync({
+      await mutation.mutateAsync({
         nome: nome.trim(),
         tipo,
         indirizzo: indirizzo.trim() || null,
@@ -39,9 +65,9 @@ export function NuovoLuogoScreen() {
         note: note.trim() || null,
         lat: pos ? Number(pos.lat.toFixed(7)) : null,
         lng: pos ? Number(pos.lng.toFixed(7)) : null,
-        attivo: true,
+        ...(luogo ? {} : { attivo: true }),
       })
-      navigate('/luoghi')
+      chiudi()
     } catch (e) {
       setErrore((e as Error).message || 'Errore nel salvataggio')
     }
@@ -56,11 +82,11 @@ export function NuovoLuogoScreen() {
         background: 'var(--prox-surface)', borderBottom: '1px solid var(--prox-line)',
         padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 8,
       }}>
-        <button onClick={() => navigate('/luoghi')} style={ghostBtn} aria-label="Chiudi">
+        <button onClick={chiudi} style={ghostBtn} aria-label="Chiudi">
           <X size={20} strokeWidth={1.75} />
         </button>
         <div className="prox-display" style={{ flex: 1, textAlign: 'center', fontSize: 15, fontWeight: 700 }}>
-          Nuovo luogo
+          {luogo ? 'Modifica luogo' : 'Nuovo luogo'}
         </div>
         <div style={{ width: 36 }} />
       </div>
@@ -122,14 +148,14 @@ export function NuovoLuogoScreen() {
       <div style={{ padding: '12px 16px', background: 'var(--prox-surface)', borderTop: '1px solid var(--prox-line)' }}>
         <button
           onClick={salva}
-          disabled={create.isPending}
+          disabled={mutation.isPending}
           style={{
             width: '100%', padding: '13px 0', borderRadius: 999, border: 'none',
             background: 'var(--prox-accent)', color: '#fff', fontSize: 15, fontWeight: 700,
-            cursor: 'pointer', opacity: create.isPending ? 0.6 : 1,
+            cursor: 'pointer', opacity: mutation.isPending ? 0.6 : 1,
           }}
         >
-          {create.isPending ? 'Salvo…' : 'Crea luogo'}
+          {mutation.isPending ? 'Salvo…' : luogo ? 'Salva modifiche' : 'Crea luogo'}
         </button>
       </div>
     </div>
