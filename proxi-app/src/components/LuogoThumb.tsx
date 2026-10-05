@@ -49,8 +49,13 @@ export function LuogoThumb({ lat, lng, color, size = 44, radius = 10 }: Props) {
         position: 'absolute', left: '50%', top: '50%', width: 16, height: 16,
         transform: 'translate(-50%, -92%)', display: 'block',
       }}>
-        <MapPin size={16} color="#fff" strokeWidth={4.2} style={{ position: 'absolute', inset: 0 }} />
-        <MapPin size={16} color={color} strokeWidth={2.2} style={{ position: 'absolute', inset: 0 }} />
+        <MapPin
+          size={16} color={color} strokeWidth={2.2}
+          style={{
+            position: 'absolute', inset: 0,
+            filter: 'drop-shadow(0 0 3px rgba(255,255,255,0.55)) drop-shadow(0 0 7px rgba(255,255,255,0.3))',
+          }}
+        />
       </span>
       <span style={{
         position: 'absolute', inset: 0, borderRadius: radius,
