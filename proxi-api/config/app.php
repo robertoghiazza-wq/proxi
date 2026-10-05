@@ -15,6 +15,8 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    'migrate_token' => env('MIGRATE_TOKEN'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

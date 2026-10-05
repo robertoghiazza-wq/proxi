@@ -6,6 +6,12 @@ use Illuminate\Support\Facades\Route;
 // Health check pubblico
 Route::get('/ping', fn () => response()->json(['ok' => true]));
 
+// Migrazioni via URL (hosting senza SSH): richiede MIGRATE_TOKEN nel .env, altrimenti 404
+Route::middleware('throttle:10,1')->prefix('deploy')->group(function () {
+    Route::get('/migrate', [\App\Http\Controllers\DeployController::class, 'migrate']);
+    Route::get('/migrate-status', [\App\Http\Controllers\DeployController::class, 'stato']);
+});
+
 // Auth
 Route::prefix('auth')->group(function () {
     Route::post('/login', [\App\Http\Controllers\Api\AuthController::class, 'login']);
