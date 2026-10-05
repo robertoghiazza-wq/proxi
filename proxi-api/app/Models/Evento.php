@@ -18,6 +18,8 @@ class Evento extends Model
         'tipo', 'data', 'ora_inizio', 'durata_min', 'stato', 'note',
     ];
 
+    protected $appends = ['completo', 'mancanti'];
+
     protected $casts = [
         'data'       => 'date:Y-m-d',
         'durata_min' => 'integer',
@@ -27,6 +29,32 @@ class Evento extends Model
     public function getOraInizioAttribute(?string $value): ?string
     {
         return $value ? substr($value, 0, 5) : null;
+    }
+
+    // Campi che mancano perché l'evento sia "completo". Le note non sono
+    // obbligatorie per salvare, ma contano per la completezza.
+    public function getMancantiAttribute(): array
+    {
+        $manca = [];
+
+        if (blank($this->tipo)) $manca[] = 'tipo';
+        if (blank($this->getRawOriginal('data'))) $manca[] = 'data';
+        if (blank($this->getRawOriginal('ora_inizio'))) $manca[] = 'ora';
+        if (blank($this->durata_min)) $manca[] = 'durata';
+        if (blank($this->luogo_id)) $manca[] = 'luogo';
+
+        $nPersone = $this->persone_count
+            ?? ($this->relationLoaded('persone') ? $this->persone->count() : $this->persone()->count());
+        if ($nPersone === 0) $manca[] = 'persone';
+
+        if (blank(trim((string) $this->note))) $manca[] = 'note';
+
+        return $manca;
+    }
+
+    public function getCompletoAttribute(): bool
+    {
+        return $this->mancanti === [];
     }
 
     protected function auditExtraOnDelete(): array

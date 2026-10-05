@@ -5,6 +5,7 @@ import { useNavigate, useMatch, Outlet } from 'react-router-dom'
 import { Search, AlertTriangle, Plus } from 'lucide-react'
 import { MobileLayout } from '../components/MobileLayout'
 import { Drawer } from '../components/Drawer'
+import { Modal } from '../components/Modal'
 import { Avatar } from '../components/Avatar'
 import { usePersone } from '../hooks/usePersone'
 import type { Persona, RuoloPersona } from '../types'
@@ -82,7 +83,9 @@ const FILTRI: { key: Filtro; label: string }[] = [
 
 export function PersoneScreen() {
   const navigate = useNavigate()
-  const isDetailOpen = !!useMatch('/persone/:id')
+  const isModificaOpen = !!useMatch('/persone/:id/modifica')
+  const isNuovoOpen  = !!useMatch('/persone/nuovo') || isModificaOpen
+  const isDetailOpen = !!useMatch('/persone/:id') && !isNuovoOpen
   const [query, setQuery]   = useState('')
   const [filtro, setFiltro] = useState<Filtro>('tutti')
 
@@ -178,9 +181,15 @@ export function PersoneScreen() {
               : persone.map(p => <PersonaRow key={p.id} persona={p} />)
         }
       </div>
-      <Drawer open={isDetailOpen} onClose={() => navigate('/persone')}>
-        <Outlet />
-      </Drawer>
+      {isNuovoOpen ? (
+        <Modal open onClose={() => navigate('/persone')}>
+          <Outlet />
+        </Modal>
+      ) : (
+        <Drawer open={isDetailOpen} onClose={() => navigate('/persone')}>
+          <Outlet />
+        </Drawer>
+      )}
     </MobileLayout>
   )
 }

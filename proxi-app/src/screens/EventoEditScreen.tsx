@@ -10,7 +10,7 @@ import { useEvento, useUpdateEvento } from '../hooks/useEventi'
 import type { Evento, StatoEvento } from '../types'
 
 const STATI: { key: StatoEvento; label: string }[] = [
-  { key: 'completato',  label: 'Completato'  },
+  { key: 'completato',  label: 'Svolto'      },
   { key: 'in_corso',    label: 'In corso'    },
   { key: 'pianificato', label: 'Pianificato' },
 ]
@@ -142,11 +142,11 @@ function EventoForm({ evento }: { evento: Evento }) {
 
         <Section label="Luogo *"><LuogoPicker value={luogoId} onChange={setLuogoId} /></Section>
 
-        <Section label="Persone">
+        <Section label="Persone" missing={form.personeIds.length === 0}>
           <PersonePicker selectedIds={form.personeIds} onToggle={togglePersona} />
         </Section>
 
-        <Section label="Note">
+        <Section label="Note" missing={form.note.trim() === ''}>
           <div style={{ padding: '4px 16px 24px' }}>
             <textarea
               value={form.note}
@@ -180,11 +180,19 @@ function EventoForm({ evento }: { evento: Evento }) {
   )
 }
 
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
+function Section({ label, missing, children }: { label: string; missing?: boolean; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 8 }}>
-      <div style={{ padding: '16px 16px 6px' }}>
+      <div style={{ padding: '16px 16px 6px', display: 'flex', alignItems: 'center', gap: 8 }}>
         <span className="prox-label">{label}</span>
+        {missing && (
+          <span style={{
+            fontSize: 10.5, fontWeight: 700, color: 'oklch(0.50 0.13 70)',
+            background: 'oklch(0.95 0.06 85)', borderRadius: 999, padding: '1px 7px',
+          }}>
+            manca per essere completo
+          </span>
+        )}
       </div>
       {children}
     </div>

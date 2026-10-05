@@ -144,4 +144,76 @@ class EventoAuditTest extends TestCase
         $this->postJson('/api/auth/login', ['email' => $this->user->email, 'password' => 'segreta123'])
             ->assertOk();
     }
+
+    public function test_completo_richiede_tutti_i_campi_note_comprese(): void
+    {
+        $p = Persona::create(['institution_id' => $this->user->institution_id, 'nome' => 'Marco']);
+
+        $id = $this->postJson('/api/eventi', $this->payload())->assertCreated()
+            ->assertJsonPath('completo', false)
+            ->assertJsonPath('mancanti', ['persone', 'note'])
+            ->json('id');
+
+        $this->patchJson("/api/eventi/{$id}", ['note' => 'ok'])
+            ->assertJsonPath('mancanti', ['persone']);
+
+        $this->patchJson("/api/eventi/{$id}", ['persone_ids' => [$p->id]])
+            ->assertJsonPath('completo', true)
+            ->assertJsonPath('mancanti', []);
+
+        $this->patchJson("/api/eventi/{$id}", ['note' => '   '])
+            ->assertJsonPath('completo', false);
+
+        $this->getJson('/api/eventi')->assertJsonPath('0.completo', false);
+    }
+
+    public function test_scheda_persona_validazione_e_audit(): void
+    {
+        $this->postJson('/api/persone', ['ruolo' => 'utente'])
+            ->assertStatus(422)->assertJsonValidationErrors('nome');
+
+        $this->postJson('/api/persone', ['nome' => 'Marco', 'anonimo' => true])
+            ->assertStatus(422)->assertJsonValidationErrors('soprannome');
+
+        $id = $this->postJson('/api/persone', [
+            'ruolo' => 'utente', 'soprannome' => 'Gigi', 'anonimo' => true,
+            'eta' => 40, 'lingue' => ['IT', 'FR'], 'tag' => ['alcol'],
+        ])->assertCreated()->json('id');
+
+        $this->patchJson("/api/persone/{$id}", ['eta' => 41, 'tag' => ['alcol', 'minore']])->assertOk();
+
+        $log = AuditLog::where('auditable_type', 'Persona')->where('action', 'updated')->firstOrFail();
+        $this->assertEquals(40, $log->old_values['eta']);
+        $this->assertEquals(41, $log->new_values['eta']);
+
+        $this->deleteJson("/api/persone/{$id}")->assertNoContent();
+        $this->assertDatabaseHas('audit_logs', ['action' => 'deleted', 'auditable_type' => 'Persona', 'auditable_id' => $id]);
+    }
+
+    public function test_dettaglio_modifica_ed_eliminazione_rispettano_l_ente(): void
+    {
+        $altro = Institution::forceCreate(['name' => 'Altro', 'slug' => 'altro']);
+        $estranea = Persona::create(['institution_id' => $altro->id, 'nome' => 'Estranea']);
+        $estraneo = Luogo::create(['institution_id' => $altro->id, 'nome' => 'X', 'tipo' => 'strada']);
+        $mia = Persona::create(['institution_id' => $this->user->institution_id, 'nome' => 'Mia']);
+
+        $this->getJson("/api/persone/{$mia->id}")->assertOk()->assertJsonPath('nome', 'Mia');
+        $this->getJson("/api/luoghi/{$this->luogo->id}")->assertOk()->assertJsonPath('nome', 'Piazza');
+        $this->patchJson("/api/luoghi/{$this->luogo->id}", ['nome' => 'Nuova'])->assertOk();
+
+        foreach (["/api/persone/{$estranea->id}", "/api/luoghi/{$estraneo->id}"] as $url) {
+            $this->getJson($url)->assertNotFound();
+            $this->deleteJson($url)->assertNotFound();
+        }
+    }
+
+    public function test_non_si_puo_svuotare_l_identita_di_una_persona(): void
+    {
+        $p = Persona::create(['institution_id' => $this->user->institution_id, 'nome' => 'Marco']);
+
+        $this->patchJson("/api/persone/{$p->id}", ['nome' => null])
+            ->assertStatus(422)->assertJsonValidationErrors('nome');
+
+        $this->patchJson("/api/persone/{$p->id}", ['nome' => null, 'soprannome' => 'Gigi'])->assertOk();
+    }
 }

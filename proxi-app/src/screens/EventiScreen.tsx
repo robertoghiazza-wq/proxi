@@ -9,17 +9,19 @@ import { Card } from '../components/Card'
 import { SwipeRow } from '../components/SwipeRow'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { colorForTipo, tipoLabel } from '../lib/mock-data'
+import { daCompletare, mancantiTesto } from '../lib/completezza'
 import { useEventi, useDeleteEvento } from '../hooks/useEventi'
 import type { Evento, StatoEvento } from '../types'
-import { Plus, Check } from 'lucide-react'
+import { Plus, Check, CircleDashed } from 'lucide-react'
 
-type Filtro = 'tutti' | StatoEvento
+type Filtro = 'tutti' | StatoEvento | 'incompleti'
 
 const FILTRI: { key: Filtro; label: string }[] = [
   { key: 'tutti',       label: 'Tutti'    },
-  { key: 'completato',  label: 'Chiusi'   },
+  { key: 'completato',  label: 'Svolti'   },
   { key: 'pianificato', label: 'Pianif.'  },
   { key: 'in_corso',    label: 'In corso' },
+  { key: 'incompleti',  label: 'Da completare' },
 ]
 
 function minToHM(m: number) {
@@ -46,7 +48,9 @@ export function EventiScreen() {
   const { data: tuttiEventi = [], isLoading } = useEventi({})
 
   const filtrati = tuttiEventi
-    .filter(e => filtro === 'tutti' || e.stato === filtro)
+    .filter(e => filtro === 'tutti'
+      || (filtro === 'incompleti' ? daCompletare(e) : e.stato === filtro))
+  const nIncompleti = tuttiEventi.filter(daCompletare).length
 
   // Raggruppa per giorno
   const giorni = [...new Set(filtrati.map(e => e.data))]
@@ -68,7 +72,7 @@ export function EventiScreen() {
             <Plus size={18} strokeWidth={2.5} />
           </button>
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', margin: '0 -16px', padding: '0 16px', scrollbarWidth: 'none' }}>
           {FILTRI.map(({ key, label }) => {
             const active = filtro === key
             return (
@@ -77,12 +81,15 @@ export function EventiScreen() {
                 onClick={() => setFiltro(key)}
                 style={{
                   padding: '4px 10px', borderRadius: 999, border: 'none',
-                  fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
+                  fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
                   background: active ? 'var(--prox-accent)' : 'var(--prox-surface2)',
                   color: active ? '#fff' : 'var(--prox-ink2)',
                 }}
               >
                 {label}
+                {key === 'incompleti' && nIncompleti > 0 && (
+                  <span style={{ marginLeft: 5, opacity: active ? 0.85 : 1, color: active ? '#fff' : 'var(--prox-warn)' }}>{nIncompleti}</span>
+                )}
               </button>
             )
           })}
@@ -165,7 +172,22 @@ export function EventiScreen() {
                           padding: '1px 6px', textTransform: 'uppercase', flexShrink: 0,
                         }}>Live</span>
                       )}
-                      {e.stato === 'completato' && <Check size={14} color="var(--prox-ok)" strokeWidth={2.2} style={{ flexShrink: 0 }} />}
+                      {e.stato === 'completato' && e.completo && (
+                        <Check size={14} color="var(--prox-ok)" strokeWidth={2.2} style={{ flexShrink: 0 }} aria-label="Completo" />
+                      )}
+                      {daCompletare(e) && (
+                        <span
+                          title={`Mancano: ${mancantiTesto(e.mancanti)}`}
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 3, flexShrink: 0,
+                            fontSize: 10.5, fontWeight: 700, color: 'oklch(0.50 0.13 70)',
+                            background: 'oklch(0.95 0.06 85)', borderRadius: 999, padding: '2px 7px',
+                          }}
+                        >
+                          <CircleDashed size={11} strokeWidth={2.4} />
+                          Da completare
+                        </span>
+                      )}
                     </Card>
                     </SwipeRow>
                   )

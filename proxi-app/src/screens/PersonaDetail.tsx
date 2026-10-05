@@ -1,13 +1,15 @@
 // Persona detail — hero + bisogni + note + storico eventi
 
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ChevronLeft, Phone, Edit, Plus, AlertTriangle } from 'lucide-react'
+import { ChevronLeft, Phone, Edit, Plus, AlertTriangle, Trash2, Mail } from 'lucide-react'
 import { Avatar } from '../components/Avatar'
 import { Tag } from '../components/Tag'
 import { Card } from '../components/Card'
 import { EventTypeDot } from '../components/EventTypeDot'
 import { colorForTipo } from '../lib/mock-data'
-import { usePersona } from '../hooks/usePersone'
+import { ConfirmDialog } from '../components/ConfirmDialog'
+import { usePersona, useDeletePersona } from '../hooks/usePersone'
 
 const TAG_VULNERABILI = ['senza fissa dimora', 'minore', 'dipendenza', 'prostituzione']
 
@@ -34,6 +36,8 @@ export function PersonaDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { data: persona, isLoading } = usePersona(Number(id))
+  const elimina = useDeletePersona()
+  const [confermaElimina, setConfermaElimina] = useState(false)
 
   if (isLoading) {
     return <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Caricamento…</div>
@@ -125,6 +129,7 @@ export function PersonaDetail() {
         {/* Action row */}
         <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
           <button
+            onClick={() => navigate('/eventi/nuovo', { state: { personaId: persona.id } })}
             style={{
               flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
               background: 'var(--prox-accent)', color: '#fff',
@@ -136,11 +141,11 @@ export function PersonaDetail() {
             Nuovo evento
           </button>
           {persona.telefono && (
-            <button style={iconBtnStyle}>
+            <a href={`tel:${persona.telefono.replace(/\s+/g, '')}`} style={iconBtnStyle} aria-label="Chiama">
               <Phone size={18} strokeWidth={1.75} color="var(--prox-ink2)" />
-            </button>
+            </a>
           )}
-          <button style={iconBtnStyle}>
+          <button onClick={() => navigate(`/persone/${persona.id}/modifica`)} style={iconBtnStyle} aria-label="Modifica persona">
             <Edit size={18} strokeWidth={1.75} color="var(--prox-ink2)" />
           </button>
         </div>
@@ -156,6 +161,24 @@ export function PersonaDetail() {
               {persona.bisogni.map(b => (
                 <Tag key={b} label={b} />
               ))}
+            </div>
+          </Section>
+        )}
+
+        {/* Contatti */}
+        {(persona.telefono || persona.email) && (
+          <Section title="Contatti">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 14 }}>
+              {persona.telefono && (
+                <a href={`tel:${persona.telefono.replace(/\s+/g, '')}`} style={contactLink}>
+                  <Phone size={15} strokeWidth={1.75} /> {persona.telefono}
+                </a>
+              )}
+              {persona.email && (
+                <a href={`mailto:${persona.email}`} style={contactLink}>
+                  <Mail size={15} strokeWidth={1.75} /> {persona.email}
+                </a>
+              )}
             </div>
           </Section>
         )}
@@ -219,12 +242,41 @@ export function PersonaDetail() {
             )
           }
         </Section>
+
+        <button
+          onClick={() => setConfermaElimina(true)}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+            border: '1.5px solid var(--prox-line)', borderRadius: 999,
+            background: 'transparent', color: 'var(--prox-danger)',
+            padding: '11px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer', width: '100%',
+          }}
+        >
+          <Trash2 size={16} strokeWidth={1.75} />
+          Elimina persona
+        </button>
       </div>
+
+      <ConfirmDialog
+        open={confermaElimina}
+        danger
+        title="Eliminare la persona?"
+        message={`${name} sparisce dall'elenco e dagli eventi, ma la scheda resta nel log.`}
+        confirmLabel="Elimina"
+        loading={elimina.isPending}
+        error={elimina.isError ? (elimina.error as Error).message : null}
+        onCancel={() => { setConfermaElimina(false); elimina.reset() }}
+        onConfirm={() => elimina.mutate(persona.id, { onSuccess: () => navigate('/persone') })}
+      />
     </div>
   )
 }
 
 // ---- helpers ----
+
+const contactLink: React.CSSProperties = {
+  display: 'flex', alignItems: 'center', gap: 8, color: 'var(--prox-ink2)', textDecoration: 'none',
+}
 
 const iconBtnStyle: React.CSSProperties = {
   width: 44, height: 44, borderRadius: 999,

@@ -75,6 +75,8 @@ export interface Evento {
   durata_min: number
   stato: StatoEvento
   note: string | null
+  completo?: boolean
+  mancanti?: string[]
   persone?: Persona[]
   luogo?: Luogo
   educatore?: User

@@ -5,6 +5,7 @@ import './index.css'
 import { HomeScreen }        from './screens/HomeScreen'
 import { PersoneScreen }     from './screens/PersoneScreen'
 import { PersonaDetail }     from './screens/PersonaDetail'
+import { PersonaFormScreen } from './screens/PersonaFormScreen'
 import { EventiScreen }      from './screens/EventiScreen'
 import { EventoDetail }      from './screens/EventoDetail'
 import { NuovoEventoScreen } from './screens/NuovoEventoScreen'
@@ -43,6 +44,8 @@ export default function App() {
 
           {/* Persone: lista + drawer dettaglio */}
           <Route path="/persone" element={<Auth><PersoneScreen /></Auth>}>
+            <Route path="nuovo" element={<PersonaFormScreen />} />
+            <Route path=":id/modifica" element={<PersonaFormScreen />} />
             <Route path=":id" element={<PersonaDetail />} />
           </Route>
 

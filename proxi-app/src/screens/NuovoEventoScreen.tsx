@@ -85,7 +85,9 @@ export type SetFn = <K extends keyof WizardState>(key: K, val: WizardState[K]) =
 
 export function NuovoEventoScreen() {
   const navigate = useNavigate()
-  const preLuogoId = (useLocation().state as { luogoId?: number } | null)?.luogoId ?? null
+  const locState = useLocation().state as { luogoId?: number; personaId?: number } | null
+  const preLuogoId = locState?.luogoId ?? null
+  const prePersonaId = locState?.personaId ?? null
   const [step,   setStep]   = useState(0)
   const [saving, setSaving] = useState(false)
   const [errore, setErrore] = useState<string | null>(null)
@@ -97,7 +99,7 @@ export function NuovoEventoScreen() {
     soste:      preLuogoId !== null
       ? [{ luogoId: preLuogoId, dalle: nowRounded(), alle: calcFine(nowRounded(), 30) }]
       : [],
-    personeIds: [],
+    personeIds: prePersonaId !== null ? [prePersonaId] : [],
     note:       '',
     savedId:    null,
   })

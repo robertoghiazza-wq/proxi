@@ -2,12 +2,13 @@
 
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ChevronLeft, MapPin, Clock, FileText, Edit, CheckCircle, Circle, PlayCircle, Trash2 } from 'lucide-react'
+import { ChevronLeft, MapPin, Clock, FileText, Edit, CheckCircle, Circle, PlayCircle, Trash2, CircleDashed } from 'lucide-react'
 import { Avatar } from '../components/Avatar'
 import { Tag } from '../components/Tag'
 import { Card } from '../components/Card'
 import { colorForTipo, tipoLabel } from '../lib/mock-data'
 import { ConfirmDialog } from '../components/ConfirmDialog'
+import { daCompletare, mancantiTesto } from '../lib/completezza'
 import { useEvento, useUpdateEvento, useDeleteEvento } from '../hooks/useEventi'
 import type { StatoEvento } from '../types'
 
@@ -25,7 +26,7 @@ function fmtData(d: string) {
 
 function StatoInfo({ stato }: { stato: StatoEvento }) {
   const configs: Record<StatoEvento, { icon: React.ReactNode; label: string; color: string; bg: string }> = {
-    completato:  { icon: <CheckCircle size={16} strokeWidth={2} />, label: 'Completato',  color: 'var(--prox-ok)',     bg: 'oklch(0.96 0.05 155)' },
+    completato:  { icon: <CheckCircle size={16} strokeWidth={2} />, label: 'Svolto',      color: 'var(--prox-ok)',     bg: 'oklch(0.96 0.05 155)' },
     in_corso:    { icon: <PlayCircle size={16} strokeWidth={2} />,  label: 'In corso',    color: 'var(--prox-accent)', bg: 'var(--prox-accent-soft)' },
     pianificato: { icon: <Circle size={16} strokeWidth={2} />,      label: 'Pianificato', color: 'var(--prox-ink3)',   bg: 'var(--prox-surface2)' },
   }
@@ -113,6 +114,37 @@ export function EventoDetail() {
 
       {/* CORPO */}
       <div style={{ padding: '14px 16px 120px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+        {daCompletare(evento) && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px',
+            borderRadius: 14, background: 'oklch(0.95 0.06 85)', color: 'oklch(0.40 0.11 70)',
+          }}>
+            <CircleDashed size={18} strokeWidth={2.2} style={{ flexShrink: 0 }} />
+            <div style={{ flex: 1, fontSize: 13.5, lineHeight: 1.4 }}>
+              <strong>Da completare.</strong> Mancano: {mancantiTesto(evento.mancanti)}.
+            </div>
+            <button
+              onClick={() => navigate(`/eventi/${evento.id}/modifica`)}
+              style={{
+                border: 'none', borderRadius: 999, padding: '6px 14px', cursor: 'pointer',
+                background: 'oklch(0.40 0.11 70)', color: '#fff', fontSize: 13, fontWeight: 600, flexShrink: 0,
+              }}
+            >
+              Completa
+            </button>
+          </div>
+        )}
+        {evento.stato === 'completato' && evento.completo && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px',
+            borderRadius: 14, background: 'oklch(0.96 0.05 155)', color: 'var(--prox-ok)',
+            fontSize: 13.5, fontWeight: 600,
+          }}>
+            <CheckCircle size={16} strokeWidth={2.2} />
+            Completo
+          </div>
+        )}
 
         {/* Info principali */}
         <Card padding={0}>
@@ -217,7 +249,7 @@ export function EventoDetail() {
             }}
           >
             <CheckCircle size={16} strokeWidth={2.2} />
-            Segna come completato
+            Segna come svolto
           </button>
         )}
         {aggiorna.isError && (

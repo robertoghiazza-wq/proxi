@@ -28,6 +28,20 @@ export function useUpdatePersona(id: number) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (data: Partial<Persona>) => api.patch<Persona>(`/persone/${id}`, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['persone'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['persone'] })
+      qc.invalidateQueries({ queryKey: ['eventi'] })
+    },
+  })
+}
+
+export function useDeletePersona() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api.delete<void>(`/persone/${id}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['persone'] })
+      qc.invalidateQueries({ queryKey: ['eventi'] })
+    },
   })
 }
