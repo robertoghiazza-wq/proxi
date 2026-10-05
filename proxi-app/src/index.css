@@ -58,6 +58,7 @@
 }
 
 html, body {
+  touch-action: manipulation;
   overscroll-behavior-y: none;
   -webkit-text-size-adjust: 100%;
 }
@@ -114,3 +115,8 @@ body::before {
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--prox-line); border-radius: 999px; }
+
+/* iOS zooma sui campi sotto i 16px: sui dispositivi touch li portiamo a 16px */
+@media (pointer: coarse) {
+  input, select, textarea { font-size: 16px !important; }
+}
