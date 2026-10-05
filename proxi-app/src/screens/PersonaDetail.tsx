@@ -183,6 +183,20 @@ export function PersonaDetail() {
           </Section>
         )}
 
+        {/* Servizi */}
+        {persona.servizi && persona.servizi.length > 0 && (
+          <Section title="Servizi" count={persona.servizi.length}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {persona.servizi.map(sv => (
+                <div key={sv.id} onClick={() => navigate(`/servizi/${sv.id}`)} style={{ cursor: 'pointer', fontSize: 14 }}>
+                  <div style={{ fontWeight: 600 }}>{sv.nome}</div>
+                  {sv.localita && <div style={{ fontSize: 12, color: 'var(--prox-ink3)' }}>{sv.localita}</div>}
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+
         {/* Note */}
         {persona.note && (
           <Section title="Note">

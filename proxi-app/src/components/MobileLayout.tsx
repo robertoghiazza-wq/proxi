@@ -10,6 +10,12 @@ const TABS = [
   { path: '/profilo', icon: User,     label: 'Profilo' },
 ]
 
+// I servizi stanno nella tab Persone
+function tabAttiva(pathname: string, path: string): boolean {
+  if (path === '/persone' && (pathname === '/servizi' || pathname.startsWith('/servizi/'))) return true
+  return pathname === path || (path !== '/' && pathname.startsWith(path + '/'))
+}
+
 interface MobileLayoutProps {
   children: React.ReactNode
 }
@@ -53,7 +59,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
             {TABS.map(({ path, icon: Icon, label }) => {
               const active = path === '/'
                 ? pathname === '/'
-                : pathname === path || pathname.startsWith(path + '/')
+                : tabAttiva(pathname, path)
               return (
                 <button
                   key={path}
@@ -121,7 +127,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
         paddingBottom: 'var(--sab)',
       }}>
         {TABS.map(({ path, icon: Icon, label }) => {
-          const active = pathname === path
+          const active = tabAttiva(pathname, path)
           return (
             <button
               key={path}

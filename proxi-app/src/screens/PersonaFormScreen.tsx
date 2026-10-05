@@ -43,8 +43,9 @@ export function PersonaFormScreen() {
   return <PersonaForm persona={persona} />
 }
 
-export function PersonaForm({ persona, onClose, onSaved }: {
+export function PersonaForm({ persona, initialRuolo, onClose, onSaved }: {
   persona?: Persona
+  initialRuolo?: RuoloPersona
   onClose?: () => void
   onSaved?: (p: Persona) => void
 }) {
@@ -55,7 +56,7 @@ export function PersonaForm({ persona, onClose, onSaved }: {
   const chiudi = onClose ?? (() => navigate(persona ? `/persone/${persona.id}` : '/persone'))
   const { data: tutte = [] } = usePersone()
 
-  const [ruolo, setRuolo] = useState<RuoloPersona>(persona?.ruolo ?? 'utente')
+  const [ruolo, setRuolo] = useState<RuoloPersona>(persona?.ruolo ?? initialRuolo ?? 'utente')
   const [anonimo, setAnonimo] = useState(persona?.anonimo ?? false)
   const [nome, setNome] = useState(persona?.nome ?? '')
   const [soprannome, setSoprannome] = useState(persona?.soprannome ?? '')

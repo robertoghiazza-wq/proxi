@@ -13,6 +13,9 @@ import { EventoEditScreen }  from './screens/EventoEditScreen'
 import { LuoghiScreen }      from './screens/LuoghiScreen'
 import { LuogoDetail }       from './screens/LuogoDetail'
 import { NuovoLuogoScreen }  from './screens/NuovoLuogoScreen'
+import { ServiziScreen }     from './screens/ServiziScreen'
+import { ServizioDetail }    from './screens/ServizioDetail'
+import { ServizioFormScreen } from './screens/ServizioFormScreen'
 import { ProfiloScreen }     from './screens/ProfiloScreen'
 import { LoginScreen }       from './screens/LoginScreen'
 
@@ -47,6 +50,13 @@ export default function App() {
             <Route path="nuovo" element={<PersonaFormScreen />} />
             <Route path=":id/modifica" element={<PersonaFormScreen />} />
             <Route path=":id" element={<PersonaDetail />} />
+          </Route>
+
+          {/* Servizi (enti della rete): stessa tab di Persone */}
+          <Route path="/servizi" element={<Auth><ServiziScreen /></Auth>}>
+            <Route path="nuovo" element={<ServizioFormScreen />} />
+            <Route path=":id/modifica" element={<ServizioFormScreen />} />
+            <Route path=":id" element={<ServizioDetail />} />
           </Route>
 
           {/* Eventi: lista + modal nuovo + drawer dettaglio */}

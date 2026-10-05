@@ -62,6 +62,7 @@ class PersonaController extends Controller
 
         return response()->json($persona->load([
             'eventi' => fn ($q) => $q->withCount('persone')->with('luogo'),
+            'servizi' => fn ($q) => $q->select('servizi.id', 'servizi.nome', 'servizi.localita'),
         ]));
     }
 

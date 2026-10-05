@@ -22,6 +22,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Persone
     Route::apiResource('persone', \App\Http\Controllers\Api\PersonaController::class);
 
+    // Servizi (enti della rete) e persone collegate
+    Route::apiResource('servizi', \App\Http\Controllers\Api\ServizioController::class);
+    Route::put('/servizi/{servizio}/persone', [\App\Http\Controllers\Api\ServizioController::class, 'syncPersone']);
+
     // Luoghi
     Route::apiResource('luoghi', \App\Http\Controllers\Api\LuogoController::class);
 

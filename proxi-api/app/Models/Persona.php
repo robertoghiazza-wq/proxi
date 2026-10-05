@@ -37,6 +37,12 @@ class Persona extends Model
         return $this->belongsToMany(Evento::class, 'evento_persona');
     }
 
+    public function servizi(): BelongsToMany
+    {
+        return $this->belongsToMany(Servizio::class, 'persona_servizio')
+            ->withPivot('ruolo', 'principale');
+    }
+
     public function scopeForInstitution($query, int $institutionId)
     {
         return $query->where('institution_id', $institutionId);

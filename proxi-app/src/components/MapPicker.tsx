@@ -9,12 +9,14 @@ import { Search, Loader2, LocateFixed } from 'lucide-react'
 
 export interface LatLng { lat: number; lng: number }
 
+export interface ParteIndirizzo { via?: string; cap?: string; localita?: string }
+
 interface Props {
   value: LatLng | null
-  onChange: (pos: LatLng, indirizzo?: string) => void
+  onChange: (pos: LatLng, indirizzo?: string, parti?: ParteIndirizzo) => void
 }
 
-interface Risultato { label: string; lat: number; lng: number }
+interface Risultato { label: string; lat: number; lng: number; parti?: ParteIndirizzo }
 
 const CENTRO_TICINO: [number, number] = [46.0, 8.95]
 const GEO = 'https://api3.geo.admin.ch/rest/services'
@@ -27,14 +29,18 @@ async function cerca(testo: string, signal: AbortSignal): Promise<Risultato[]> {
   const res = await fetch(url, { signal })
   if (!res.ok) return []
   const json = await res.json()
-  return (json.results ?? []).map((r: { attrs: { label: string; lat: number; lon: number } }) => ({
-    label: stripTags(r.attrs.label),
-    lat: r.attrs.lat,
-    lng: r.attrs.lon,
-  }))
+  return (json.results ?? []).map((r: { attrs: { label: string; lat: number; lon: number } }) => {
+    const m = r.attrs.label.match(/^(.*?)\s*<b>(\d{4})\s+(.+?)<\/b>/)
+    return {
+      label: stripTags(r.attrs.label),
+      lat: r.attrs.lat,
+      lng: r.attrs.lon,
+      parti: m ? { via: m[1].trim() || undefined, cap: m[2], localita: m[3].trim() } : undefined,
+    }
+  })
 }
 
-async function indirizzoDa(pos: LatLng): Promise<string | undefined> {
+async function indirizzoDa(pos: LatLng): Promise<{ testo: string; parti: ParteIndirizzo } | undefined> {
   const d = 0.001
   const url = `${GEO}/ech/MapServer/identify?geometryType=esriGeometryPoint`
     + `&geometry=${pos.lng},${pos.lat}&sr=4326&layers=all:ch.bfs.gebaeude_wohnungs_register`
@@ -47,7 +53,10 @@ async function indirizzoDa(pos: LatLng): Promise<string | undefined> {
     const a = json.results?.[0]?.attributes
     if (!a?.strname_deinr) return undefined
     const plz = String(a.plz_plz6 ?? '').split('/')[0]
-    return `${a.strname_deinr}, ${plz} ${a.ggdename}`.trim()
+    return {
+      testo: `${a.strname_deinr}, ${plz} ${a.ggdename}`.trim(),
+      parti: { via: a.strname_deinr, cap: plz, localita: a.ggdename },
+    }
   } catch {
     return undefined
   }
@@ -100,13 +109,13 @@ export function MapPicker({ value, onChange }: Props) {
     setFlyTarget(pos)
     setRisultati([])
     setQuery('')
-    onChange(pos, r.label)
+    onChange(pos, r.label, r.parti)
   }
 
   async function clickMappa(pos: LatLng) {
     onChange(pos)
     const ind = await indirizzoDa(pos)
-    if (ind) onChange(pos, ind)
+    if (ind) onChange(pos, ind.testo, ind.parti)
   }
 
   function locate() {

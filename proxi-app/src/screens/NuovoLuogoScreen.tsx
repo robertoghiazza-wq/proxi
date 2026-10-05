@@ -31,8 +31,9 @@ export function NuovoLuogoScreen() {
   return <LuogoForm luogo={luogo} />
 }
 
-export function LuogoForm({ luogo, onClose, onSaved }: {
+export function LuogoForm({ luogo, initial, onClose, onSaved }: {
   luogo?: Luogo
+  initial?: Partial<Luogo>
   onClose?: () => void
   onSaved?: (luogo: Luogo) => void
 }) {
@@ -42,13 +43,14 @@ export function LuogoForm({ luogo, onClose, onSaved }: {
   const mutation = luogo ? update : create
   const chiudi = onClose ?? (() => navigate(luogo ? `/luoghi/${luogo.id}` : '/luoghi'))
 
-  const [nome, setNome] = useState(luogo?.nome ?? '')
-  const [tipo, setTipo] = useState<TipoLuogo>(luogo?.tipo ?? 'strada')
-  const [indirizzo, setIndirizzo] = useState(luogo?.indirizzo ?? '')
-  const [orari, setOrari] = useState(luogo?.orari ?? '')
-  const [note, setNote] = useState(luogo?.note ?? '')
+  const base = luogo ?? initial
+  const [nome, setNome] = useState(base?.nome ?? '')
+  const [tipo, setTipo] = useState<TipoLuogo>(base?.tipo ?? 'strada')
+  const [indirizzo, setIndirizzo] = useState(base?.indirizzo ?? '')
+  const [orari, setOrari] = useState(base?.orari ?? '')
+  const [note, setNote] = useState(base?.note ?? '')
   const [pos, setPos] = useState<LatLng | null>(
-    luogo?.lat != null && luogo?.lng != null ? { lat: luogo.lat, lng: luogo.lng } : null,
+    base?.lat != null && base?.lng != null ? { lat: base.lat, lng: base.lng } : null,
   )
   const [errore, setErrore] = useState('')
 

@@ -7,6 +7,7 @@ import { MobileLayout } from '../components/MobileLayout'
 import { Drawer } from '../components/Drawer'
 import { Modal } from '../components/Modal'
 import { Avatar } from '../components/Avatar'
+import { PersoneServiziSwitch } from '../components/PersoneServiziSwitch'
 import { usePersone } from '../hooks/usePersone'
 import type { Persona, RuoloPersona } from '../types'
 
@@ -127,6 +128,8 @@ export function PersoneScreen() {
             <Plus size={18} strokeWidth={2.5} />
           </button>
         </div>
+
+        <PersoneServiziSwitch current="persone" />
 
         {/* Search */}
         <div style={{

@@ -1,8 +1,11 @@
 // Luogo detail — mappa placeholder + stats + eventi recenti
 
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ChevronLeft, MapPin, Users, Calendar, Clock, Plus, Edit } from 'lucide-react'
 import { Card } from '../components/Card'
+import { Modal } from '../components/Modal'
+import { ServizioForm } from './ServizioFormScreen'
 import { LuogoMap } from '../components/LuogoMap'
 import { Tag } from '../components/Tag'
 import { EventTypeDot } from '../components/EventTypeDot'
@@ -37,6 +40,8 @@ export function LuogoDetail() {
   const { data: luogo, isLoading } = useLuogo(Number(id))
   const { data: eventiTutti = [] } = useEventi({ luogo_id: Number(id) })
   const eventiRecenti = eventiTutti.slice(0, 5)
+  const [creaServizio, setCreaServizio] = useState(false)
+  const [servizioCreatoId, setServizioCreatoId] = useState<number | null>(null)
 
   if (isLoading) {
     return <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Caricamento…</div>
@@ -168,6 +173,16 @@ export function LuogoDetail() {
           </Card>
         )}
 
+        {servizioCreatoId !== null ? (
+          <button onClick={() => navigate(`/servizi/${servizioCreatoId}`)} style={{ ...azioneLuogo, color: 'var(--prox-ok)' }}>
+            Servizio creato — aprilo
+          </button>
+        ) : (
+          <button onClick={() => setCreaServizio(true)} style={azioneLuogo}>
+            Crea un servizio da questo luogo
+          </button>
+        )}
+
         {/* Eventi recenti */}
         <Card padding="14px 16px">
           <div style={{
@@ -213,11 +228,27 @@ export function LuogoDetail() {
           }
         </Card>
       </div>
+
+      {creaServizio && luogo && (
+        <Modal open onClose={() => setCreaServizio(false)}>
+          <ServizioForm
+            initial={{ nome: luogo.nome, indirizzo: luogo.indirizzo, lat: luogo.lat, lng: luogo.lng, note: luogo.note }}
+            onClose={() => setCreaServizio(false)}
+            onSaved={sv => { setCreaServizio(false); setServizioCreatoId(sv.id) }}
+          />
+        </Modal>
+      )}
     </div>
   )
 }
 
 // ---- helpers ----
+
+const azioneLuogo: React.CSSProperties = {
+  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+  border: '1.5px solid var(--prox-line)', borderRadius: 999, background: 'transparent',
+  color: 'var(--prox-ink2)', padding: '11px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer', width: '100%',
+}
 
 const iconBtnStyle: React.CSSProperties = {
   width: 44, height: 44, borderRadius: 999,

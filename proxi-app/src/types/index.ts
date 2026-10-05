@@ -41,6 +41,7 @@ export interface Persona {
   // calcolato/caricato dal backend
   eventi_count?: number
   eventi?: Evento[]
+  servizi?: Pick<Servizio, 'id' | 'nome' | 'localita'>[]
 }
 
 export type TipoLuogo = 'strada' | 'informale' | 'diurno' | 'sanitario' | 'ufficio'
@@ -60,6 +61,27 @@ export interface Luogo {
   persone_count?: number
   eventi_settimana?: number
   eventi_totali?: number
+}
+
+export interface Servizio {
+  id: number
+  institution_id: number
+  nome: string
+  indirizzo: string | null
+  cap: string | null
+  localita: string | null
+  paese: string | null
+  telefono: string | null
+  email: string | null
+  sito: string | null
+  note: string | null
+  lat: number | null
+  lng: number | null
+  attivo: boolean
+  persone_count?: number
+  persone?: (Pick<Persona, 'id' | 'nome' | 'soprannome' | 'anonimo' | 'ruolo' | 'telefono' | 'email'> & {
+    pivot: { ruolo: string | null; principale: boolean }
+  })[]
 }
 
 export type StatoEvento = 'pianificato' | 'in_corso' | 'completato'
