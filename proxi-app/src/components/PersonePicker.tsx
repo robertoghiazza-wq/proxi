@@ -1,5 +1,6 @@
 // Selezione multipla di persone con creazione al volo
 
+import { nomeAvatar, nomePersona } from '../lib/persona'
 import { useState } from 'react'
 import { Plus, Search, X } from 'lucide-react'
 import { Avatar } from './Avatar'
@@ -22,7 +23,7 @@ export function PersonePicker({ selectedIds, onToggle, sticky }: Props) {
   const filtrate = persone
     .filter(p => p.ruolo === 'utente')
     .filter(p => !q
-      || p.nome?.toLowerCase().includes(q)
+      || p.nome?.toLowerCase().includes(q) || p.cognome?.toLowerCase().includes(q)
       || p.soprannome?.toLowerCase().includes(q)
       || p.tag?.some(t => t.toLowerCase().includes(q)))
 
@@ -111,9 +112,7 @@ function Msg({ children, danger }: { children: React.ReactNode; danger?: boolean
 }
 
 function PersonaRow({ persona, selected, onToggle }: { persona: Persona; selected: boolean; onToggle: () => void }) {
-  const nome = persona.anonimo
-    ? (persona.soprannome ? `"${persona.soprannome}"` : '—')
-    : (persona.nome ?? persona.soprannome ?? '—')
+  const nome = nomePersona(persona)
 
   return (
     <button onClick={onToggle} style={{
@@ -132,7 +131,7 @@ function PersonaRow({ persona, selected, onToggle }: { persona: Persona; selecte
           </svg>
         )}
       </div>
-      <Avatar nome={persona.anonimo ? persona.soprannome : persona.nome} anonimo={persona.anonimo} size={36} />
+      <Avatar nome={nomeAvatar(persona)} anonimo={persona.anonimo} size={36} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 14, fontWeight: 600, color: selected ? 'var(--prox-accent-ink)' : 'var(--prox-ink)' }}>
           {nome}

@@ -1,5 +1,6 @@
 // Eventi — lista raggruppata per giorno con filtri stato
 
+import { nomeAvatar } from '../lib/persona'
 import { useState } from 'react'
 import { useNavigate, useMatch, Outlet } from 'react-router-dom'
 import { MobileLayout } from '../components/MobileLayout'
@@ -131,7 +132,7 @@ export function EventiScreen() {
                   const color = colorForTipo(e.tipo)
                   const luogo = e.luogo ?? null
                   const nomi = (e.persone ?? [])
-                    .map(p => (p.anonimo ? p.soprannome : p.nome ?? p.soprannome))
+                    .map(p => (nomeAvatar(p) ?? p.soprannome))
                     .filter(Boolean)
 
                   return (

@@ -28,6 +28,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Persone
     Route::apiResource('persone', \App\Http\Controllers\Api\PersonaController::class);
 
+    // Elenco ruoli (maschile/femminile) usati per le persone e come default negli eventi
+    Route::apiResource('ruoli', \App\Http\Controllers\Api\RuoloController::class)->except('show');
+
     // Servizi (enti della rete) e persone collegate
     Route::apiResource('servizi', \App\Http\Controllers\Api\ServizioController::class);
     Route::put('/servizi/{servizio}/persone', [\App\Http\Controllers\Api\ServizioController::class, 'syncPersone']);

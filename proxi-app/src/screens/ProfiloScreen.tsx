@@ -1,8 +1,10 @@
 // Profilo educatore — ore lavorate + impostazioni
 
+import { useState } from 'react'
 import {
-  Download, Bell, Shield, Tag, FileText, LogOut, ChevronRight,
+  Download, Bell, Shield, Tag, FileText, LogOut, ChevronRight, BadgeCheck,
 } from 'lucide-react'
+import { RuoliManager } from '../components/RuoliManager'
 import { MobileLayout } from '../components/MobileLayout'
 import { Avatar } from '../components/Avatar'
 import { Card } from '../components/Card'
@@ -84,6 +86,7 @@ function Voce({ icon, label, sublabel, danger, onClick }: VoceProps) {
 
 export function ProfiloScreen() {
   const user      = getCurrentUser()
+  const [ruoliAperti, setRuoliAperti] = useState(false)
   const logout    = useLogout()
   const { data: eventiOggi = [] } = useEventi({ data: TODAY })
 
@@ -142,6 +145,12 @@ export function ProfiloScreen() {
             sublabel="Gestione dati persone"
           />
           <Voce
+            icon={<BadgeCheck size={18} strokeWidth={1.75} />}
+            label="Ruoli"
+            sublabel="Educatore/trice, Psicologo/a… (maschile e femminile)"
+            onClick={() => setRuoliAperti(true)}
+          />
+          <Voce
             icon={<Tag size={18} strokeWidth={1.75} />}
             label="Categorie & tag"
             sublabel="Personalizza tag e bisogni"
@@ -193,6 +202,7 @@ export function ProfiloScreen() {
         </div>
 
       </div>
+      {ruoliAperti && <RuoliManager onClose={() => setRuoliAperti(false)} />}
     </MobileLayout>
   )
 }

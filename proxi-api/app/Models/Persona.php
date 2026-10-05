@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Persona extends Model
 {
@@ -15,13 +16,17 @@ class Persona extends Model
     protected $table = 'persone';
 
     protected $fillable = [
-        'institution_id', 'ruolo', 'nome', 'soprannome', 'anonimo',
+        'institution_id', 'ruolo', 'nome', 'cognome', 'soprannome', 'anonimo', 'data_nascita', 'ruolo_id',
+        'indirizzo', 'npa', 'localita', 'comune_politico', 'bfs', 'cantone', 'paese', 'note_contatti',
         'eta', 'sesso', 'lingue', 'tag', 'bisogni', 'note',
         'telefono', 'email',
     ];
 
+    protected $appends = ['eta'];
+
     protected $casts = [
         'anonimo' => 'boolean',
+        'data_nascita' => 'date:Y-m-d',
         'lingue'  => 'array',
         'tag'     => 'array',
         'bisogni' => 'array',
@@ -35,6 +40,17 @@ class Persona extends Model
     public function eventi(): BelongsToMany
     {
         return $this->belongsToMany(Evento::class, 'evento_persona');
+    }
+
+    // Con la data di nascita l'età è calcolata; altrimenti vale il dato approssimato inserito a mano.
+    public function getEtaAttribute($value): ?int
+    {
+        return $this->data_nascita ? (int) $this->data_nascita->diffInYears(now()) : ($value === null ? null : (int) $value);
+    }
+
+    public function telefoni(): HasMany
+    {
+        return $this->hasMany(PersonaTelefono::class)->orderBy('ordine');
     }
 
     public function servizi(): BelongsToMany

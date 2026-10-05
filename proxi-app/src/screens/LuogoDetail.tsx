@@ -116,10 +116,15 @@ export function LuogoDetail() {
             </h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
               <Tag label={TIPO_LUOGO_LABEL[luogo.tipo]} soft />
-              {luogo.indirizzo && (
-                <span style={{ fontSize: 12, color: 'var(--prox-ink3)' }}>{luogo.indirizzo}</span>
+              {(luogo.indirizzo || luogo.localita) && (
+                <span style={{ fontSize: 12, color: 'var(--prox-ink3)' }}>{[luogo.indirizzo, [luogo.npa, luogo.localita].filter(Boolean).join(' ')].filter(Boolean).join(', ')}</span>
               )}
             </div>
+            {luogo.comune_politico && (
+              <div style={{ fontSize: 11.5, color: 'var(--prox-ink3)', marginTop: 3 }}>
+                Comune politico: {luogo.comune_politico}{luogo.cantone ? ` (${luogo.cantone})` : ''}
+              </div>
+            )}
             {luogo.orari && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4, fontSize: 12, color: 'var(--prox-ink3)' }}>
                 <Clock size={12} strokeWidth={1.75} />
@@ -232,7 +237,11 @@ export function LuogoDetail() {
       {creaServizio && luogo && (
         <Modal open onClose={() => setCreaServizio(false)}>
           <ServizioForm
-            initial={{ nome: luogo.nome, indirizzo: luogo.indirizzo, lat: luogo.lat, lng: luogo.lng, note: luogo.note }}
+            initial={{
+              nome: luogo.nome, indirizzo: luogo.indirizzo, cap: luogo.npa, localita: luogo.localita,
+              comune_politico: luogo.comune_politico, bfs: luogo.bfs, cantone: luogo.cantone,
+              lat: luogo.lat, lng: luogo.lng, note: luogo.note,
+            }}
             onClose={() => setCreaServizio(false)}
             onSaved={sv => { setCreaServizio(false); setServizioCreatoId(sv.id) }}
           />

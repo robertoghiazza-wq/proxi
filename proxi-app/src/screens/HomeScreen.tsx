@@ -1,3 +1,4 @@
+import { nomeAvatar, nomePersona } from '../lib/persona'
 import { MobileLayout } from '../components/MobileLayout'
 import { Card } from '../components/Card'
 import { Avatar } from '../components/Avatar'
@@ -79,7 +80,7 @@ function EventRow({ evento }: { evento: Evento }) {
           {evento.persone && evento.persone.length > 0 && (
             <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
               {evento.persone.slice(0, 3).map(p => (
-                <Avatar key={p.id} nome={p.anonimo ? p.soprannome : p.nome} anonimo={p.anonimo} size={22} />
+                <Avatar key={p.id} nome={nomeAvatar(p)} anonimo={p.anonimo} size={22} />
               ))}
             </div>
           )}
@@ -136,10 +137,10 @@ function PersonaRecente({ persona }: { persona: Persona }) {
         borderBottom: '1px solid var(--prox-line2)',
       }}
     >
-      <Avatar nome={persona.anonimo ? persona.soprannome : persona.nome} anonimo={persona.anonimo} size={34} />
+      <Avatar nome={nomeAvatar(persona)} anonimo={persona.anonimo} size={34} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--prox-ink)' }}>
-          {persona.anonimo && persona.soprannome ? `"${persona.soprannome}"` : persona.nome ?? '—'}
+          {nomePersona(persona)}
         </div>
         {persona.tag && persona.tag.length > 0 && (
           <div style={{ fontSize: 11, color: 'var(--prox-ink3)', marginTop: 1 }}>

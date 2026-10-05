@@ -10,6 +10,11 @@ class Institution extends Model
 {
     use Auditable;
 
+    protected static function booted(): void
+    {
+        static::created(fn (self $i) => \App\Support\RuoliDefault::seed($i->id));
+    }
+
     protected $fillable = ['nome', 'slug', 'email', 'attiva'];
 
     protected $casts = ['attiva' => 'boolean'];

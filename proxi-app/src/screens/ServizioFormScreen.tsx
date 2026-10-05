@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { X } from 'lucide-react'
 import { MapPicker, type LatLng, type ParteIndirizzo } from '../components/MapPicker'
+import { IndirizzoField } from '../components/IndirizzoField'
+import { INDIRIZZO_VUOTO, validaIndirizzo, type Indirizzo } from '../lib/geo'
 import { useServizio, useCreateServizio, useUpdateServizio } from '../hooks/useServizi'
 import type { Servizio } from '../types'
 
@@ -42,10 +44,16 @@ export function ServizioForm({ servizio, initial, onClose, onSaved }: {
 
   const base = servizio ?? initial
   const [nome, setNome] = useState(base?.nome ?? '')
-  const [indirizzo, setIndirizzo] = useState(base?.indirizzo ?? '')
-  const [cap, setCap] = useState(base?.cap ?? '')
-  const [localita, setLocalita] = useState(base?.localita ?? '')
-  const [paese, setPaese] = useState(base?.paese ?? 'Svizzera')
+  const [addr, setAddr] = useState<Indirizzo>({
+    ...INDIRIZZO_VUOTO,
+    indirizzo: base?.indirizzo ?? '',
+    npa: base?.cap ?? '',
+    localita: base?.localita ?? '',
+    comune_politico: base?.comune_politico ?? '',
+    bfs: base?.bfs ?? '',
+    cantone: base?.cantone ?? '',
+    paese: base?.paese ?? 'Svizzera',
+  })
   const [telefono, setTelefono] = useState(base?.telefono ?? '')
   const [email, setEmail] = useState(base?.email ?? '')
   const [sito, setSito] = useState(base?.sito ?? '')
@@ -57,25 +65,32 @@ export function ServizioForm({ servizio, initial, onClose, onSaved }: {
 
   function onMapChange(p: LatLng, testo?: string, parti?: ParteIndirizzo) {
     setPos(p)
-    if (parti) {
-      setIndirizzo(parti.via ?? testo ?? '')
-      if (parti.cap) setCap(parti.cap)
-      if (parti.localita) setLocalita(parti.localita)
-    } else if (testo) {
-      setIndirizzo(testo)
-    }
+    setAddr(a => ({
+      ...a,
+      ...(parti?.via || testo ? { indirizzo: parti?.via ?? testo ?? a.indirizzo } : {}),
+      ...(parti?.cap ? { npa: parti.cap } : {}),
+      ...(parti?.localita ? { localita: parti.localita } : {}),
+      ...(parti?.comune ? { comune_politico: parti.comune, bfs: parti.bfs ?? '', cantone: parti.cantone ?? a.cantone } : {}),
+    }))
   }
 
   async function salva() {
     if (!nome.trim()) { setErrore('Il nome è obbligatorio'); return }
     setErrore('')
+    const v = await validaIndirizzo(addr)
+    if (!v.ok) { setErrore(v.errore); return }
+    const a = { ...addr, ...(v.patch ?? {}) }
+    setAddr(a)
     try {
       const saved = await mutation.mutateAsync({
         nome: nome.trim(),
-        indirizzo: indirizzo.trim() || null,
-        cap: cap.trim() || null,
-        localita: localita.trim() || null,
-        paese: paese.trim() || null,
+        indirizzo: a.indirizzo.trim() || null,
+        cap: a.npa.trim() || null,
+        localita: a.localita.trim() || null,
+        comune_politico: a.comune_politico.trim() || null,
+        bfs: a.bfs.trim() || null,
+        cantone: a.cantone.trim() || null,
+        paese: a.paese.trim() || null,
         telefono: telefono.trim() || null,
         email: email.trim() || null,
         sito: sito.trim() || null,
@@ -121,24 +136,11 @@ export function ServizioForm({ servizio, initial, onClose, onSaved }: {
         </Field>
 
         <Field label="Indirizzo">
-          <input value={indirizzo} onChange={e => setIndirizzo(e.target.value)} placeholder="Via e numero" style={input} />
-        </Field>
-
-        <div style={{ display: 'flex', gap: 12 }}>
-          <div style={{ width: 96 }}>
-            <Field label="CAP">
-              <input value={cap} onChange={e => setCap(e.target.value)} inputMode="numeric" placeholder="6500" style={input} />
-            </Field>
-          </div>
-          <div style={{ flex: 1 }}>
-            <Field label="Località">
-              <input value={localita} onChange={e => setLocalita(e.target.value)} placeholder="Bellinzona" style={input} />
-            </Field>
-          </div>
-        </div>
-
-        <Field label="Paese">
-          <input value={paese} onChange={e => setPaese(e.target.value)} style={input} />
+          <IndirizzoField
+            value={addr}
+            onChange={patch => setAddr(a => ({ ...a, ...patch }))}
+            onPosizione={(lat, lng) => setPos({ lat, lng })}
+          />
         </Field>
 
         <Field label="Telefono">

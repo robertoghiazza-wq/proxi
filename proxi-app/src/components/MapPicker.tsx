@@ -5,11 +5,15 @@ import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-lea
 import type L from 'leaflet'
 import { BASEMAPS, BaseMapSwitch, type BaseKey } from './MapBase'
 import { Search, Loader2, LocateFixed } from 'lucide-react'
+import { comuneDaCoordinate } from '../lib/geo'
 
 
 export interface LatLng { lat: number; lng: number }
 
-export interface ParteIndirizzo { via?: string; cap?: string; localita?: string }
+export interface ParteIndirizzo {
+  via?: string; cap?: string; localita?: string
+  comune?: string; bfs?: string; cantone?: string
+}
 
 interface Props {
   value: LatLng | null
@@ -29,13 +33,18 @@ async function cerca(testo: string, signal: AbortSignal): Promise<Risultato[]> {
   const res = await fetch(url, { signal })
   if (!res.ok) return []
   const json = await res.json()
-  return (json.results ?? []).map((r: { attrs: { label: string; lat: number; lon: number } }) => {
+  return (json.results ?? []).map((r: { attrs: { label: string; detail?: string; lat: number; lon: number } }) => {
     const m = r.attrs.label.match(/^(.*?)\s*<b>(\d{4})\s+(.+?)<\/b>/)
+    const d = r.attrs.detail?.match(/\b\d{4}\s+.+?\s+(\d{4,5})\s+(.+?)\s+ch\s+([a-z]{2})\b/i)
     return {
       label: stripTags(r.attrs.label),
       lat: r.attrs.lat,
       lng: r.attrs.lon,
-      parti: m ? { via: m[1].trim() || undefined, cap: m[2], localita: m[3].trim() } : undefined,
+      parti: m ? {
+        via: m[1].trim() || undefined, cap: m[2], localita: m[3].trim(),
+        comune: d ? d[2].replace(/(^|[\s'’-])(\p{L})/gu, (_x: string, sep: string, c: string) => sep + c.toUpperCase()) : undefined,
+        bfs: d?.[1], cantone: d?.[3].toUpperCase(),
+      } : undefined,
     }
   })
 }
@@ -55,7 +64,10 @@ async function indirizzoDa(pos: LatLng): Promise<{ testo: string; parti: ParteIn
     const plz = String(a.plz_plz6 ?? '').split('/')[0]
     return {
       testo: `${a.strname_deinr}, ${plz} ${a.ggdename}`.trim(),
-      parti: { via: a.strname_deinr, cap: plz, localita: a.ggdename },
+      parti: {
+        via: a.strname_deinr, cap: plz, localita: a.ggdename,
+        comune: a.ggdename, bfs: a.ggdenr != null ? String(a.ggdenr) : undefined, cantone: a.gdekt,
+      },
     }
   } catch {
     return undefined
@@ -115,7 +127,9 @@ export function MapPicker({ value, onChange }: Props) {
   async function clickMappa(pos: LatLng) {
     onChange(pos)
     const ind = await indirizzoDa(pos)
-    if (ind) onChange(pos, ind.testo, ind.parti)
+    if (ind) { onChange(pos, ind.testo, ind.parti); return }
+    const c = await comuneDaCoordinate(pos.lat, pos.lng)
+    if (c) onChange(pos, undefined, { comune: c.nome, bfs: c.bfs, cantone: c.cantone })
   }
 
   function locate() {

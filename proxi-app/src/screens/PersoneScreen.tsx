@@ -1,5 +1,6 @@
 // Persone — lista con ricerca e filtri per ruolo
 
+import { nomeAvatar, nomePersona, etichettaRuolo } from '../lib/persona'
 import { useState } from 'react'
 import { useNavigate, useMatch, Outlet } from 'react-router-dom'
 import { Search, AlertTriangle, Plus } from 'lucide-react'
@@ -9,6 +10,7 @@ import { Modal } from '../components/Modal'
 import { Avatar } from '../components/Avatar'
 import { PersoneServiziSwitch } from '../components/PersoneServiziSwitch'
 import { usePersone } from '../hooks/usePersone'
+import { useRuoli } from '../hooks/useRuoli'
 import type { Persona, RuoloPersona } from '../types'
 
 const TAG_VULNERABILI = ['senza fissa dimora', 'minore', 'dipendenza']
@@ -17,14 +19,12 @@ function isVulnerabile(p: Persona) {
   return p.tag?.some(t => TAG_VULNERABILI.includes(t)) ?? false
 }
 
-function displayName(p: Persona): string {
-  if (p.soprannome) return `"${p.soprannome}"`
-  if (p.nome) return p.nome
-  return '—'
-}
+const displayName = nomePersona
 
 function PersonaRow({ persona }: { persona: Persona }) {
   const navigate = useNavigate()
+  const { data: ruoli = [] } = useRuoli()
+  const ruolo = etichettaRuolo(ruoli.find(r => r.id === persona.ruolo_id), persona.sesso)
   const vuln = isVulnerabile(persona)
 
   return (
@@ -36,7 +36,7 @@ function PersonaRow({ persona }: { persona: Persona }) {
         borderBottom: '1px solid var(--prox-line2)',
       }}
     >
-      <Avatar nome={persona.anonimo ? persona.soprannome : persona.nome} anonimo={persona.anonimo} size={40} />
+      <Avatar nome={nomeAvatar(persona)} anonimo={persona.anonimo} size={40} />
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -48,7 +48,7 @@ function PersonaRow({ persona }: { persona: Persona }) {
           )}
         </div>
         <div style={{ fontSize: 12, color: 'var(--prox-ink3)', marginTop: 1 }}>
-          {[persona.eta ? `${persona.eta} anni` : null, persona.lingue?.join(' · ')].filter(Boolean).join(' · ')}
+          {[ruolo, persona.eta ? `${persona.eta} anni` : null, persona.lingue?.join(' · ')].filter(Boolean).join(' · ')}
         </div>
         {persona.tag && persona.tag.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 4 }}>
@@ -78,8 +78,8 @@ type Filtro = 'tutti' | RuoloPersona
 const FILTRI: { key: Filtro; label: string }[] = [
   { key: 'tutti',      label: 'Tutti'    },
   { key: 'utente',     label: 'Utenti'   },
-  { key: 'dipendente', label: 'Équipe'   },
-  { key: 'rete',       label: 'Rete'     },
+  { key: 'dipendente', label: 'Dipendenti' },
+  { key: 'rete',       label: 'Contatti'  },
 ]
 
 export function PersoneScreen() {
@@ -99,6 +99,7 @@ export function PersoneScreen() {
       const q = query.toLowerCase()
       return (
         p.nome?.toLowerCase().includes(q) ||
+        p.cognome?.toLowerCase().includes(q) ||
         p.soprannome?.toLowerCase().includes(q) ||
         p.tag?.some(t => t.includes(q))
       )

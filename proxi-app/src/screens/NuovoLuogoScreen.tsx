@@ -3,7 +3,9 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { X } from 'lucide-react'
-import { MapPicker, type LatLng } from '../components/MapPicker'
+import { MapPicker, type LatLng, type ParteIndirizzo } from '../components/MapPicker'
+import { IndirizzoField } from '../components/IndirizzoField'
+import { INDIRIZZO_VUOTO, validaIndirizzo, type Indirizzo } from '../lib/geo'
 import { TIPO_LUOGO_LABEL } from '../lib/mock-data'
 import { useCreateLuogo, useLuogo, useUpdateLuogo } from '../hooks/useLuoghi'
 import type { Luogo, TipoLuogo } from '../types'
@@ -46,7 +48,15 @@ export function LuogoForm({ luogo, initial, onClose, onSaved }: {
   const base = luogo ?? initial
   const [nome, setNome] = useState(base?.nome ?? '')
   const [tipo, setTipo] = useState<TipoLuogo>(base?.tipo ?? 'strada')
-  const [indirizzo, setIndirizzo] = useState(base?.indirizzo ?? '')
+  const [addr, setAddr] = useState<Indirizzo>({
+    ...INDIRIZZO_VUOTO,
+    indirizzo: base?.indirizzo ?? '',
+    npa: base?.npa ?? '',
+    localita: base?.localita ?? '',
+    comune_politico: base?.comune_politico ?? '',
+    bfs: base?.bfs ?? '',
+    cantone: base?.cantone ?? '',
+  })
   const [orari, setOrari] = useState(base?.orari ?? '')
   const [note, setNote] = useState(base?.note ?? '')
   const [pos, setPos] = useState<LatLng | null>(
@@ -54,19 +64,34 @@ export function LuogoForm({ luogo, initial, onClose, onSaved }: {
   )
   const [errore, setErrore] = useState('')
 
-  function onMapChange(p: LatLng, ind?: string) {
+  function onMapChange(p: LatLng, testo?: string, parti?: ParteIndirizzo) {
     setPos(p)
-    if (ind) setIndirizzo(ind)
+    setAddr(a => ({
+      ...a,
+      ...(parti?.via || testo ? { indirizzo: parti?.via ?? testo ?? a.indirizzo } : {}),
+      ...(parti?.cap ? { npa: parti.cap } : {}),
+      ...(parti?.localita ? { localita: parti.localita } : {}),
+      ...(parti?.comune ? { comune_politico: parti.comune, bfs: parti.bfs ?? '', cantone: parti.cantone ?? a.cantone } : {}),
+    }))
   }
 
   async function salva() {
     if (!nome.trim()) { setErrore('Il nome è obbligatorio'); return }
     setErrore('')
+    const v = await validaIndirizzo(addr)
+    if (!v.ok) { setErrore(v.errore); return }
+    const a = { ...addr, ...(v.patch ?? {}) }
+    setAddr(a)
     try {
       const saved = await mutation.mutateAsync({
         nome: nome.trim(),
         tipo,
-        indirizzo: indirizzo.trim() || null,
+        indirizzo: a.indirizzo.trim() || null,
+        npa: a.npa.trim() || null,
+        localita: a.localita.trim() || null,
+        comune_politico: a.comune_politico.trim() || null,
+        bfs: a.bfs.trim() || null,
+        cantone: a.cantone.trim() || null,
         orari: orari.trim() || null,
         note: note.trim() || null,
         lat: pos ? Number(pos.lat.toFixed(7)) : null,
@@ -140,7 +165,12 @@ export function LuogoForm({ luogo, initial, onClose, onSaved }: {
         </Field>
 
         <Field label="Indirizzo">
-          <input value={indirizzo} onChange={e => setIndirizzo(e.target.value)} placeholder="Compilato dalla mappa, modificabile" style={input} />
+          <IndirizzoField
+            value={addr}
+            senzaPaese
+            onChange={patch => setAddr(a => ({ ...a, ...patch }))}
+            onPosizione={(lat, lng) => setPos({ lat, lng })}
+          />
         </Field>
 
         <Field label="Orari">

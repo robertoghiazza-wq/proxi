@@ -1,5 +1,6 @@
 // Evento detail — tipo, orario, durata, persone, luogo, note, educatore
 
+import { nomeAvatar, nomePersona, etichettaRuolo } from '../lib/persona'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ChevronLeft, MapPin, Clock, FileText, Edit, CheckCircle, Circle, PlayCircle, Trash2, CircleDashed } from 'lucide-react'
@@ -10,6 +11,7 @@ import { colorForTipo, tipoLabel } from '../lib/mock-data'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { daCompletare, mancantiTesto } from '../lib/completezza'
 import { useEvento, useUpdateEvento, useDeleteEvento } from '../hooks/useEventi'
+import { useRuoli } from '../hooks/useRuoli'
 import type { StatoEvento } from '../types'
 
 function minToHM(m: number) {
@@ -48,6 +50,7 @@ export function EventoDetail() {
   const navigate = useNavigate()
   const { data: evento, isLoading, error } = useEvento(Number(id))
   const aggiorna = useUpdateEvento(Number(id))
+  const { data: ruoli = [] } = useRuoli()
   const elimina = useDeleteEvento()
   const [confermaElimina, setConfermaElimina] = useState(false)
 
@@ -187,14 +190,19 @@ export function EventoDetail() {
                   style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
                 >
                   <Avatar
-                    nome={p.anonimo ? p.soprannome : p.nome}
+                    nome={nomeAvatar(p)}
                     anonimo={p.anonimo}
                     size={36}
                   />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 14, fontWeight: 600 }}>
-                      {p.anonimo && p.soprannome ? `"${p.soprannome}"` : p.nome ?? '—'}
+                      {nomePersona(p)}
                     </div>
+                    {p.ruolo_id && (
+                      <div style={{ fontSize: 11.5, color: 'var(--prox-ink3)' }}>
+                        {etichettaRuolo(ruoli.find(r => r.id === p.ruolo_id), p.sesso)}
+                      </div>
+                    )}
                     {p.tag && p.tag.length > 0 && (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 3 }}>
                         {p.tag.slice(0, 2).map(t => (

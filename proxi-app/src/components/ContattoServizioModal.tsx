@@ -1,5 +1,6 @@
 // Collega una persona a un servizio (con ruolo) o modifica/scollega un collegamento
 
+import { nomeAvatar, nomePersona } from '../lib/persona'
 import { useState } from 'react'
 import { Search, Plus, X } from 'lucide-react'
 import { Modal } from './Modal'
@@ -17,17 +18,12 @@ interface Props {
   onClose: () => void
 }
 
-function nomePersona(p: { nome: string | null; soprannome: string | null; anonimo: boolean }) {
-  if (p.anonimo && p.soprannome) return `"${p.soprannome}"`
-  return p.nome ?? (p.soprannome ? `"${p.soprannome}"` : '—')
-}
-
 export function ContattoServizioModal({ servizio, modifica, onClose }: Props) {
   const sync = useSyncContatti(servizio.id)
   const { data: tutte = [] } = usePersone()
   const esistenti = servizio.persone ?? []
 
-  const [scelta, setScelta] = useState<Pick<Persona, 'id' | 'nome' | 'soprannome' | 'anonimo'> | null>(modifica ?? null)
+  const [scelta, setScelta] = useState<Pick<Persona, 'id' | 'nome' | 'cognome' | 'soprannome' | 'anonimo'> | null>(modifica ?? null)
   const [ruolo, setRuolo] = useState(modifica?.pivot.ruolo ?? '')
   const [query, setQuery] = useState('')
   const [creando, setCreando] = useState(false)
@@ -64,7 +60,7 @@ export function ContattoServizioModal({ servizio, modifica, onClose }: Props) {
   const q = query.trim().toLowerCase()
   const candidate = tutte
     .filter(p => !esistenti.some(e => e.id === p.id))
-    .filter(p => !q || p.nome?.toLowerCase().includes(q) || p.soprannome?.toLowerCase().includes(q))
+    .filter(p => !q || p.nome?.toLowerCase().includes(q) || p.cognome?.toLowerCase().includes(q) || p.soprannome?.toLowerCase().includes(q))
     .sort((a, b) => Number(b.ruolo === 'rete') - Number(a.ruolo === 'rete'))
 
   return (
@@ -111,7 +107,7 @@ export function ContattoServizioModal({ servizio, modifica, onClose }: Props) {
 
             {candidate.map(p => (
               <button key={p.id} onClick={() => setScelta(p)} style={row}>
-                <Avatar nome={p.anonimo ? p.soprannome : p.nome} anonimo={p.anonimo} size={36} />
+                <Avatar nome={nomeAvatar(p)} anonimo={p.anonimo} size={36} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 600 }}>{nomePersona(p)}</div>
                   <div style={{ fontSize: 11.5, color: 'var(--prox-ink3)' }}>
@@ -130,7 +126,7 @@ export function ContattoServizioModal({ servizio, modifica, onClose }: Props) {
               display: 'flex', alignItems: 'center', gap: 12, padding: 12,
               background: 'var(--prox-surface)', borderRadius: 14, border: '1px solid var(--prox-line2)',
             }}>
-              <Avatar nome={scelta.anonimo ? scelta.soprannome : scelta.nome} anonimo={scelta.anonimo} size={40} />
+              <Avatar nome={nomeAvatar(scelta)} anonimo={scelta.anonimo} size={40} />
               <div style={{ flex: 1, fontSize: 15, fontWeight: 600 }}>{nomePersona(scelta)}</div>
               {!modifica && (
                 <button onClick={() => setScelta(null)} style={{

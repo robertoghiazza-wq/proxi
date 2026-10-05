@@ -18,6 +18,7 @@ class Luogo extends Model
     protected $fillable = [
         'institution_id', 'nome', 'tipo', 'indirizzo',
         'orari', 'note', 'lat', 'lng', 'attivo',
+        'npa', 'localita', 'comune_politico', 'bfs', 'cantone',
     ];
 
     protected $casts = [

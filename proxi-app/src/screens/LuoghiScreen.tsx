@@ -124,8 +124,8 @@ export function LuoghiScreen() {
                   display: 'flex', gap: 6, alignItems: 'center', minWidth: 0,
                 }}>
                   <span style={{ flexShrink: 0 }}>{TIPO_LUOGO_LABEL[l.tipo]}</span>
-                  {l.indirizzo && <><span>·</span>
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.indirizzo}</span></>}
+                  {(l.indirizzo || l.localita) && <><span>·</span>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[l.indirizzo, l.localita].filter(Boolean).join(', ')}</span></>}
                 </div>
               </div>
 

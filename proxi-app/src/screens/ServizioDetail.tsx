@@ -1,5 +1,6 @@
 // Servizio — dettaglio con mappa, contatti collegati e dettagli
 
+import { nomeAvatar, nomePersona } from '../lib/persona'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ChevronLeft, Building2, Phone, Edit, Plus, Star, Trash2, Mail, Globe, MapPin } from 'lucide-react'
@@ -15,11 +16,6 @@ import type { Servizio } from '../types'
 type Contatto = NonNullable<Servizio['persone']>[number]
 
 const TINTA = 'oklch(0.58 0.12 245)'
-
-function nomePersona(p: Contatto) {
-  if (p.anonimo && p.soprannome) return `"${p.soprannome}"`
-  return p.nome ?? (p.soprannome ? `"${p.soprannome}"` : '—')
-}
 
 export function ServizioDetail() {
   const { id } = useParams()
@@ -135,7 +131,7 @@ export function ServizioDetail() {
                     borderTop: i ? '1px solid var(--prox-line2)' : 'none',
                   }}>
                     <div onClick={() => navigate(`/persone/${c.id}`)} style={{ cursor: 'pointer', display: 'flex' }}>
-                      <Avatar nome={c.anonimo ? c.soprannome : c.nome} anonimo={c.anonimo} size={36} />
+                      <Avatar nome={nomeAvatar(c)} anonimo={c.anonimo} size={36} />
                     </div>
                     <div onClick={() => setModifica(c)} style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}>
                       <div style={{ fontSize: 14, fontWeight: 600 }}>{nomePersona(c)}</div>
@@ -163,6 +159,7 @@ export function ServizioDetail() {
           <div className="prox-label" style={{ marginBottom: 10 }}>Dettagli</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 14 }}>
             {indirizzoCompleto && <Dato icon={<MapPin size={15} strokeWidth={1.75} />}>{indirizzoCompleto}{servizio.paese ? `, ${servizio.paese}` : ''}</Dato>}
+            {servizio.comune_politico && <Dato icon={<MapPin size={15} strokeWidth={1.75} />}>Comune politico: {servizio.comune_politico}{servizio.cantone ? ` (${servizio.cantone})` : ''}</Dato>}
             {servizio.telefono && <Dato icon={<Phone size={15} strokeWidth={1.75} />}>{servizio.telefono}</Dato>}
             {servizio.email && <Dato icon={<Mail size={15} strokeWidth={1.75} />}><a href={`mailto:${servizio.email}`} style={link}>{servizio.email}</a></Dato>}
             {servizio.sito && (
@@ -200,7 +197,12 @@ export function ServizioDetail() {
           initial={{
             nome: servizio.nome,
             tipo: 'ufficio',
-            indirizzo: indirizzoCompleto || null,
+            indirizzo: servizio.indirizzo,
+            npa: servizio.cap,
+            localita: servizio.localita,
+            comune_politico: servizio.comune_politico,
+            bfs: servizio.bfs,
+            cantone: servizio.cantone,
             lat: servizio.lat,
             lng: servizio.lng,
           }}

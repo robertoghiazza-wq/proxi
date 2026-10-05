@@ -23,13 +23,29 @@ export interface User {
 
 export type RuoloPersona = 'utente' | 'dipendente' | 'rete'
 
+export interface Ruolo {
+  id: number
+  nome_m: string
+  nome_f: string | null
+  nome_misto: string | null
+  ordine: number
+}
+
+export interface Telefono {
+  etichetta: string | null
+  numero: string
+}
+
 export interface Persona {
   id: number
   institution_id: number
   ruolo: RuoloPersona
+  ruolo_id?: number | null
   nome: string | null
+  cognome?: string | null
   soprannome: string | null
   anonimo: boolean
+  data_nascita?: string | null
   eta: number | null
   sesso: 'M' | 'F' | 'altro' | null
   lingue: string[] | null
@@ -37,7 +53,16 @@ export interface Persona {
   bisogni: string[] | null
   note: string | null
   telefono: string | null
+  telefoni?: Telefono[]
   email: string | null
+  indirizzo?: string | null
+  npa?: string | null
+  localita?: string | null
+  comune_politico?: string | null
+  bfs?: string | null
+  cantone?: string | null
+  paese?: string | null
+  note_contatti?: string | null
   // calcolato/caricato dal backend
   eventi_count?: number
   eventi?: Evento[]
@@ -57,6 +82,11 @@ export interface Luogo {
   lat: number | null
   lng: number | null
   attivo: boolean
+  npa?: string | null
+  localita?: string | null
+  comune_politico?: string | null
+  bfs?: string | null
+  cantone?: string | null
   // calcolati
   persone_count?: number
   eventi_settimana?: number
@@ -78,8 +108,11 @@ export interface Servizio {
   lat: number | null
   lng: number | null
   attivo: boolean
+  comune_politico?: string | null
+  bfs?: string | null
+  cantone?: string | null
   persone_count?: number
-  persone?: (Pick<Persona, 'id' | 'nome' | 'soprannome' | 'anonimo' | 'ruolo' | 'telefono' | 'email'> & {
+  persone?: (Pick<Persona, 'id' | 'nome' | 'cognome' | 'soprannome' | 'anonimo' | 'ruolo' | 'telefono' | 'email'> & {
     pivot: { ruolo: string | null; principale: boolean }
   })[]
 }

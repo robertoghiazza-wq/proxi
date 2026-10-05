@@ -17,6 +17,7 @@ class Servizio extends Model
     protected $fillable = [
         'institution_id', 'nome', 'indirizzo', 'cap', 'localita', 'paese',
         'telefono', 'email', 'sito', 'note', 'lat', 'lng', 'attivo',
+        'comune_politico', 'bfs', 'cantone',
     ];
 
     protected $attributes = ['paese' => 'Svizzera', 'attivo' => true];
