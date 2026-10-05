@@ -19,7 +19,7 @@ export function ServiziScreen() {
   const isDetailOpen = !!useMatch('/servizi/:id') && !isNuovoOpen
   const [query, setQuery] = useState('')
 
-  const { data: tutti = [], isLoading, isError } = useServizi()
+  const { data: tutti = [], isLoading, isError, error } = useServizi()
   const q = query.trim().toLowerCase()
   const servizi = tutti.filter(s => !q
     || s.nome.toLowerCase().includes(q)
@@ -58,7 +58,7 @@ export function ServiziScreen() {
 
       <div style={{ padding: '8px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {isLoading && <Msg>Caricamento…</Msg>}
-        {isError && <Msg danger>Errore di caricamento</Msg>}
+        {isError && <Msg danger>Errore di caricamento<div style={{ fontSize: 12, color: 'var(--prox-ink3)', marginTop: 6 }}>{(error as Error)?.message}</div></Msg>}
         {!isLoading && !isError && servizi.length === 0 && (
           <Msg>{q ? 'Nessun risultato' : 'Nessun servizio. Aggiungi il primo con +'}</Msg>
         )}

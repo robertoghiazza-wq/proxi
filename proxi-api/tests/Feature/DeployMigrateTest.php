@@ -54,4 +54,17 @@ class DeployMigrateTest extends TestCase
         $this->post('/api/deploy/migrate', ['email' => '"><script>alert(1)</script>', 'password' => 'x'])
             ->assertForbidden()->assertDontSee('<script>alert(1)</script>', false);
     }
+
+    public function test_diagnosi_ed_errori_solo_per_admin(): void
+    {
+        $this->utente('educatore');
+        $this->utente('admin');
+        $dati = ['email' => 'admin@example.ch', 'password' => 'segreta123'];
+
+        $this->post('/api/deploy/migrate', ['email' => 'educatore@example.ch', 'password' => 'segreta123', 'azione' => 'diagnosi'])->assertForbidden();
+
+        $this->post('/api/deploy/migrate', $dati + ['azione' => 'diagnosi'])
+            ->assertOk()->assertSee('tabella persone')->assertSee('lista persone')->assertSee('lista ruoli')->assertDontSee('[ERRORE]');
+        $this->post('/api/deploy/migrate', $dati + ['azione' => 'errori'])->assertOk();
+    }
 }

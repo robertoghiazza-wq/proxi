@@ -90,7 +90,7 @@ export function PersoneScreen() {
   const [query, setQuery]   = useState('')
   const [filtro, setFiltro] = useState<Filtro>('tutti')
 
-  const { data: tuttePersone = [], isLoading, isError } = usePersone()
+  const { data: tuttePersone = [], isLoading, isError, error } = usePersone()
 
   const persone = tuttePersone
     .filter(p => filtro === 'tutti' || p.ruolo === filtro)
@@ -179,7 +179,7 @@ export function PersoneScreen() {
         {isLoading
           ? <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-ink3)', fontSize: 14 }}>Caricamento…</div>
           : isError
-            ? <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-accent)', fontSize: 14 }}>Errore di caricamento</div>
+            ? <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-accent)', fontSize: 14 }}>Errore di caricamento<div style={{ fontSize: 12, color: 'var(--prox-ink3)', marginTop: 6 }}>{(error as Error)?.message}</div></div>
             : persone.length === 0
               ? <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-ink3)', fontSize: 14 }}>Nessun risultato</div>
               : persone.map(p => <PersonaRow key={p.id} persona={p} />)

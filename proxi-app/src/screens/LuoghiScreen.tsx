@@ -30,7 +30,7 @@ export function LuoghiScreen() {
   const [query, setQuery] = useState('')
   const [vista, setVista] = useState<'lista' | 'mappa'>('lista')
 
-  const { data: tuttiLuoghi = [], isLoading, isError } = useLuoghi()
+  const { data: tuttiLuoghi = [], isLoading, isError, error } = useLuoghi()
 
   const luoghi = tuttiLuoghi.filter(l => {
     if (!query) return true
@@ -98,7 +98,7 @@ export function LuoghiScreen() {
         {isLoading
           ? <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-ink3)', fontSize: 14 }}>Caricamento…</div>
           : isError
-            ? <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-accent)', fontSize: 14 }}>Errore di caricamento</div>
+            ? <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-accent)', fontSize: 14 }}>Errore di caricamento<div style={{ fontSize: 12, color: 'var(--prox-ink3)', marginTop: 6 }}>{(error as Error)?.message}</div></div>
             : null
         }
         {vista === 'mappa' && !isLoading && (
