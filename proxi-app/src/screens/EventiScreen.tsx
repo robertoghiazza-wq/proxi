@@ -5,12 +5,11 @@ import { useNavigate, useMatch, Outlet } from 'react-router-dom'
 import { MobileLayout } from '../components/MobileLayout'
 import { Drawer } from '../components/Drawer'
 import { Modal } from '../components/Modal'
-import { EventTypeDot } from '../components/EventTypeDot'
-import { Avatar } from '../components/Avatar'
-import { colorForTipo } from '../lib/mock-data'
+import { Card } from '../components/Card'
+import { colorForTipo, tipoLabel } from '../lib/mock-data'
 import { useEventi } from '../hooks/useEventi'
 import type { StatoEvento } from '../types'
-import { Plus } from 'lucide-react'
+import { Plus, Check } from 'lucide-react'
 
 type Filtro = 'tutti' | StatoEvento
 
@@ -119,72 +118,50 @@ export function EventiScreen() {
                 {eventiGiorno.map(e => {
                   const color = colorForTipo(e.tipo)
                   const luogo = e.luogo ?? null
+                  const nomi = (e.persone ?? [])
+                    .map(p => (p.anonimo ? p.soprannome : p.nome ?? p.soprannome))
+                    .filter(Boolean)
 
                   return (
-                    <div
+                    <Card
                       key={e.id}
                       onClick={() => navigate(`/eventi/${e.id}`)}
-                      style={{
-                        display: 'flex', alignItems: 'stretch',
-                        background: 'var(--prox-surface)',
-                        borderRadius: 12, overflow: 'hidden',
-                        border: '1px solid var(--prox-line2)',
-                        cursor: 'pointer',
-                      }}
+                      padding={10}
+                      style={{ display: 'flex', gap: 10, alignItems: 'center' }}
                     >
-                      <div style={{ width: 4, background: color, flexShrink: 0 }} />
-                      <div style={{ flex: 1, padding: '10px 12px', display: 'flex', gap: 10 }}>
-                        {/* Ora */}
+                      <div style={{ width: 4, height: 40, borderRadius: 2, background: color, flexShrink: 0 }} />
+
+                      <div className="prox-mono" style={{ width: 42, fontSize: 11.5, color: 'var(--prox-ink3)', flexShrink: 0 }}>
+                        <div>{e.ora_inizio ? e.ora_inizio.slice(0, 5) : '—'}</div>
+                        <div style={{ fontSize: 10 }}>{e.durata_min}m</div>
+                      </div>
+
+                      <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{
-                          width: 40, fontSize: 12, fontWeight: 600,
-                          color: 'var(--prox-ink2)', fontFamily: 'ui-monospace, monospace',
-                          flexShrink: 0, paddingTop: 1,
+                          fontSize: 13.5, fontWeight: 600, marginBottom: 2,
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         }}>
-                          {e.ora_inizio ? e.ora_inizio.slice(0, 5) : '—'}
+                          {nomi.length ? nomi.join(', ') : tipoLabel(e.tipo)}
                         </div>
-
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4 }}>
-                            <EventTypeDot tipo={e.tipo} showLabel size={7} />
-                            {e.stato === 'in_corso' && (
-                              <span style={{
-                                fontSize: 9.5, fontWeight: 700,
-                                color: 'var(--prox-accent)',
-                                background: 'var(--prox-accent-soft)',
-                                borderRadius: 999, padding: '1px 6px',
-                                textTransform: 'uppercase',
-                              }}>Live</span>
-                            )}
-                          </div>
-
-                          {e.persone && e.persone.length > 0 && (
-                            <div style={{ display: 'flex', gap: 3 }}>
-                              {e.persone.slice(0, 4).map(p => (
-                                <Avatar
-                                  key={p.id}
-                                  nome={p.anonimo ? p.soprannome : p.nome}
-                                  anonimo={p.anonimo}
-                                  size={20}
-                                />
-                              ))}
-                            </div>
-                          )}
-
-                          {luogo && (
-                            <div style={{ fontSize: 11, color: 'var(--prox-ink3)', marginTop: 3 }}>
-                              {luogo.nome}
-                            </div>
-                          )}
-                        </div>
-
                         <div style={{
-                          fontSize: 11, color: 'var(--prox-ink3)',
-                          fontFamily: 'ui-monospace, monospace', flexShrink: 0,
+                          fontSize: 11, color: 'var(--prox-ink3)', display: 'flex', gap: 5,
+                          alignItems: 'center', minWidth: 0,
                         }}>
-                          {e.durata_min}′
+                          <span style={{ flexShrink: 0 }}>{tipoLabel(e.tipo)}</span>
+                          {luogo && <><span>·</span>
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{luogo.nome}</span></>}
                         </div>
                       </div>
-                    </div>
+
+                      {e.stato === 'in_corso' && (
+                        <span style={{
+                          fontSize: 9.5, fontWeight: 700, color: 'var(--prox-accent)',
+                          background: 'var(--prox-accent-soft)', borderRadius: 999,
+                          padding: '1px 6px', textTransform: 'uppercase', flexShrink: 0,
+                        }}>Live</span>
+                      )}
+                      {e.stato === 'completato' && <Check size={14} color="var(--prox-ok)" strokeWidth={2.2} style={{ flexShrink: 0 }} />}
+                    </Card>
                   )
                 })}
               </div>

@@ -2,10 +2,13 @@
 
 import { useState } from 'react'
 import { useNavigate, useMatch, Outlet } from 'react-router-dom'
-import { Search, MapPin, Users, Calendar, Plus } from 'lucide-react'
+import { Search, Plus, List, Map as MapIcon } from 'lucide-react'
 import { MobileLayout } from '../components/MobileLayout'
 import { Drawer } from '../components/Drawer'
 import { Modal } from '../components/Modal'
+import { Card } from '../components/Card'
+import { LuogoThumb } from '../components/LuogoThumb'
+import { LuoghiMap } from '../components/LuoghiMap'
 import { TIPO_LUOGO_LABEL } from '../lib/mock-data'
 import { useLuoghi } from '../hooks/useLuoghi'
 import type { TipoLuogo } from '../types'
@@ -25,6 +28,7 @@ export function LuoghiScreen() {
   const hasIdMatch   = !!useMatch('/luoghi/:id')
   const isDetailOpen = hasIdMatch && !isNuovoOpen
   const [query, setQuery] = useState('')
+  const [vista, setVista] = useState<'lista' | 'mappa'>('lista')
 
   const { data: tuttiLuoghi = [], isLoading, isError } = useLuoghi()
 
@@ -51,21 +55,41 @@ export function LuoghiScreen() {
             <Plus size={18} strokeWidth={2.5} />
           </button>
         </div>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          background: 'var(--prox-surface2)', borderRadius: 12,
-          padding: '8px 12px', border: '1px solid var(--prox-line)',
-        }}>
-          <Search size={16} color="var(--prox-ink3)" strokeWidth={1.75} />
-          <input
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Cerca luogo o indirizzo…"
-            style={{
-              flex: 1, border: 'none', background: 'none',
-              fontSize: 14, color: 'var(--prox-ink)', outline: 'none',
-            }}
-          />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8, flex: 1,
+            background: 'var(--prox-surface2)', borderRadius: 12,
+            padding: '8px 12px', border: '1px solid var(--prox-line)',
+          }}>
+            <Search size={16} color="var(--prox-ink3)" strokeWidth={1.75} />
+            <input
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Cerca luogo o indirizzo…"
+              style={{
+                flex: 1, minWidth: 0, border: 'none', background: 'none',
+                fontSize: 14, color: 'var(--prox-ink)', outline: 'none',
+              }}
+            />
+          </div>
+          <div style={{ display: 'flex', background: 'var(--prox-surface2)', borderRadius: 10, padding: 2, border: '1px solid var(--prox-line)' }}>
+            {(['lista', 'mappa'] as const).map(v => (
+              <button
+                key={v}
+                onClick={() => setVista(v)}
+                aria-label={v === 'lista' ? 'Vista lista' : 'Vista mappa'}
+                style={{
+                  width: 34, height: 30, borderRadius: 8, border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: vista === v ? 'var(--prox-surface)' : 'transparent',
+                  color: vista === v ? 'var(--prox-ink)' : 'var(--prox-ink3)',
+                  boxShadow: vista === v ? '0 1px 2px rgba(0,0,0,0.08)' : 'none',
+                }}
+              >
+                {v === 'lista' ? <List size={16} strokeWidth={1.75} /> : <MapIcon size={16} strokeWidth={1.75} />}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -77,53 +101,41 @@ export function LuoghiScreen() {
             ? <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-accent)', fontSize: 14 }}>Errore di caricamento</div>
             : null
         }
-        {luoghi.map(l => {
+        {vista === 'mappa' && !isLoading && (
+          <LuoghiMap luoghi={luoghi} colors={TIPO_COLOR} onOpen={id => navigate(`/luoghi/${id}`)} />
+        )}
+        {vista === 'lista' && luoghi.map(l => {
           const color = TIPO_COLOR[l.tipo]
           return (
-            <div
+            <Card
               key={l.id}
               onClick={() => navigate(`/luoghi/${l.id}`)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                background: 'var(--prox-surface)',
-                borderRadius: 14, padding: '12px 14px',
-                border: '1px solid var(--prox-line2)',
-                boxShadow: '0 1px 2px rgba(20,15,10,0.03)',
-                cursor: 'pointer',
-              }}
+              padding={12}
+              style={{ display: 'flex', gap: 12, alignItems: 'center' }}
             >
-              {/* Pin tile */}
-              <div style={{
-                width: 42, height: 42, borderRadius: 12,
-                background: color + '22',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0,
-              }}>
-                <MapPin size={20} color={color} strokeWidth={1.75} />
-              </div>
+              <LuogoThumb lat={l.lat} lng={l.lng} color={color} />
 
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--prox-ink)' }}>
                   {l.nome}
                 </div>
-                <div style={{ fontSize: 12, color: 'var(--prox-ink3)', marginTop: 1 }}>
-                  {TIPO_LUOGO_LABEL[l.tipo]}
-                  {l.indirizzo ? ` · ${l.indirizzo}` : ''}
+                <div style={{
+                  fontSize: 11.5, color: 'var(--prox-ink3)', marginTop: 2,
+                  display: 'flex', gap: 6, alignItems: 'center', minWidth: 0,
+                }}>
+                  <span style={{ flexShrink: 0 }}>{TIPO_LUOGO_LABEL[l.tipo]}</span>
+                  {l.indirizzo && <><span>·</span>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.indirizzo}</span></>}
                 </div>
               </div>
 
-              {/* Stats */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11.5, color: 'var(--prox-ink3)' }}>
-                  <Users size={11} strokeWidth={1.75} />
-                  {l.persone_count}
+              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+                  {Number(l.persone_count ?? 0)}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11.5, color: 'var(--prox-ink3)' }}>
-                  <Calendar size={11} strokeWidth={1.75} />
-                  {l.eventi_settimana}/sett
-                </div>
+                <div style={{ fontSize: 10, color: 'var(--prox-ink3)' }}>persone</div>
               </div>
-            </div>
+            </Card>
           )
         })}
       </div>
