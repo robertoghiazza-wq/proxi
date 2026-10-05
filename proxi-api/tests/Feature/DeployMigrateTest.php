@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Institution;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -9,34 +11,47 @@ class DeployMigrateTest extends TestCase
 {
     use RefreshDatabase;
 
-    private string $token = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEF';
-
-    public function test_senza_token_configurato_l_endpoint_non_esiste(): void
+    private function utente(string $ruolo): User
     {
-        config(['app.migrate_token' => null]);
-        $this->get('/api/deploy/migrate?token=')->assertNotFound();
-        $this->get('/api/deploy/migrate')->assertNotFound();
+        $inst = Institution::forceCreate(['name' => 'P', 'slug' => 'p' . $ruolo]);
+
+        return User::factory()->create([
+            'institution_id' => $inst->id, 'role' => $ruolo, 'email' => "{$ruolo}@example.ch", 'password' => 'segreta123',
+        ]);
     }
 
-    public function test_token_sbagliato_o_troppo_corto_e_404(): void
+    public function test_la_pagina_mostra_il_modulo_di_accesso(): void
     {
-        config(['app.migrate_token' => $this->token]);
-        $this->get('/api/deploy/migrate?token=sbagliato')->assertNotFound();
-
-        config(['app.migrate_token' => 'corto']);
-        $this->get('/api/deploy/migrate?token=corto')->assertNotFound();
+        $this->get('/api/deploy/migrate')->assertOk()->assertSee('Migrazioni Proxi')->assertSee('type="password"', false);
     }
 
-    public function test_con_il_token_giusto_esegue_e_mostra_l_esito(): void
+    public function test_senza_credenziali_valide_o_senza_ruolo_admin_e_negato(): void
     {
-        config(['app.migrate_token' => $this->token]);
+        $this->utente('educatore');
+        $this->utente('coordinatore');
 
-        $this->get("/api/deploy/migrate?token={$this->token}")
-            ->assertOk()
-            ->assertHeader('Content-Type', 'text/plain; charset=utf-8')
-            ->assertSee('OK');
+        $this->post('/api/deploy/migrate', ['email' => 'nessuno@example.ch', 'password' => 'x', 'azione' => 'esegui'])->assertForbidden();
+        $this->post('/api/deploy/migrate', ['email' => 'educatore@example.ch', 'password' => 'sbagliata', 'azione' => 'esegui'])->assertForbidden();
+        $this->post('/api/deploy/migrate', ['email' => 'educatore@example.ch', 'password' => 'segreta123', 'azione' => 'esegui'])
+            ->assertForbidden()->assertDontSee('Esito');
+        $this->post('/api/deploy/migrate', ['email' => 'coordinatore@example.ch', 'password' => 'segreta123', 'azione' => 'esegui'])
+            ->assertForbidden();
+    }
 
-        $this->get("/api/deploy/migrate-status?token={$this->token}")
-            ->assertOk()->assertSee('create_audit_logs_table')->assertSee('create_servizi_table');
+    public function test_un_admin_vede_stato_anteprima_ed_esegue(): void
+    {
+        $this->utente('admin');
+        $dati = ['email' => 'admin@example.ch', 'password' => 'segreta123'];
+
+        $this->post('/api/deploy/migrate', $dati + ['azione' => 'stato'])
+            ->assertOk()->assertSee('create_servizi_table')->assertSee('scheda_persona_base');
+        $this->post('/api/deploy/migrate', $dati + ['azione' => 'anteprima'])->assertOk()->assertSee('ANTEPRIMA');
+        $this->post('/api/deploy/migrate', $dati + ['azione' => 'esegui'])->assertOk()->assertSee('OK');
+    }
+
+    public function test_l_output_e_sempre_escapato(): void
+    {
+        $this->post('/api/deploy/migrate', ['email' => '"><script>alert(1)</script>', 'password' => 'x'])
+            ->assertForbidden()->assertDontSee('<script>alert(1)</script>', false);
     }
 }
