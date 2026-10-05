@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { X, ChevronLeft, Search, Navigation, MapPin, Plus } from 'lucide-react'
 import { NuovoLuogoModal } from '../components/NuovoLuogoModal'
+import { DateField, TimeField } from '../components/DateFields'
 import { PersonePicker } from '../components/PersonePicker'
 import {
   MACRO_CATEGORIE, TIPI_EVENTO,
@@ -412,13 +413,13 @@ export function StepQuando({ form, set, allowFuture }: { form: WizardState; set:
       <StepIntro>Quando si è svolto?</StepIntro>
 
       <Field label="Data">
-        <input type="date" value={form.data} max={allowFuture ? undefined : todayISO()}
-          onChange={e => set('data', e.target.value)} style={inputStyle} />
+        <DateField value={form.data} max={allowFuture ? undefined : todayISO()}
+          onChange={e => set('data', e.target.value)} style={inputStyle} title="Data" />
       </Field>
 
       <Field label="Ora di inizio">
-        <input type="time" value={form.oraInizio}
-          onChange={e => set('oraInizio', e.target.value)} style={inputStyle} />
+        <TimeField value={form.oraInizio}
+          onChange={e => set('oraInizio', e.target.value)} style={inputStyle} title="Ora di inizio" />
       </Field>
 
       <Field label="Durata">
@@ -557,13 +558,13 @@ function StepLuoghi({ form, set, luoghi }: { form: WizardState; set: SetFn; luog
                   {/* Orari */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ fontSize: 12, color: 'var(--prox-ink3)' }}>dalle</span>
-                    <input type="time" value={sosta.dalle}
+                    <TimeField value={sosta.dalle}
                       onChange={e => updateSosta(i, 'dalle', e.target.value)}
-                      style={{ ...timeInput }} />
+                      style={{ ...timeInput }} title="Dalle" />
                     <span style={{ fontSize: 12, color: 'var(--prox-ink3)' }}>alle</span>
-                    <input type="time" value={sosta.alle}
+                    <TimeField value={sosta.alle}
                       onChange={e => updateSosta(i, 'alle', e.target.value)}
-                      style={{ ...timeInput }} />
+                      style={{ ...timeInput }} title="Alle" />
                     <span style={{ fontSize: 11.5, color: 'var(--prox-ink3)', fontFamily: 'ui-monospace, monospace', marginLeft: 4 }}>
                       {durSosta(sosta)}
                     </span>

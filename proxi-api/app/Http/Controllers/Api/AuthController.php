@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -43,6 +44,35 @@ class AuthController extends Controller
     {
         AuditLog::record('logout', $request->user());
         $request->user()->currentAccessToken()->delete();
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function cambiaPassword(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'current_password' => 'required|string',
+            'password'         => ['required', 'string', 'confirmed', 'different:current_password', Password::min(10)->letters()->numbers()],
+        ], [
+            'password.confirmed' => 'Le due password nuove non coincidono.',
+            'password.different' => 'La nuova password deve essere diversa da quella attuale.',
+            'password.min'       => 'La nuova password deve avere almeno 10 caratteri.',
+        ]);
+
+        if (! Hash::check($request->current_password, $user->password)) {
+            throw ValidationException::withMessages(['current_password' => ['La password attuale non è corretta.']]);
+        }
+
+        $user->password = $request->password;
+        $user->save();
+
+        // Gli altri dispositivi vengono scollegati; questo resta collegato.
+        $corrente = $user->currentAccessToken();
+        $user->tokens()->when($corrente?->id, fn ($q, $id) => $q->where('id', '!=', $id))->delete();
+
+        AuditLog::record('password_changed', $user);
 
         return response()->json(['ok' => true]);
     }

@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import {
-  Download, Bell, Shield, Tag, FileText, LogOut, ChevronRight, BadgeCheck,
+  Download, Bell, Shield, Tag, FileText, LogOut, ChevronRight, BadgeCheck, KeyRound,
 } from 'lucide-react'
 import { RuoliManager } from '../components/RuoliManager'
+import { CambiaPasswordModal } from '../components/CambiaPasswordModal'
 import { MobileLayout } from '../components/MobileLayout'
 import { Avatar } from '../components/Avatar'
 import { Card } from '../components/Card'
@@ -87,6 +88,7 @@ function Voce({ icon, label, sublabel, danger, onClick }: VoceProps) {
 export function ProfiloScreen() {
   const user      = getCurrentUser()
   const [ruoliAperti, setRuoliAperti] = useState(false)
+  const [passwordAperta, setPasswordAperta] = useState(false)
   const logout    = useLogout()
   const { data: eventiOggi = [] } = useEventi({ data: TODAY })
 
@@ -134,6 +136,12 @@ export function ProfiloScreen() {
 
         {/* IMPOSTAZIONI */}
         <Card padding={0}>
+          <Voce
+            icon={<KeyRound size={18} strokeWidth={1.75} />}
+            label="Cambia password"
+            sublabel="Scollega gli altri dispositivi"
+            onClick={() => setPasswordAperta(true)}
+          />
           <Voce
             icon={<Bell size={18} strokeWidth={1.75} />}
             label="Notifiche"
@@ -203,6 +211,7 @@ export function ProfiloScreen() {
 
       </div>
       {ruoliAperti && <RuoliManager onClose={() => setRuoliAperti(false)} />}
+      {passwordAperta && <CambiaPasswordModal onClose={() => setPasswordAperta(false)} />}
     </MobileLayout>
   )
 }

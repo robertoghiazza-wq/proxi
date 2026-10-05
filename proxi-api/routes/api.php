@@ -17,6 +17,8 @@ Route::prefix('auth')->group(function () {
     Route::post('/login', [\App\Http\Controllers\Api\AuthController::class, 'login']);
     Route::post('/logout', [\App\Http\Controllers\Api\AuthController::class, 'logout'])
         ->middleware('auth:sanctum');
+    Route::post('/password', [\App\Http\Controllers\Api\AuthController::class, 'cambiaPassword'])
+        ->middleware(['auth:sanctum', 'throttle:5,1']);
 });
 
 // Rotte protette — tutte richiedono token Sanctum

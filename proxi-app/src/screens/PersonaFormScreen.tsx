@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { X } from 'lucide-react'
 import { ChipsInput } from '../components/ChipsInput'
+import { DateField } from '../components/DateFields'
 import { IndirizzoField } from '../components/IndirizzoField'
 import { INDIRIZZO_VUOTO, validaIndirizzo, type Indirizzo } from '../lib/geo'
 import { etichettaRuolo, etichettaTipo } from '../lib/persona'
@@ -236,8 +237,8 @@ export function PersonaForm({ persona, initialRuolo, onClose, onSaved }: {
         <div style={{ display: 'flex', gap: 12 }}>
           <div style={{ flex: 1 }}>
             <Field label="Data di nascita">
-              <input type="date" value={dataNascita} max={new Date().toISOString().slice(0, 10)}
-                onChange={e => setDataNascita(e.target.value)} style={input} />
+              <DateField value={dataNascita} max={new Date().toISOString().slice(0, 10)}
+                onChange={e => setDataNascita(e.target.value)} style={input} title="Data di nascita" />
             </Field>
           </div>
           <div style={{ width: 110 }}>
