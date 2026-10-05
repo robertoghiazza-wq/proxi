@@ -41,8 +41,11 @@ export function useCreateEvento() {
 export function useUpdateEvento(id: number) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: Partial<Evento>) => api.patch<Evento>(`/eventi/${id}`, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['eventi'] }),
+    mutationFn: (data: Partial<Evento> & { persone_ids?: number[] }) => api.patch<Evento>(`/eventi/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['eventi'] })
+      qc.invalidateQueries({ queryKey: ['luoghi'] })
+    },
   })
 }
 
@@ -52,5 +55,16 @@ export function useSyncPersone(eventoId: number) {
     mutationFn: (personeIds: number[]) =>
       api.post<Evento>(`/eventi/${eventoId}/persone`, { persone_ids: personeIds }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['eventi', eventoId] }),
+  })
+}
+
+export function useDeleteEvento() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api.delete<void>(`/eventi/${id}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['eventi'] })
+      qc.invalidateQueries({ queryKey: ['luoghi'] })
+    },
   })
 }

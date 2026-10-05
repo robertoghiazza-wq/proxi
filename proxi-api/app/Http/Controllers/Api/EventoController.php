@@ -3,9 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Evento;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class EventoController extends Controller
 {
@@ -31,27 +36,40 @@ class EventoController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $data = $request->validate([
-            'luogo_id'   => 'nullable|exists:luoghi,id',
-            'tipo'       => 'required|string|max:50',
-            'data'       => 'required|date',
-            'ora_inizio' => 'nullable|date_format:H:i',
-            'durata_min' => 'integer|min:1|max:1440',
-            'stato'      => 'in:pianificato,in_corso,completato',
-            'note'       => 'nullable|string',
-        ]);
+        $instId = $request->user()->institution_id;
 
-        $data['institution_id'] = $request->user()->institution_id;
+        $data = $request->validate([
+            'luogo_id'     => ['required', $this->existsInInstitution('luoghi', $instId)],
+            'tipo'         => 'required|string|max:50',
+            'data'         => 'required|date',
+            'ora_inizio'   => 'nullable|date_format:H:i',
+            'durata_min'   => 'integer|min:1|max:1440',
+            'stato'        => 'in:pianificato,in_corso,completato',
+            'note'         => 'nullable|string',
+            'persone_ids'   => 'sometimes|array',
+            'persone_ids.*' => [$this->existsInInstitution('persone', $instId)],
+        ], $this->messages());
+
+        $personeIds = Arr::pull($data, 'persone_ids');
+
+        $data['institution_id'] = $instId;
         $data['educatore_id']   = $request->user()->id;
 
-        $evento = Evento::create($data);
+        $evento = DB::transaction(function () use ($data, $personeIds) {
+            $evento = Evento::create($data);
+            if ($personeIds !== null) {
+                $this->syncPersoneAudited($evento, $personeIds);
+            }
+
+            return $evento;
+        });
 
         return response()->json($evento->load(['luogo', 'persone']), 201);
     }
 
     public function show(Request $request, int $id): JsonResponse
     {
-        $evento = Evento::forInstitution($request->user()->institution_id)
+        $evento = $this->scoped($request)
             ->with(['luogo', 'persone', 'educatore:id,name'])
             ->findOrFail($id);
 
@@ -60,26 +78,36 @@ class EventoController extends Controller
 
     public function update(Request $request, int $id): JsonResponse
     {
-        $evento = Evento::forInstitution($request->user()->institution_id)->findOrFail($id);
+        $instId = $request->user()->institution_id;
+        $evento = $this->scoped($request)->findOrFail($id);
 
         $data = $request->validate([
-            'luogo_id'   => 'nullable|exists:luoghi,id',
-            'tipo'       => 'string|max:50',
-            'data'       => 'date',
-            'ora_inizio' => 'nullable|date_format:H:i',
-            'durata_min' => 'integer|min:1|max:1440',
-            'stato'      => 'in:pianificato,in_corso,completato',
-            'note'       => 'nullable|string',
-        ]);
+            'luogo_id'     => ['sometimes', 'required', $this->existsInInstitution('luoghi', $instId)],
+            'tipo'         => 'string|max:50',
+            'data'         => 'date',
+            'ora_inizio'   => 'nullable|date_format:H:i',
+            'durata_min'   => 'integer|min:1|max:1440',
+            'stato'        => 'in:pianificato,in_corso,completato',
+            'note'         => 'nullable|string',
+            'persone_ids'   => 'sometimes|array',
+            'persone_ids.*' => [$this->existsInInstitution('persone', $instId)],
+        ], $this->messages());
 
-        $evento->update($data);
+        $personeIds = Arr::pull($data, 'persone_ids');
 
-        return response()->json($evento->load(['luogo', 'persone']));
+        DB::transaction(function () use ($evento, $data, $personeIds) {
+            $evento->update($data);
+            if ($personeIds !== null) {
+                $this->syncPersoneAudited($evento, $personeIds);
+            }
+        });
+
+        return response()->json($evento->load(['luogo', 'persone', 'educatore:id,name']));
     }
 
     public function destroy(Request $request, int $id): JsonResponse
     {
-        $evento = Evento::forInstitution($request->user()->institution_id)->findOrFail($id);
+        $evento = $this->scoped($request)->findOrFail($id);
         $evento->delete();
 
         return response()->json(null, 204);
@@ -87,12 +115,51 @@ class EventoController extends Controller
 
     public function syncPersone(Request $request, int $id): JsonResponse
     {
-        $evento = Evento::forInstitution($request->user()->institution_id)->findOrFail($id);
+        $evento = $this->scoped($request)->findOrFail($id);
 
-        $request->validate(['persone_ids' => 'present|array', 'persone_ids.*' => 'exists:persone,id']);
+        $request->validate([
+            'persone_ids'   => 'present|array',
+            'persone_ids.*' => [$this->existsInInstitution('persone', $request->user()->institution_id)],
+        ], $this->messages());
 
-        $evento->persone()->sync($request->persone_ids);
+        $this->syncPersoneAudited($evento, $request->persone_ids);
 
         return response()->json($evento->load('persone'));
+    }
+
+    private function scoped(Request $request): Builder
+    {
+        return Evento::forInstitution($request->user()->institution_id);
+    }
+
+    private function existsInInstitution(string $table, int $instId)
+    {
+        return Rule::exists($table, 'id')
+            ->where('institution_id', $instId)
+            ->whereNull('deleted_at');
+    }
+
+    private function syncPersoneAudited(Evento $evento, array $ids): void
+    {
+        $prima = $evento->persone()->pluck('persone.id')->sort()->values()->all();
+        $evento->persone()->sync($ids);
+        $dopo = $evento->persone()->pluck('persone.id')->sort()->values()->all();
+
+        if ($prima !== $dopo) {
+            AuditLog::record(
+                'updated', $evento,
+                ['persone_ids' => $prima], ['persone_ids' => $dopo],
+                ['relation' => 'persone'],
+            );
+        }
+    }
+
+    private function messages(): array
+    {
+        return [
+            'luogo_id.required'      => 'Il luogo è obbligatorio.',
+            'luogo_id.exists'        => 'Il luogo selezionato non esiste.',
+            'persone_ids.*.exists'   => 'Una delle persone selezionate non esiste.',
+        ];
     }
 }

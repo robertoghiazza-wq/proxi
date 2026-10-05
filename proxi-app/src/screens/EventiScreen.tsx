@@ -6,9 +6,11 @@ import { MobileLayout } from '../components/MobileLayout'
 import { Drawer } from '../components/Drawer'
 import { Modal } from '../components/Modal'
 import { Card } from '../components/Card'
+import { SwipeRow } from '../components/SwipeRow'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { colorForTipo, tipoLabel } from '../lib/mock-data'
-import { useEventi } from '../hooks/useEventi'
-import type { StatoEvento } from '../types'
+import { useEventi, useDeleteEvento } from '../hooks/useEventi'
+import type { Evento, StatoEvento } from '../types'
 import { Plus, Check } from 'lucide-react'
 
 type Filtro = 'tutti' | StatoEvento
@@ -33,10 +35,13 @@ function fmtData(d: string) {
 
 export function EventiScreen() {
   const navigate = useNavigate()
-  const isNuovoOpen  = !!useMatch('/eventi/nuovo')
+  const isModificaOpen = !!useMatch('/eventi/:id/modifica')
+  const isNuovoOpen  = !!useMatch('/eventi/nuovo') || isModificaOpen
   const hasIdMatch   = !!useMatch('/eventi/:id')
   const isDetailOpen = hasIdMatch && !isNuovoOpen
   const [filtro, setFiltro] = useState<Filtro>('tutti')
+  const [daEliminare, setDaEliminare] = useState<Evento | null>(null)
+  const eliminaEvento = useDeleteEvento()
 
   const { data: tuttiEventi = [], isLoading } = useEventi({})
 
@@ -123,8 +128,8 @@ export function EventiScreen() {
                     .filter(Boolean)
 
                   return (
+                    <SwipeRow key={e.id} onDelete={() => setDaEliminare(e)}>
                     <Card
-                      key={e.id}
                       onClick={() => navigate(`/eventi/${e.id}`)}
                       padding={10}
                       style={{ display: 'flex', gap: 10, alignItems: 'center' }}
@@ -162,6 +167,7 @@ export function EventiScreen() {
                       )}
                       {e.stato === 'completato' && <Check size={14} color="var(--prox-ok)" strokeWidth={2.2} style={{ flexShrink: 0 }} />}
                     </Card>
+                    </SwipeRow>
                   )
                 })}
               </div>
@@ -169,6 +175,21 @@ export function EventiScreen() {
           )
         })}
       </div>
+      <ConfirmDialog
+        open={daEliminare !== null}
+        danger
+        title="Eliminare l'evento?"
+        message={daEliminare
+          ? `${tipoLabel(daEliminare.tipo)} del ${fmtData(daEliminare.data)}. L'operazione resta registrata nel log.`
+          : undefined}
+        confirmLabel="Elimina"
+        loading={eliminaEvento.isPending}
+        error={eliminaEvento.isError ? (eliminaEvento.error as Error).message : null}
+        onCancel={() => { setDaEliminare(null); eliminaEvento.reset() }}
+        onConfirm={() => daEliminare && eliminaEvento.mutate(daEliminare.id, {
+          onSuccess: () => setDaEliminare(null),
+        })}
+      />
       {isNuovoOpen ? (
         <Modal open onClose={() => navigate('/eventi')}>
           <Outlet />

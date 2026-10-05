@@ -31,12 +31,16 @@ export function NuovoLuogoScreen() {
   return <LuogoForm luogo={luogo} />
 }
 
-function LuogoForm({ luogo }: { luogo?: Luogo }) {
+export function LuogoForm({ luogo, onClose, onSaved }: {
+  luogo?: Luogo
+  onClose?: () => void
+  onSaved?: (luogo: Luogo) => void
+}) {
   const navigate = useNavigate()
   const create = useCreateLuogo()
   const update = useUpdateLuogo(luogo?.id ?? 0)
   const mutation = luogo ? update : create
-  const chiudi = () => navigate(luogo ? `/luoghi/${luogo.id}` : '/luoghi')
+  const chiudi = onClose ?? (() => navigate(luogo ? `/luoghi/${luogo.id}` : '/luoghi'))
 
   const [nome, setNome] = useState(luogo?.nome ?? '')
   const [tipo, setTipo] = useState<TipoLuogo>(luogo?.tipo ?? 'strada')
@@ -57,7 +61,7 @@ function LuogoForm({ luogo }: { luogo?: Luogo }) {
     if (!nome.trim()) { setErrore('Il nome è obbligatorio'); return }
     setErrore('')
     try {
-      await mutation.mutateAsync({
+      const saved = await mutation.mutateAsync({
         nome: nome.trim(),
         tipo,
         indirizzo: indirizzo.trim() || null,
@@ -67,7 +71,8 @@ function LuogoForm({ luogo }: { luogo?: Luogo }) {
         lng: pos ? Number(pos.lng.toFixed(7)) : null,
         ...(luogo ? {} : { attivo: true }),
       })
-      chiudi()
+      if (onSaved) onSaved(saved as Luogo)
+      else chiudi()
     } catch (e) {
       setErrore((e as Error).message || 'Errore nel salvataggio')
     }

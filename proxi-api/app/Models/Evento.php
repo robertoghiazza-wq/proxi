@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Evento extends Model
 {
+    use Auditable;
+
     protected $table = 'eventi';
 
     protected $fillable = [
@@ -24,6 +27,11 @@ class Evento extends Model
     public function getOraInizioAttribute(?string $value): ?string
     {
         return $value ? substr($value, 0, 5) : null;
+    }
+
+    protected function auditExtraOnDelete(): array
+    {
+        return ['persone_ids' => $this->persone()->pluck('persone.id')->all()];
     }
 
     public function institution(): BelongsTo

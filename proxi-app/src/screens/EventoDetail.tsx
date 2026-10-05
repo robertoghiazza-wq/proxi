@@ -1,12 +1,14 @@
 // Evento detail — tipo, orario, durata, persone, luogo, note, educatore
 
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ChevronLeft, MapPin, Clock, FileText, Edit, CheckCircle, Circle, PlayCircle } from 'lucide-react'
+import { ChevronLeft, MapPin, Clock, FileText, Edit, CheckCircle, Circle, PlayCircle, Trash2 } from 'lucide-react'
 import { Avatar } from '../components/Avatar'
 import { Tag } from '../components/Tag'
 import { Card } from '../components/Card'
 import { colorForTipo, tipoLabel } from '../lib/mock-data'
-import { useEvento } from '../hooks/useEventi'
+import { ConfirmDialog } from '../components/ConfirmDialog'
+import { useEvento, useUpdateEvento, useDeleteEvento } from '../hooks/useEventi'
 import type { StatoEvento } from '../types'
 
 function minToHM(m: number) {
@@ -44,6 +46,9 @@ export function EventoDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { data: evento, isLoading, error } = useEvento(Number(id))
+  const aggiorna = useUpdateEvento(Number(id))
+  const elimina = useDeleteEvento()
+  const [confermaElimina, setConfermaElimina] = useState(false)
 
   if (isLoading) {
     return <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Caricamento…</div>
@@ -198,18 +203,67 @@ export function EventoDetail() {
           </Card>
         )}
 
-        {/* Azione modifica */}
-        <button style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-          border: '1.5px solid var(--prox-line)', borderRadius: 999,
-          background: 'var(--prox-surface)', color: 'var(--prox-ink2)',
-          padding: '11px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-          width: '100%',
-        }}>
+        {/* Azioni */}
+        {evento.stato !== 'completato' && (
+          <button
+            onClick={() => aggiorna.mutate({ stato: 'completato' })}
+            disabled={aggiorna.isPending}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+              border: 'none', borderRadius: 999, width: '100%',
+              background: 'var(--prox-ok)', color: '#fff',
+              padding: '12px 0', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+              opacity: aggiorna.isPending ? 0.6 : 1,
+            }}
+          >
+            <CheckCircle size={16} strokeWidth={2.2} />
+            Segna come completato
+          </button>
+        )}
+        {aggiorna.isError && (
+          <div style={{ fontSize: 13, color: 'var(--prox-danger)' }}>{(aggiorna.error as Error).message}</div>
+        )}
+
+        <button
+          onClick={() => navigate(`/eventi/${evento.id}/modifica`)}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+            border: '1.5px solid var(--prox-line)', borderRadius: 999,
+            background: 'var(--prox-surface)', color: 'var(--prox-ink2)',
+            padding: '11px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+            width: '100%',
+          }}
+        >
           <Edit size={16} strokeWidth={1.75} />
           Modifica evento
         </button>
+
+        <button
+          onClick={() => setConfermaElimina(true)}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+            border: '1.5px solid var(--prox-line)', borderRadius: 999,
+            background: 'transparent', color: 'var(--prox-danger)',
+            padding: '11px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+            width: '100%',
+          }}
+        >
+          <Trash2 size={16} strokeWidth={1.75} />
+          Elimina evento
+        </button>
       </div>
+
+      <ConfirmDialog
+        open={confermaElimina}
+        danger
+        title="Eliminare l'evento?"
+        message="L'operazione resta registrata nel log."
+        confirmLabel="Elimina"
+        loading={elimina.isPending}
+        error={elimina.isError ? (elimina.error as Error).message : null}
+        onCancel={() => { setConfermaElimina(false); elimina.reset() }}
+        onConfirm={() => elimina.mutate(evento.id, { onSuccess: () => navigate('/eventi') })}
+      />
     </div>
   )
 }

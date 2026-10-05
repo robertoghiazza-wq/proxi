@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,6 +31,8 @@ class AuthController extends Controller
 
         $token = $user->createToken('proxi-pwa')->plainTextToken;
 
+        AuditLog::record('login', $user);
+
         return response()->json([
             'token' => $token,
             'user'  => $user,
@@ -38,6 +41,7 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
+        AuditLog::record('logout', $request->user());
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['ok' => true]);

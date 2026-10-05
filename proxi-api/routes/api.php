@@ -36,6 +36,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('veicoli', \App\Http\Controllers\Api\VeicoloController::class);
     Route::apiResource('viaggi', \App\Http\Controllers\Api\ViaggiController::class);
 
+    // Audit log (sola lettura, solo coordinatori/admin)
+    Route::get('/audit', [\App\Http\Controllers\Api\AuditController::class, 'index']);
+
     // Obiettivi
     Route::apiResource('obiettivi', \App\Http\Controllers\Api\ObiettivoController::class);
 

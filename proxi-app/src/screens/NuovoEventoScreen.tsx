@@ -4,9 +4,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { X, ChevronLeft, Search, Navigation, MapPin, Plus } from 'lucide-react'
-import { Avatar } from '../components/Avatar'
+import { NuovoLuogoModal } from '../components/NuovoLuogoModal'
+import { PersonePicker } from '../components/PersonePicker'
 import {
-  MOCK_PERSONE,
   MACRO_CATEGORIE, TIPI_EVENTO,
   tipoLabel, hueToColor,
 } from '../lib/mock-data'
@@ -28,13 +28,13 @@ function nowRounded(): string {
   return `${String(h % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
 }
 
-function minToLabel(m: number) {
+export function minToLabel(m: number) {
   if (m < 60) return `${m}′`
   const h = Math.floor(m / 60), r = m % 60
   return r > 0 ? `${h}h ${r}′` : `${h}h`
 }
 
-function calcFine(oraInizio: string, durataMin: number): string {
+export function calcFine(oraInizio: string, durataMin: number): string {
   const [h, m] = oraInizio.split(':').map(Number)
   const tot = h * 60 + m + durataMin
   return `${String(Math.floor(tot / 60) % 24).padStart(2, '0')}:${String(tot % 60).padStart(2, '0')}`
@@ -63,7 +63,7 @@ export interface Sosta {
   alle:     string          // HH:MM
 }
 
-interface WizardState {
+export interface WizardState {
   tipo:       string | null
   data:       string
   oraInizio:  string
@@ -74,12 +74,12 @@ interface WizardState {
   savedId:    number | null // ID evento creato dopo step Luoghi
 }
 
-const DURATE = [15, 30, 45, 60, 90, 120]
+export const DURATE = [15, 30, 45, 60, 90, 120]
 const STEPS  = ['Tipo', 'Quando', 'Luoghi', 'Persone', 'Note']
 // step 2 = Luoghi → "Crea evento"; step 3+ = arricchimento facoltativo
 const STEP_CREA = 2
 
-type SetFn = <K extends keyof WizardState>(key: K, val: WizardState[K]) => void
+export type SetFn = <K extends keyof WizardState>(key: K, val: WizardState[K]) => void
 
 // ─── componente principale ─────────────────────────────────────────────────
 
@@ -119,7 +119,7 @@ export function NuovoEventoScreen() {
   const canProceed = [
     form.tipo !== null,   // step 0 — tipo obbligatorio
     form.data !== '',     // step 1 — data obbligatoria
-    true,                 // step 2 — luoghi facoltativi
+    form.soste.some(x => x.luogoId !== null), // step 2 — luogo obbligatorio
     true,                 // step 3 — persone facoltative
     true,                 // step 4 — note facoltative
   ][step]
@@ -141,7 +141,7 @@ export function NuovoEventoScreen() {
         data:       form.data,
         ora_inizio: form.oraInizio || undefined,
         durata_min: form.durata,
-        luogo_id:   primoLuogoId(),
+        luogo_id:   primoLuogoId()!,
         stato:      'completato',
       })
       setForm(f => ({ ...f, savedId: evento.id }))
@@ -166,8 +166,8 @@ export function NuovoEventoScreen() {
         }
       }
       navigate('/eventi')
-    } catch {
-      navigate('/eventi')
+    } catch (e: unknown) {
+      setErrore(`L'evento è stato creato ma non ho potuto salvare note o persone: ${e instanceof Error ? e.message : 'errore di rete'}`)
     } finally {
       setSaving(false)
     }
@@ -308,7 +308,7 @@ function MacroIcon({ id, size = 18 }: { id: string; size?: number }) {
   )
 }
 
-function StepTipo({ form, set }: { form: WizardState; set: SetFn }) {
+export function StepTipo({ form, set }: { form: WizardState; set: SetFn }) {
   // Macro selezionata: se ho già un tipo scelto, preseleziona la sua macro
   const macroDefault = form.tipo
     ? (TIPI_EVENTO[form.tipo]?.macro ?? MACRO_CATEGORIE[0].id)
@@ -404,13 +404,13 @@ function StepTipo({ form, set }: { form: WizardState; set: SetFn }) {
 
 // ─── STEP 2: QUANDO ────────────────────────────────────────────────────────
 
-function StepQuando({ form, set }: { form: WizardState; set: SetFn }) {
+export function StepQuando({ form, set, allowFuture }: { form: WizardState; set: SetFn; allowFuture?: boolean }) {
   return (
     <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 20 }}>
       <StepIntro>Quando si è svolto?</StepIntro>
 
       <Field label="Data">
-        <input type="date" value={form.data} max={todayISO()}
+        <input type="date" value={form.data} max={allowFuture ? undefined : todayISO()}
           onChange={e => set('data', e.target.value)} style={inputStyle} />
       </Field>
 
@@ -464,6 +464,7 @@ function StepLuoghi({ form, set, luoghi }: { form: WizardState; set: SetFn; luog
   const [query,    setQuery]    = useState('')
   const [geoState, setGeoState] = useState<GeoState>('idle')
   const [userPos,  setUserPos]  = useState<{ lat: number; lng: number } | null>(null)
+  const [creandoLuogo, setCreandoLuogo] = useState(false)
   const requested = useRef(false)
 
   useEffect(() => {
@@ -542,7 +543,7 @@ function StepLuoghi({ form, set, luoghi }: { form: WizardState; set: SetFn; luog
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <MapPin size={14} color="var(--prox-accent)" strokeWidth={2} style={{ flexShrink: 0 }} />
                     <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>
-                      {luogo?.nome ?? 'Spostamento / esterno'}
+                      {luogo?.nome ?? 'Luogo'}
                     </span>
                     <button onClick={() => removeSosta(i)} style={{
                       background: 'none', border: 'none', cursor: 'pointer',
@@ -574,6 +575,12 @@ function StepLuoghi({ form, set, luoghi }: { form: WizardState; set: SetFn; luog
         </div>
       )}
 
+      {form.soste.length === 0 && (
+        <div style={{ padding: '16px 16px 0' }}>
+          <StepIntro>Dove si è svolto? Il luogo è obbligatorio.</StepIntro>
+        </div>
+      )}
+
       {/* ── Ricerca / aggiungi ── */}
       <div style={{
         padding: '12px 16px', background: 'var(--prox-surface)',
@@ -586,17 +593,14 @@ function StepLuoghi({ form, set, luoghi }: { form: WizardState; set: SetFn; luog
         {geoState === 'denied' && <GpsBanner icon={<MapPin size={13} strokeWidth={2}/>} color="var(--prox-ink3)">Posizione non disponibile</GpsBanner>}
       </div>
 
-      {/* "Spostamento / esterno" — sempre disponibile */}
-      {!query && (
-        <AddLuogoRow
-          label="Spostamento / esterno"
-          sublabel="Nessun luogo specifico"
-          onAdd={() => aggiungiSosta(null)}
-        />
-      )}
+      <AddLuogoRow
+        label="Nuovo luogo"
+        sublabel={query.trim() ? `Crea “${query.trim()}”` : 'Non è in elenco? Crealo ora'}
+        onAdd={() => setCreandoLuogo(true)}
+      />
 
       {/* Vicini */}
-      {vicini.length > 0 && !luoghiUsati.has(null) && (
+      {vicini.length > 0 && (
         <>
           <SectionDivider label="Vicino a te" />
           {vicini.filter(l => !luoghiUsati.has(l.id)).map(l => (
@@ -624,6 +628,13 @@ function StepLuoghi({ form, set, luoghi }: { form: WizardState; set: SetFn; luog
       )}
 
       <div style={{ height: 24 }} />
+
+      {creandoLuogo && (
+        <NuovoLuogoModal
+          onClose={() => setCreandoLuogo(false)}
+          onCreated={l => { setCreandoLuogo(false); aggiungiSosta(l.id) }}
+        />
+      )}
     </div>
   )
 }
@@ -681,64 +692,9 @@ const timeInput: React.CSSProperties = {
 function StepPersone({
   form, togglePersona,
 }: { form: WizardState; togglePersona: (id: number) => void }) {
-  const [query, setQuery] = useState('')
-
-  const utenti = MOCK_PERSONE.filter(p => p.ruolo === 'utente')
-
-  // Filtra per ricerca
-  function matches(p: typeof utenti[0]) {
-    if (!query) return true
-    const q = query.toLowerCase()
-    return p.nome?.toLowerCase().includes(q)
-      || p.soprannome?.toLowerCase().includes(q)
-      || p.tag?.some(t => t.includes(q))
-  }
-
-  const filtratiPersone = utenti.filter(matches)
-  const nSel = form.personeIds.length
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      {/* Barra ricerca sticky */}
-      <div style={{
-        padding: '12px 16px', background: 'var(--prox-surface)',
-        borderBottom: '1px solid var(--prox-line2)',
-        position: 'sticky', top: 0, zIndex: 5,
-      }}>
-        <SearchBar
-          value={query}
-          onChange={setQuery}
-          placeholder="Cerca nome, soprannome, tag…"
-        />
-        <p style={{ fontSize: 12, color: 'var(--prox-ink3)', margin: '8px 0 0' }}>
-          {nSel === 0
-            ? 'Opzionale — puoi saltare questo step'
-            : `${nSel} person${nSel === 1 ? 'a selezionata' : 'e selezionate'}`}
-        </p>
-      </div>
-
-      {filtratiPersone.length > 0 && (
-        <>
-          <SectionDivider label="Persone" />
-          {filtratiPersone.map(p => (
-            <PersonaRow
-              key={p.id}
-              persona={p}
-              score={0}
-              selected={form.personeIds.includes(p.id)}
-              onToggle={() => togglePersona(p.id)}
-            />
-          ))}
-        </>
-      )}
-
-      {filtratiPersone.length === 0 && (
-        <div style={{ padding: '40px 16px', textAlign: 'center', color: 'var(--prox-ink3)', fontSize: 14 }}>
-          Nessun risultato per "{query}"
-        </div>
-      )}
-
-      <div style={{ height: 16 }} />
+    <div style={{ paddingBottom: 16 }}>
+      <PersonePicker selectedIds={form.personeIds} onToggle={togglePersona} sticky />
     </div>
   )
 }
@@ -749,7 +705,7 @@ function StepNote({ form, set, luoghi }: { form: WizardState; set: SetFn; luoghi
   const luoghiRep = form.soste.length === 0
     ? 'Nessuno'
     : form.soste.map(s => {
-        const n = s.luogoId ? (luoghi.find(l => l.id === s.luogoId)?.nome ?? '?') : 'Esterno'
+        const n = luoghi.find(l => l.id === s.luogoId)?.nome ?? '?'
         return `${n} ${s.dalle}–${s.alle}`
       }).join(', ')
   const nPers = form.personeIds.length
@@ -877,68 +833,6 @@ function SectionDivider({ label }: { label: string }) {
 }
 
 
-function PersonaRow({ persona, score, selected, onToggle }: {
-  persona: typeof MOCK_PERSONE[0]
-  score: number
-  selected: boolean
-  onToggle: () => void
-}) {
-  const nome = persona.anonimo
-    ? (persona.soprannome ? `"${persona.soprannome}"` : '—')
-    : (persona.nome ?? '—')
-
-  return (
-    <button onClick={onToggle} style={{
-      display: 'flex', alignItems: 'center', gap: 12,
-      padding: '11px 16px', width: '100%',
-      background: selected ? 'var(--prox-accent-soft)' : 'var(--prox-surface)',
-      border: 'none', borderBottom: '1px solid var(--prox-line2)',
-      cursor: 'pointer', textAlign: 'left', transition: 'background 0.1s',
-    }}>
-      {/* Checkbox */}
-      <div style={{
-        width: 22, height: 22, borderRadius: 6, flexShrink: 0,
-        border: `2px solid ${selected ? 'var(--prox-accent)' : 'var(--prox-line)'}`,
-        background: selected ? 'var(--prox-accent)' : 'transparent',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        transition: 'all 0.12s',
-      }}>
-        {selected && (
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-            stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-        )}
-      </div>
-
-      <Avatar nome={persona.anonimo ? persona.soprannome : persona.nome} anonimo={persona.anonimo} size={36} />
-
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
-          fontSize: 14, fontWeight: 600,
-          color: selected ? 'var(--prox-accent-ink)' : 'var(--prox-ink)',
-        }}>{nome}</div>
-        {persona.tag && persona.tag.length > 0 && (
-          <div style={{ fontSize: 11.5, color: 'var(--prox-ink3)', marginTop: 1 }}>
-            {persona.tag.slice(0, 2).join(' · ')}
-          </div>
-        )}
-      </div>
-
-      {/* Badge eventi nel luogo */}
-      {score > 0 && (
-        <span style={{
-          fontSize: 11, fontWeight: 600, fontFamily: 'ui-monospace, monospace',
-          color: 'var(--prox-accent-ink)', flexShrink: 0,
-          background: 'var(--prox-accent-soft)', borderRadius: 999, padding: '2px 8px',
-        }}>
-          {score} ev.
-        </span>
-      )}
-    </button>
-  )
-}
-
 function RRow({ label, value, last }: { label: string; value: string; last?: boolean }) {
   return (
     <div style={{
@@ -962,7 +856,7 @@ function StepIntro({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+export function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
       <label className="prox-label" style={{ display: 'block', marginBottom: 8 }}>{label}</label>
@@ -990,7 +884,7 @@ const continueBtn: React.CSSProperties = {
   fontSize: 15, fontWeight: 700, transition: 'background 0.15s',
 }
 
-const inputStyle: React.CSSProperties = {
+export const inputStyle: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box',
   border: '1.5px solid var(--prox-line)', borderRadius: 12,
   padding: '12px 14px', fontSize: 15, color: 'var(--prox-ink)',

@@ -8,6 +8,7 @@ import { PersonaDetail }     from './screens/PersonaDetail'
 import { EventiScreen }      from './screens/EventiScreen'
 import { EventoDetail }      from './screens/EventoDetail'
 import { NuovoEventoScreen } from './screens/NuovoEventoScreen'
+import { EventoEditScreen }  from './screens/EventoEditScreen'
 import { LuoghiScreen }      from './screens/LuoghiScreen'
 import { LuogoDetail }       from './screens/LuogoDetail'
 import { NuovoLuogoScreen }  from './screens/NuovoLuogoScreen'
@@ -48,6 +49,7 @@ export default function App() {
           {/* Eventi: lista + modal nuovo + drawer dettaglio */}
           <Route path="/eventi" element={<Auth><EventiScreen /></Auth>}>
             <Route path="nuovo" element={<NuovoEventoScreen />} />
+            <Route path=":id/modifica" element={<EventoEditScreen />} />
             <Route path=":id"   element={<EventoDetail />} />
           </Route>
 
