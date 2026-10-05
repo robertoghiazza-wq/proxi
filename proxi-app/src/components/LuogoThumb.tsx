@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { MapPin } from 'lucide-react'
 
-export function satelliteUrl(lat: number, lng: number, px: number, metri = 70) {
+export function satelliteUrl(lat: number, lng: number, px: number, metri = 22) {
   const d = metri / 111320
   const dl = d / Math.cos(lat * Math.PI / 180)
   const bbox = `${lat - d},${lng - dl},${lat + d},${lng + dl}`
@@ -46,11 +46,12 @@ export function LuogoThumb({ lat, lng, color, size = 44, radius = 10 }: Props) {
         style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
       />
       <span style={{
-        position: 'absolute', left: '50%', top: '50%', width: 10, height: 10,
-        transform: 'translate(-50%, -50%)', borderRadius: '50%',
-        background: color, border: '2px solid #fff', boxSizing: 'content-box',
-        boxShadow: '0 0 0 1px rgba(0,0,0,0.25)',
-      }} />
+        position: 'absolute', left: '50%', top: '50%', width: 16, height: 16,
+        transform: 'translate(-50%, -92%)', display: 'block',
+      }}>
+        <MapPin size={16} color="#fff" strokeWidth={4.2} style={{ position: 'absolute', inset: 0 }} />
+        <MapPin size={16} color={color} strokeWidth={2.2} style={{ position: 'absolute', inset: 0 }} />
+      </span>
       <span style={{
         position: 'absolute', inset: 0, borderRadius: radius,
         boxShadow: `inset 0 0 0 1.5px ${color}`, pointerEvents: 'none',
