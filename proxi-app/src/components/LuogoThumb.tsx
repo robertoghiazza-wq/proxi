@@ -1,4 +1,4 @@
-// Anteprima luogo: ritaglio satellitare swisstopo centrato sul punto, icona se mancano le coordinate
+// Anteprima luogo: ritaglio satellitare swisstopo centrato sul punto (senza segnaposto), icona se mancano le coordinate
 
 import { useState } from 'react'
 import { MapPin } from 'lucide-react'
@@ -45,18 +45,6 @@ export function LuogoThumb({ lat, lng, color, size = 44, radius = 10 }: Props) {
         onError={() => setFailed(true)}
         style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
       />
-      <span style={{
-        position: 'absolute', left: '50%', top: '50%', width: 16, height: 16,
-        transform: 'translate(-50%, -92%)', display: 'block',
-      }}>
-        <MapPin
-          size={16} color={color} strokeWidth={2.2}
-          style={{
-            position: 'absolute', inset: 0,
-            filter: 'drop-shadow(0 0 3px rgba(255,255,255,0.55)) drop-shadow(0 0 7px rgba(255,255,255,0.3))',
-          }}
-        />
-      </span>
     </div>
   )
 }
