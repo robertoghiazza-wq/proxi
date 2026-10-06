@@ -30,6 +30,11 @@ class AuthController extends Controller
             ]);
         }
 
+        if (! $user->attivo) {
+            throw ValidationException::withMessages(['email' => ['Account disattivato: rivolgiti a un coordinatore.']]);
+        }
+
+        $user->forceFill(['ultimo_accesso_il' => now()])->saveQuietly();
         $token = $user->createToken('proxi-pwa')->plainTextToken;
 
         AuditLog::record('login', $user);
@@ -73,6 +78,34 @@ class AuthController extends Controller
         $user->tokens()->when($corrente?->id, fn ($q, $id) => $q->where('id', '!=', $id))->delete();
 
         AuditLog::record('password_changed', $user);
+
+        return response()->json(['ok' => true]);
+    }
+
+    // Impostazione della prima password (o di una nuova) con il link ricevuto dal coordinatore.
+    public function impostaPassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email'    => 'required|email',
+            'token'    => 'required|string',
+            'password' => ['required', 'string', 'confirmed', Password::min(10)->letters()->numbers()],
+        ], [
+            'password.confirmed' => 'Le due password non coincidono.',
+            'password.min'       => 'La password deve avere almeno 10 caratteri.',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+        $valido = $user && $user->invito_hash && $user->invito_scade_il?->isFuture()
+            && hash_equals($user->invito_hash, hash('sha256', (string) $request->token));
+
+        if (! $valido) {
+            throw ValidationException::withMessages(['token' => ['Link non valido o scaduto: chiedine uno nuovo a un coordinatore.']]);
+        }
+
+        $user->password = $request->password;
+        $user->forceFill(['invito_hash' => null, 'invito_scade_il' => null])->save();
+        $user->tokens()->delete();
+        AuditLog::record('password_set', $user);
 
         return response()->json(['ok' => true]);
     }

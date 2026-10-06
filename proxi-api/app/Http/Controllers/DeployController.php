@@ -75,6 +75,8 @@ class DeployController extends Controller
             'persona_telefoni' => ['numero'],
             'persona_servizio' => ['ruolo', 'principale'],
             'audit_logs' => ['action', 'auditable_type'],
+            'persona_contratti' => ['persona_id', 'data_inizio', 'iban', 'avs'],
+            'users' => ['persona_id', 'attivo', 'invito_hash', 'ultimo_accesso_il'],
             'vocaboli' => ['categoria', 'valore'],
             'persona_profili' => ['persona_id', 'storia_medica'],
             'persona_sostanze' => ['sostanza', 'frequenza'],

@@ -7,7 +7,10 @@ import { SelectVoce } from '../components/SelectVoce'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { DateField } from '../components/DateFields'
 import { Tag } from '../components/Tag'
+import { Titolo, BtnModifica, BarraSalva, etichetta, vuoto, testoStile as testo, campo, ghost, btn as btnPiccolo } from '../components/SchedaUi'
 import { useScheda, useSalvaScheda, useDiario } from '../hooks/useSchedaUtente'
+import { useUpdatePersona } from '../hooks/usePersone'
+import { NoteCampi, noteDa, datiNote, type NoteBozza } from '../components/PersonaCampi'
 import { getCurrentUser } from '../lib/api-client'
 import type { Persona, ProfiloUtente, Sostanza, VoceDiario } from '../types'
 
@@ -166,71 +169,73 @@ export function InfoPanel({ persona }: { persona: Persona }) {
 export function NotePanel({ persona }: { persona: Persona }) {
   const { data, isLoading, error } = useScheda(persona.id)
   const salva = useSalvaScheda(persona.id)
+  const aggiornaPersona = useUpdatePersona(persona.id)
   const [modifica, setModifica] = useState(false)
   const [testi, setTesti] = useState<Partial<ProfiloUtente>>({})
+  const [generali, setGenerali] = useState<NoteBozza>(() => noteDa(persona))
   const [errore, setErrore] = useState('')
+
+  function inizia() {
+    if (!data) return
+    setTesti(Object.fromEntries(AREE_NOTE.map(x => [x.key, data.profilo[x.key]])))
+    setGenerali(noteDa(persona))
+    setErrore('')
+    setModifica(true)
+  }
+
+  async function conferma() {
+    setErrore('')
+    try {
+      await aggiornaPersona.mutateAsync(datiNote(generali, true))
+      await salva.mutateAsync(testi)
+      setModifica(false)
+    } catch (e) {
+      setErrore((e as Error).message || 'Errore nel salvataggio')
+    }
+  }
+
+  if (!data) return <Card padding="14px 16px"><Caricamento isLoading={isLoading} error={error} /></Card>
+
+  if (modifica) {
+    return (
+      <>
+        <Card padding="14px 16px">
+          <Titolo titolo="Bisogni e note generali" />
+          <NoteCampi value={generali} onChange={p => setGenerali(g => ({ ...g, ...p }))} utente />
+        </Card>
+        {AREE_NOTE.map(a => (
+          <Card key={a.key} padding="14px 16px">
+            <Titolo titolo={a.label} />
+            <textarea
+              value={testi[a.key] ?? ''}
+              onChange={e => setTesti(t => ({ ...t, [a.key]: e.target.value }))}
+              rows={5}
+              style={{ ...campo, resize: 'vertical', lineHeight: 1.55 }}
+            />
+          </Card>
+        ))}
+        <BarraSalva errore={errore} caricamento={salva.isPending || aggiornaPersona.isPending} onAnnulla={() => setModifica(false)} onSalva={conferma} />
+      </>
+    )
+  }
 
   return (
     <>
-      {persona.bisogni && persona.bisogni.length > 0 && (
-        <Card padding="14px 16px">
-          <Titolo titolo="Bisogni attivi" />
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+      <Card padding="14px 16px">
+        <Titolo titolo="Bisogni e note generali" azione={<BtnModifica onClick={inizia} />} />
+        {persona.bisogni && persona.bisogni.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: persona.note ? 10 : 0 }}>
             {persona.bisogni.map(b => <Tag key={b} label={b} />)}
           </div>
+        )}
+        {persona.note ? <p style={testo}>{persona.note}</p> : !persona.bisogni?.length && <p style={vuoto}>Nessun bisogno o nota inseriti</p>}
+      </Card>
+      {AREE_NOTE.map(a => (
+        <Card key={a.key} padding="14px 16px">
+          <Titolo titolo={a.label} />
+          {data.profilo[a.key] ? <p style={testo}>{data.profilo[a.key]}</p> : <p style={vuoto}>Nessuna nota</p>}
         </Card>
-      )}
-      {persona.note && (
-        <Card padding="14px 16px">
-          <Titolo titolo="Note generali" />
-          <p style={testo}>{persona.note}</p>
-        </Card>
-      )}
-
-      {!data ? (
-        <Card padding="14px 16px"><Caricamento isLoading={isLoading} error={error} /></Card>
-      ) : !modifica ? (
-        <>
-          {AREE_NOTE.map((a, i) => (
-            <Card key={a.key} padding="14px 16px">
-              <Titolo
-                titolo={a.label}
-                azione={i === 0 ? <BtnModifica onClick={() => {
-                  setTesti(Object.fromEntries(AREE_NOTE.map(x => [x.key, data.profilo[x.key]])))
-                  setErrore('')
-                  setModifica(true)
-                }} /> : undefined}
-              />
-              {data.profilo[a.key]
-                ? <p style={testo}>{data.profilo[a.key]}</p>
-                : <p style={vuoto}>Nessuna nota</p>}
-            </Card>
-          ))}
-        </>
-      ) : (
-        <>
-          {AREE_NOTE.map(a => (
-            <Card key={a.key} padding="14px 16px">
-              <Titolo titolo={a.label} />
-              <textarea
-                value={testi[a.key] ?? ''}
-                onChange={e => setTesti(t => ({ ...t, [a.key]: e.target.value }))}
-                rows={5}
-                style={{ ...campo, resize: 'vertical', lineHeight: 1.55 }}
-              />
-            </Card>
-          ))}
-          <BarraSalva
-            errore={errore} caricamento={salva.isPending}
-            onAnnulla={() => setModifica(false)}
-            onSalva={async () => {
-              setErrore('')
-              try { await salva.mutateAsync(testi); setModifica(false) }
-              catch (e) { setErrore((e as Error).message || 'Errore nel salvataggio') }
-            }}
-          />
-        </>
-      )}
+      ))}
     </>
   )
 }
@@ -360,62 +365,7 @@ export function DiarioPanel({ persona }: { persona: Persona }) {
 
 // ─── elementi comuni ──────────────────────────────────────────────────────
 
-function Titolo({ titolo, azione, conto }: { titolo: string; azione?: React.ReactNode; conto?: number }) {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-      <span className="prox-label">{titolo}{conto !== undefined && <span style={{ marginLeft: 8, fontWeight: 500 }}>{conto}</span>}</span>
-      {azione}
-    </div>
-  )
-}
-
-function BtnModifica({ onClick }: { onClick: () => void }) {
-  return (
-    <button onClick={onClick} style={{
-      display: 'flex', alignItems: 'center', gap: 4, border: 'none', background: 'none',
-      color: 'var(--prox-accent)', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-    }}>
-      <Edit size={14} strokeWidth={2} /> Modifica
-    </button>
-  )
-}
-
-function BarraSalva({ errore, caricamento, onSalva, onAnnulla }: {
-  errore: string; caricamento: boolean; onSalva: () => void; onAnnulla: () => void
-}) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      {errore && <div style={{ fontSize: 13, color: 'var(--prox-danger)' }}>{errore}</div>}
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={onAnnulla} style={{ ...btnPiccolo, flex: 1, padding: '12px 0' }}>Annulla</button>
-        <button onClick={onSalva} disabled={caricamento} style={{
-          flex: 2, padding: '12px 0', borderRadius: 999, border: 'none', cursor: 'pointer',
-          background: 'var(--prox-accent)', color: '#fff', fontSize: 15, fontWeight: 700, opacity: caricamento ? 0.6 : 1,
-        }}>
-          {caricamento ? 'Salvo…' : 'Salva'}
-        </button>
-      </div>
-    </div>
-  )
-}
-
-const etichetta: React.CSSProperties = { fontSize: 11.5, color: 'var(--prox-ink3)', marginBottom: 3, fontWeight: 500 }
-const vuoto: React.CSSProperties = { fontSize: 13, color: 'var(--prox-ink3)', margin: 0 }
-const testo: React.CSSProperties = { fontSize: 14, color: 'var(--prox-ink2)', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }
-const campo: React.CSSProperties = {
-  width: '100%', boxSizing: 'border-box', padding: '10px 12px', borderRadius: 12,
-  border: '1px solid var(--prox-line)', background: 'var(--prox-surface)',
-  fontSize: 14, color: 'var(--prox-ink)', outline: 'none', fontFamily: 'inherit',
-}
-const ghost: React.CSSProperties = {
-  border: 'none', background: 'none', cursor: 'pointer', color: 'var(--prox-ink2)',
-  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 6,
-}
 const aggiungi: React.CSSProperties = {
   alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: 5, border: '1px dashed var(--prox-line)',
   background: 'transparent', cursor: 'pointer', borderRadius: 999, padding: '6px 14px', fontSize: 13, color: 'var(--prox-ink2)',
-}
-const btnPiccolo: React.CSSProperties = {
-  padding: '8px 18px', borderRadius: 999, border: '1px solid var(--prox-line)', background: 'var(--prox-surface2)',
-  color: 'var(--prox-ink2)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
 }

@@ -54,6 +54,16 @@ class Persona extends Model
         return $this->hasMany(PersonaTelefono::class)->orderBy('ordine');
     }
 
+    public function account(): HasOne
+    {
+        return $this->hasOne(User::class, 'persona_id');
+    }
+
+    public function contratti(): HasMany
+    {
+        return $this->hasMany(PersonaContratto::class)->orderByDesc('data_inizio');
+    }
+
     public function profilo(): HasOne
     {
         return $this->hasOne(PersonaProfilo::class);

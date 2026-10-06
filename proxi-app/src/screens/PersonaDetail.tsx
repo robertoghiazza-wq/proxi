@@ -2,36 +2,42 @@
 
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ChevronLeft, Phone, Edit, Plus, AlertTriangle, Trash2, Mail, MapPin, Cake } from 'lucide-react'
+import { ChevronLeft, Phone, Edit, Plus, AlertTriangle, Trash2, Mail, MapPin } from 'lucide-react'
 import { Avatar } from '../components/Avatar'
 import { Tag } from '../components/Tag'
 import { Card } from '../components/Card'
 import { EventTypeDot } from '../components/EventTypeDot'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { InfoPanel, NotePanel, DiarioPanel } from './SchedaUtentePanels'
+import { ContrattoPanel, AccountPanel } from './SchedaDipendentePanels'
+import { BarraTab, BarraSalva, BtnModifica, Titolo, Voce, testoStile } from '../components/SchedaUi'
+import {
+  AnagraficaCampi, ContattiCampi, NoteCampi, anagraficaDa, contattiDa, noteDa,
+  datiAnagrafica, datiContatti, datiNote,
+} from '../components/PersonaCampi'
+import { getCurrentUser } from '../lib/api-client'
 import { colorForTipo } from '../lib/mock-data'
 import { nomeAvatar, nomePersona, etichettaRuolo, etichettaTipo } from '../lib/persona'
-import { usePersona, useDeletePersona } from '../hooks/usePersone'
+import { usePersona, useDeletePersona, useUpdatePersona } from '../hooks/usePersone'
 import { useRuoli } from '../hooks/useRuoli'
 import type { Persona, Evento } from '../types'
 
 const TAG_VULNERABILI = ['senza fissa dimora', 'minore', 'dipendenza', 'prostituzione']
 
-type TabKey = 'contatti' | 'eventi' | 'servizi' | 'info' | 'note' | 'diario'
+type TabKey = 'anagrafica' | 'contatti' | 'eventi' | 'servizi' | 'info' | 'note' | 'diario' | 'contratto' | 'user'
 
-function tabPer(p: Persona): { key: TabKey; label: string }[] {
+function tabPer(p: Persona, gestore: boolean): { key: TabKey; label: string }[] {
+  const base = [{ key: 'anagrafica' as const, label: 'Anagrafica' }, { key: 'contatti' as const, label: 'Contatti' }]
   if (p.ruolo === 'utente') {
+    return [...base, { key: 'eventi', label: 'Eventi' }, { key: 'info', label: 'Info' }, { key: 'note', label: 'Note' }, { key: 'diario', label: 'Diario' }]
+  }
+  if (p.ruolo === 'dipendente') {
     return [
-      { key: 'contatti', label: 'Contatti' }, { key: 'eventi', label: 'Eventi' }, { key: 'info', label: 'Info' },
-      { key: 'note', label: 'Note' }, { key: 'diario', label: 'Diario' },
+      ...base, { key: 'eventi', label: 'Eventi' }, { key: 'note', label: 'Note' },
+      ...(gestore ? [{ key: 'contratto' as const, label: 'Contratto' }, { key: 'user' as const, label: 'User' }] : []),
     ]
   }
-  return [
-    { key: 'contatti', label: 'Contatti' },
-    ...(p.ruolo === 'rete' ? [{ key: 'servizi' as const, label: 'Servizi' }] : []),
-    { key: 'eventi', label: 'Eventi' },
-    { key: 'note', label: 'Note' },
-  ]
+  return [...base, { key: 'servizi', label: 'Servizi' }, { key: 'eventi', label: 'Eventi' }, { key: 'note', label: 'Note' }]
 }
 
 function ore(min: number) {
@@ -51,14 +57,16 @@ function inizioSettimana(): string {
   return d.toISOString().slice(0, 10)
 }
 
-export function PersonaDetail() {
+export function PersonaDetail({ apriInModifica }: { apriInModifica?: boolean }) {
   const { id } = useParams()
   const navigate = useNavigate()
   const { data: persona, isLoading } = usePersona(Number(id))
   const { data: ruoli = [] } = useRuoli()
   const elimina = useDeletePersona()
   const [confermaElimina, setConfermaElimina] = useState(false)
-  const [tab, setTab] = useState<TabKey>('contatti')
+  const [tab, setTab] = useState<TabKey>(apriInModifica ? 'anagrafica' : 'contatti')
+  const [modificaAnag, setModificaAnag] = useState(!!apriInModifica)
+  const gestore = ['coordinatore', 'admin'].includes(getCurrentUser()?.role ?? '')
 
   if (isLoading) {
     return <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Caricamento…</div>
@@ -79,8 +87,8 @@ export function PersonaDetail() {
   const isVuln = persona.tag?.some(t => TAG_VULNERABILI.includes(t))
   const name = nomePersona(persona)
   const ruolo = etichettaRuolo(ruoli.find(r => r.id === persona.ruolo_id), persona.sesso)
-  const tabs = tabPer(persona)
-  const tabAttiva = tabs.some(t => t.key === tab) ? tab : 'contatti'
+  const tabs = tabPer(persona, gestore)
+  const tabAttiva = tabs.some(t => t.key === tab) ? tab : 'anagrafica'
 
   return (
     <div style={{ background: 'var(--prox-bg)', minHeight: '100svh' }}>
@@ -89,7 +97,7 @@ export function PersonaDetail() {
         padding: '0 16px 14px',
       }}>
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/persone')}
           style={{
             display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer',
             color: 'var(--prox-ink2)', fontSize: 14, fontWeight: 500, padding: '16px 0 0',
@@ -114,7 +122,6 @@ export function PersonaDetail() {
               {[
                 etichettaTipo(persona.ruolo) + (ruolo ? ` · ${ruolo}` : ''),
                 persona.eta != null ? `${persona.eta} anni` : null,
-                persona.sesso === 'M' ? 'M' : persona.sesso === 'F' ? 'F' : null,
                 persona.lingue?.join(' · '),
               ].filter(Boolean).join(' · ')}
             </div>
@@ -146,32 +153,16 @@ export function PersonaDetail() {
               <Phone size={18} strokeWidth={1.75} color="var(--prox-ink2)" />
             </a>
           )}
-          <button onClick={() => navigate(`/persone/${persona.id}/modifica`)} style={iconBtnStyle} aria-label="Modifica persona">
+          <button onClick={() => { setTab('anagrafica'); setModificaAnag(true) }} style={iconBtnStyle} aria-label="Modifica anagrafica">
             <Edit size={18} strokeWidth={1.75} color="var(--prox-ink2)" />
           </button>
         </div>
       </div>
 
-      <div style={{
-        display: 'flex', background: 'var(--prox-surface)', borderTop: '1px solid var(--prox-line)',
-        borderBottom: '1px solid var(--prox-line)', overflowX: 'auto',
-      }}>
-        {tabs.map(t => {
-          const attiva = t.key === tabAttiva
-          return (
-            <button key={t.key} onClick={() => setTab(t.key)} style={{
-              flex: 1, padding: '12px 14px', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
-              background: 'transparent', fontSize: 14, fontWeight: attiva ? 700 : 500,
-              color: attiva ? 'var(--prox-accent)' : 'var(--prox-ink3)',
-              borderBottom: `2px solid ${attiva ? 'var(--prox-accent)' : 'transparent'}`,
-            }}>
-              {t.label}
-            </button>
-          )
-        })}
-      </div>
+      <BarraTab tabs={tabs} attiva={tabAttiva} onScegli={setTab} />
 
       <div style={{ padding: '14px 16px 120px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {tabAttiva === 'anagrafica' && <PannelloAnagrafica persona={persona} modifica={modificaAnag} setModifica={setModificaAnag} />}
         {tabAttiva === 'contatti' && <PannelloContatti persona={persona} />}
         {tabAttiva === 'eventi' && <PannelloEventi eventi={persona.eventi ?? []} onApri={eid => navigate(`/eventi/${eid}`)} />}
         {tabAttiva === 'servizi' && (
@@ -193,22 +184,9 @@ export function PersonaDetail() {
         {tabAttiva === 'info' && persona.ruolo === 'utente' && <InfoPanel persona={persona} />}
         {tabAttiva === 'diario' && persona.ruolo === 'utente' && <DiarioPanel persona={persona} />}
         {tabAttiva === 'note' && persona.ruolo === 'utente' && <NotePanel persona={persona} />}
-        {tabAttiva === 'note' && persona.ruolo !== 'utente' && (
-          <>
-            {persona.bisogni && persona.bisogni.length > 0 && (
-              <Section title="Bisogni attivi">
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {persona.bisogni.map(b => <Tag key={b} label={b} />)}
-                </div>
-              </Section>
-            )}
-            <Section title="Note">
-              {persona.note
-                ? <p style={{ fontSize: 14, color: 'var(--prox-ink2)', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>{persona.note}</p>
-                : <Vuoto>Nessuna nota</Vuoto>}
-            </Section>
-          </>
-        )}
+        {tabAttiva === 'note' && persona.ruolo !== 'utente' && <PannelloNote persona={persona} />}
+        {tabAttiva === 'contratto' && persona.ruolo === 'dipendente' && gestore && <ContrattoPanel persona={persona} />}
+        {tabAttiva === 'user' && persona.ruolo === 'dipendente' && gestore && <AccountPanel persona={persona} />}
 
         <button
           onClick={() => setConfermaElimina(true)}
@@ -238,20 +216,133 @@ export function PersonaDetail() {
   )
 }
 
+const dataBreve = (d: string) => new Date(d.slice(0, 10) + 'T00:00:00').toLocaleDateString('it-CH', { day: 'numeric', month: 'long', year: 'numeric' })
+
+function PannelloAnagrafica({ persona, modifica, setModifica }: { persona: Persona; modifica: boolean; setModifica: (b: boolean) => void }) {
+  const { data: ruoli = [] } = useRuoli()
+  const aggiorna = useUpdatePersona(persona.id)
+  const [bozza, setBozza] = useState(() => anagraficaDa(persona))
+  const [errore, setErrore] = useState('')
+
+  async function salva() {
+    const r = datiAnagrafica(bozza)
+    if ('errore' in r) { setErrore(r.errore); return }
+    setErrore('')
+    try { await aggiorna.mutateAsync(r.dati); setModifica(false) }
+    catch (e) { setErrore((e as Error).message || 'Errore nel salvataggio') }
+  }
+
+  if (modifica) {
+    return (
+      <>
+        <Card padding="14px 16px">
+          <Titolo titolo="Anagrafica" />
+          <AnagraficaCampi value={bozza} onChange={p => setBozza(b => ({ ...b, ...p }))} />
+        </Card>
+        <BarraSalva errore={errore} caricamento={aggiorna.isPending} onSalva={salva} onAnnulla={() => { setBozza(anagraficaDa(persona)); setErrore(''); setModifica(false) }} />
+      </>
+    )
+  }
+
+  const ruolo = etichettaRuolo(ruoli.find(r => r.id === persona.ruolo_id), persona.sesso)
+  const sesso = persona.sesso === 'M' ? 'Maschio' : persona.sesso === 'F' ? 'Femmina' : persona.sesso === 'altro' ? 'Altro' : '—'
+  return (
+    <Card padding="14px 16px">
+      <Titolo titolo="Anagrafica" azione={<BtnModifica onClick={() => { setBozza(anagraficaDa(persona)); setModifica(true) }} />} />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px 16px' }}>
+        <Voce l="Tipo" v={etichettaTipo(persona.ruolo)} />
+        <Voce l="Ruolo" v={ruolo || '—'} />
+        <Voce l="Nome" v={persona.nome ?? '—'} />
+        <Voce l="Cognome" v={persona.cognome ?? '—'} />
+        <Voce l="Soprannome" v={persona.soprannome ?? '—'} />
+        <Voce l="Sesso" v={sesso} />
+        <Voce l="Data di nascita" v={persona.data_nascita ? dataBreve(persona.data_nascita) : '—'} />
+        <Voce l="Età" v={persona.eta != null ? `${persona.eta} anni${persona.data_nascita ? '' : ' (circa)'}` : '—'} />
+        <Voce l="Persona anonima" v={persona.anonimo ? 'Sì' : 'No'} />
+      </div>
+      <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div>
+          <div style={{ fontSize: 11.5, color: 'var(--prox-ink3)', marginBottom: 4, fontWeight: 500 }}>Lingue</div>
+          {persona.lingue?.length ? <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>{persona.lingue.map(l => <Tag key={l} label={l} soft />)}</div> : <Vuoto>—</Vuoto>}
+        </div>
+        <div>
+          <div style={{ fontSize: 11.5, color: 'var(--prox-ink3)', marginBottom: 4, fontWeight: 500 }}>Tag</div>
+          {persona.tag?.length
+            ? <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>{persona.tag.map(t => <Tag key={t} label={t} warn={TAG_VULNERABILI.includes(t)} soft={!TAG_VULNERABILI.includes(t)} />)}</div>
+            : <Vuoto>—</Vuoto>}
+        </div>
+      </div>
+    </Card>
+  )
+}
+
+function PannelloNote({ persona }: { persona: Persona }) {
+  const aggiorna = useUpdatePersona(persona.id)
+  const [modifica, setModifica] = useState(false)
+  const [bozza, setBozza] = useState(() => noteDa(persona))
+  const [errore, setErrore] = useState('')
+
+  if (modifica) {
+    return (
+      <>
+        <Card padding="14px 16px">
+          <Titolo titolo="Note" />
+          <NoteCampi value={bozza} onChange={p => setBozza(b => ({ ...b, ...p }))} utente={false} />
+        </Card>
+        <BarraSalva errore={errore} caricamento={aggiorna.isPending} onAnnulla={() => { setModifica(false); setErrore('') }}
+          onSalva={async () => {
+            setErrore('')
+            try { await aggiorna.mutateAsync(datiNote(bozza, false)); setModifica(false) }
+            catch (e) { setErrore((e as Error).message || 'Errore nel salvataggio') }
+          }} />
+      </>
+    )
+  }
+  return (
+    <Card padding="14px 16px">
+      <Titolo titolo="Note" azione={<BtnModifica onClick={() => { setBozza(noteDa(persona)); setModifica(true) }} />} />
+      {persona.note ? <p style={testoStile}>{persona.note}</p> : <Vuoto>Nessuna nota</Vuoto>}
+    </Card>
+  )
+}
+
 function PannelloContatti({ persona }: { persona: Persona }) {
+  const aggiorna = useUpdatePersona(persona.id)
+  const [modifica, setModifica] = useState(false)
+  const [bozza, setBozza] = useState(() => contattiDa(persona))
+  const [errore, setErrore] = useState('')
+
+  if (modifica) {
+    return (
+      <>
+        <Card padding="14px 16px">
+          <Titolo titolo="Contatti" />
+          <ContattiCampi value={bozza} onChange={p => setBozza(b => ({ ...b, ...p }))} />
+        </Card>
+        <BarraSalva errore={errore} caricamento={aggiorna.isPending} onAnnulla={() => { setModifica(false); setErrore('') }}
+          onSalva={async () => {
+            setErrore('')
+            const r = await datiContatti(bozza)
+            if ('errore' in r) { setErrore(r.errore); return }
+            try { await aggiorna.mutateAsync(r.dati); setModifica(false) }
+            catch (e) { setErrore((e as Error).message || 'Errore nel salvataggio') }
+          }} />
+      </>
+    )
+  }
+
   const telefoni = persona.telefoni?.length ? persona.telefoni : persona.telefono ? [{ etichetta: null, numero: persona.telefono }] : []
   const comune = [persona.npa, persona.localita].filter(Boolean).join(' ')
   const haIndirizzo = !!(persona.indirizzo || comune)
-  const vuoto = !persona.email && telefoni.length === 0 && !haIndirizzo && !persona.data_nascita && !persona.note_contatti
-
-  if (vuoto) {
-    return <Section title="Contatti"><Vuoto>Nessun contatto inserito. Aggiungili con “Modifica”.</Vuoto></Section>
-  }
+  const vuotoTutto = !persona.email && telefoni.length === 0 && !haIndirizzo && !persona.note_contatti
+  const avvia = () => { setBozza(contattiDa(persona)); setErrore(''); setModifica(true) }
 
   return (
     <>
-      {(persona.email || telefoni.length > 0 || persona.data_nascita) && (
-        <Section title="Recapiti">
+      {vuotoTutto && <Section title="Contatti" azione={<BtnModifica onClick={avvia} />}><Vuoto>Nessun contatto inserito.</Vuoto></Section>}
+
+      {(persona.email || telefoni.length > 0) && (
+        <Section title="Recapiti" azione={<BtnModifica onClick={avvia} />}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 14 }}>
             {telefoni.map((t, i) => (
               <a key={i} href={`tel:${t.numero.replace(/\s+/g, '')}`} style={riga}>
@@ -259,21 +350,13 @@ function PannelloContatti({ persona }: { persona: Persona }) {
                 <span>{t.numero}{t.etichetta ? <span style={{ color: 'var(--prox-ink3)' }}> · {t.etichetta}</span> : null}</span>
               </a>
             ))}
-            {persona.email && (
-              <a href={`mailto:${persona.email}`} style={riga}><Mail size={15} strokeWidth={1.75} /> {persona.email}</a>
-            )}
-            {persona.data_nascita && (
-              <div style={{ ...riga, cursor: 'default' }}>
-                <Cake size={15} strokeWidth={1.75} />
-                <span>{fmtData(persona.data_nascita)}{persona.eta != null ? <span style={{ color: 'var(--prox-ink3)' }}> · {persona.eta} anni</span> : null}</span>
-              </div>
-            )}
+            {persona.email && <a href={`mailto:${persona.email}`} style={riga}><Mail size={15} strokeWidth={1.75} /> {persona.email}</a>}
           </div>
         </Section>
       )}
 
       {haIndirizzo && (
-        <Section title="Indirizzo">
+        <Section title="Indirizzo" azione={!persona.email && telefoni.length === 0 ? <BtnModifica onClick={avvia} /> : undefined}>
           <div style={{ ...riga, alignItems: 'flex-start', cursor: 'default', fontSize: 14 }}>
             <MapPin size={15} strokeWidth={1.75} style={{ marginTop: 3 }} />
             <div>
@@ -291,9 +374,7 @@ function PannelloContatti({ persona }: { persona: Persona }) {
       )}
 
       {persona.note_contatti && (
-        <Section title="Note sui contatti">
-          <p style={{ fontSize: 14, color: 'var(--prox-ink2)', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>{persona.note_contatti}</p>
-        </Section>
+        <Section title="Note sui contatti"><p style={testoStile}>{persona.note_contatti}</p></Section>
       )}
     </>
   )
@@ -368,12 +449,12 @@ function Vuoto({ children }: { children: React.ReactNode }) {
   return <p style={{ fontSize: 13, color: 'var(--prox-ink3)', margin: 0 }}>{children}</p>
 }
 
-function Section({ title, count, children }: { title: string; count?: number; children: React.ReactNode }) {
+function Section({ title, count, azione, children }: { title: string; count?: number; azione?: React.ReactNode; children: React.ReactNode }) {
   return (
     <Card padding="14px 16px">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
         <span className="prox-label">{title}</span>
-        {count !== undefined && <span style={{ fontSize: 12, color: 'var(--prox-ink3)' }}>{count}</span>}
+        {azione ?? (count !== undefined && <span style={{ fontSize: 12, color: 'var(--prox-ink3)' }}>{count}</span>)}
       </div>
       {children}
     </Card>

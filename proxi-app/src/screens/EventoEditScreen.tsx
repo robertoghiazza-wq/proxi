@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { X } from 'lucide-react'
 import { StepTipo, StepQuando, DURATE, type WizardState, type SetFn } from './NuovoEventoScreen'
 import { LuogoPicker } from '../components/LuogoPicker'
+import { BarraTab } from '../components/SchedaUi'
 import { PersonePicker } from '../components/PersonePicker'
 import { useEvento, useUpdateEvento } from '../hooks/useEventi'
 import type { Evento, StatoEvento } from '../types'
@@ -53,6 +54,7 @@ function EventoForm({ evento }: { evento: Evento }) {
   const [luogoId, setLuogoId] = useState<number | null>(evento.luogo_id)
   const [stato, setStato] = useState<StatoEvento>(evento.stato)
   const [errore, setErrore] = useState('')
+  const [tab, setTab] = useState<'tipo' | 'quando' | 'luogo' | 'persone' | 'note'>('tipo')
 
   const set: SetFn = (key, val) => setForm(f => ({ ...f, [key]: val }))
 
@@ -102,6 +104,18 @@ function EventoForm({ evento }: { evento: Evento }) {
         <div style={{ width: 36 }} />
       </div>
 
+      <BarraTab
+        tabs={[
+          { key: 'tipo', label: 'Tipo' },
+          { key: 'quando', label: 'Quando' },
+          { key: 'luogo', label: 'Luogo', avviso: luogoId === null },
+          { key: 'persone', label: 'Persone', avviso: form.personeIds.length === 0 },
+          { key: 'note', label: 'Note', avviso: form.note.trim() === '' },
+        ]}
+        attiva={tab}
+        onScegli={setTab}
+      />
+
       {errore && (
         <div style={{
           padding: '8px 16px', fontSize: 13, fontWeight: 500,
@@ -111,47 +125,47 @@ function EventoForm({ evento }: { evento: Evento }) {
       )}
 
       <div style={{ flex: 1, overflowY: 'auto' }}>
-        <Section label="Tipo"><StepTipo form={form} set={set} /></Section>
+        {tab === 'tipo' && <StepTipo form={form} set={set} />}
 
-        <Section label="Quando">
-          <StepQuando form={form} set={set} allowFuture />
-          {!DURATE.includes(form.durata) && (
-            <p style={{ fontSize: 12.5, color: 'var(--prox-ink3)', margin: '0 16px 16px' }}>
-              Durata attuale: {form.durata} min — scegline una per cambiarla.
-            </p>
-          )}
-        </Section>
+        {tab === 'quando' && (
+          <>
+            <StepQuando form={form} set={set} allowFuture />
+            {!DURATE.includes(form.durata) && (
+              <p style={{ fontSize: 12.5, color: 'var(--prox-ink3)', margin: '-8px 16px 16px' }}>
+                Durata attuale: {form.durata} min — scegline una per cambiarla.
+              </p>
+            )}
+            <div style={{ padding: '0 16px 24px' }}>
+              <div className="prox-label" style={{ marginBottom: 8 }}>Stato</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {STATI.map(({ key, label }) => {
+                  const active = stato === key
+                  return (
+                    <button key={key} onClick={() => setStato(key)} style={{
+                      padding: '9px 18px', borderRadius: 999, fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                      border: `1.5px solid ${active ? 'var(--prox-accent)' : 'var(--prox-line)'}`,
+                      background: active ? 'var(--prox-accent)' : 'var(--prox-surface)',
+                      color: active ? '#fff' : 'var(--prox-ink2)',
+                    }}>
+                      {label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </>
+        )}
 
-        <Section label="Stato">
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '4px 16px 18px' }}>
-            {STATI.map(({ key, label }) => {
-              const active = stato === key
-              return (
-                <button key={key} onClick={() => setStato(key)} style={{
-                  padding: '9px 18px', borderRadius: 999, fontSize: 14, fontWeight: 600, cursor: 'pointer',
-                  border: `1.5px solid ${active ? 'var(--prox-accent)' : 'var(--prox-line)'}`,
-                  background: active ? 'var(--prox-accent)' : 'var(--prox-surface)',
-                  color: active ? '#fff' : 'var(--prox-ink2)',
-                }}>
-                  {label}
-                </button>
-              )
-            })}
-          </div>
-        </Section>
+        {tab === 'luogo' && <LuogoPicker value={luogoId} onChange={setLuogoId} />}
 
-        <Section label="Luogo *"><LuogoPicker value={luogoId} onChange={setLuogoId} /></Section>
+        {tab === 'persone' && <PersonePicker selectedIds={form.personeIds} onToggle={togglePersona} />}
 
-        <Section label="Persone" missing={form.personeIds.length === 0}>
-          <PersonePicker selectedIds={form.personeIds} onToggle={togglePersona} />
-        </Section>
-
-        <Section label="Note" missing={form.note.trim() === ''}>
-          <div style={{ padding: '4px 16px 24px' }}>
+        {tab === 'note' && (
+          <div style={{ padding: '16px 16px 24px' }}>
             <textarea
               value={form.note}
               onChange={e => set('note', e.target.value)}
-              rows={5}
+              rows={8}
               placeholder="Osservazioni, contesto, bisogni emersi, follow-up…"
               style={{
                 width: '100%', boxSizing: 'border-box', border: '1.5px solid var(--prox-line)',
@@ -160,8 +174,11 @@ function EventoForm({ evento }: { evento: Evento }) {
                 fontFamily: "'Inter', sans-serif", lineHeight: 1.6,
               }}
             />
+            <p style={{ fontSize: 12.5, color: 'var(--prox-ink3)', margin: '8px 0 0' }}>
+              Le note non sono obbligatorie, ma senza note l’evento resta “da completare”.
+            </p>
           </div>
-        </Section>
+        )}
       </div>
 
       <div style={{
@@ -176,25 +193,6 @@ function EventoForm({ evento }: { evento: Evento }) {
           {update.isPending ? 'Salvo…' : 'Salva modifiche'}
         </button>
       </div>
-    </div>
-  )
-}
-
-function Section({ label, missing, children }: { label: string; missing?: boolean; children: React.ReactNode }) {
-  return (
-    <div style={{ marginBottom: 8 }}>
-      <div style={{ padding: '16px 16px 6px', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span className="prox-label">{label}</span>
-        {missing && (
-          <span style={{
-            fontSize: 10.5, fontWeight: 700, color: 'oklch(0.50 0.13 70)',
-            background: 'oklch(0.95 0.06 85)', borderRadius: 999, padding: '1px 7px',
-          }}>
-            manca per essere completo
-          </span>
-        )}
-      </div>
-      {children}
     </div>
   )
 }

@@ -15,6 +15,8 @@ Route::middleware('throttle:10,1')->prefix('deploy')->group(function () {
 // Auth
 Route::prefix('auth')->group(function () {
     Route::post('/login', [\App\Http\Controllers\Api\AuthController::class, 'login']);
+    Route::post('/imposta-password', [\App\Http\Controllers\Api\AuthController::class, 'impostaPassword'])
+        ->middleware('throttle:10,1');
     Route::post('/logout', [\App\Http\Controllers\Api\AuthController::class, 'logout'])
         ->middleware('auth:sanctum');
     Route::post('/password', [\App\Http\Controllers\Api\AuthController::class, 'cambiaPassword'])
@@ -43,6 +45,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/persone/{id}/diario', [\App\Http\Controllers\Api\PersonaDiarioController::class, 'store']);
     Route::patch('/diario/{id}', [\App\Http\Controllers\Api\PersonaDiarioController::class, 'update']);
     Route::delete('/diario/{id}', [\App\Http\Controllers\Api\PersonaDiarioController::class, 'destroy']);
+
+    // Dipendenti: contratti (dati sensibili) e account di accesso, solo coordinatori/admin
+    Route::get('/persone/{id}/contratti', [\App\Http\Controllers\Api\ContrattoController::class, 'index']);
+    Route::post('/persone/{id}/contratti', [\App\Http\Controllers\Api\ContrattoController::class, 'store']);
+    Route::patch('/contratti/{id}', [\App\Http\Controllers\Api\ContrattoController::class, 'update']);
+    Route::delete('/contratti/{id}', [\App\Http\Controllers\Api\ContrattoController::class, 'destroy']);
+    Route::get('/persone/{id}/account', [\App\Http\Controllers\Api\AccountController::class, 'show']);
+    Route::post('/persone/{id}/account', [\App\Http\Controllers\Api\AccountController::class, 'store']);
+    Route::patch('/persone/{id}/account', [\App\Http\Controllers\Api\AccountController::class, 'update']);
+    Route::post('/persone/{id}/account/reset', [\App\Http\Controllers\Api\AccountController::class, 'reset']);
 
     // Elenchi a tendina
     Route::apiResource('vocaboli', \App\Http\Controllers\Api\VocaboloController::class)->except('show');

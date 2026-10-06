@@ -7,7 +7,7 @@ interface DrawerProps {
   width?: number
 }
 
-export function Drawer({ open, onClose, children, width = 480 }: DrawerProps) {
+export function Drawer({ open, onClose, children, width = 600 }: DrawerProps) {
   const isDesktop = useIsDesktop()
 
   if (!open) return null

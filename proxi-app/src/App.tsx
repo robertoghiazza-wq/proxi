@@ -17,6 +17,7 @@ import { ServiziScreen }     from './screens/ServiziScreen'
 import { ServizioDetail }    from './screens/ServizioDetail'
 import { ServizioFormScreen } from './screens/ServizioFormScreen'
 import { ProfiloScreen }     from './screens/ProfiloScreen'
+import { ImpostaPasswordScreen } from './screens/ImpostaPasswordScreen'
 import { LoginScreen }       from './screens/LoginScreen'
 
 const queryClient = new QueryClient({
@@ -48,7 +49,7 @@ export default function App() {
           {/* Persone: lista + drawer dettaglio */}
           <Route path="/persone" element={<Auth><PersoneScreen /></Auth>}>
             <Route path="nuovo" element={<PersonaFormScreen />} />
-            <Route path=":id/modifica" element={<PersonaFormScreen />} />
+            <Route path=":id/modifica" element={<PersonaDetail apriInModifica />} />
             <Route path=":id" element={<PersonaDetail />} />
           </Route>
 
@@ -76,6 +77,7 @@ export default function App() {
           <Route path="/profilo" element={<Auth><ProfiloScreen /></Auth>} />
 
           <Route path="/login" element={<LoginScreen />} />
+          <Route path="/imposta-password" element={<ImpostaPasswordScreen />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

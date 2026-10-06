@@ -164,6 +164,30 @@ export interface SchedaUtente {
   diario: VoceDiario[]
 }
 
+export interface Contratto {
+  id: number
+  stipendio_annuo: string | null
+  grado: string | null
+  ore_settimanali: string | null
+  data_inizio: string
+  data_fine: string | null
+  iban: string | null
+  cassa_malati: string | null
+  avs: string | null
+  note: string | null
+}
+
+export interface AccountPersona {
+  id: number
+  email: string
+  role: Role
+  attivo: boolean
+  ultimo_accesso_il: string | null
+  invito_in_corso: boolean
+  invito_scaduto: boolean
+  invito_scade_il: string | null
+}
+
 export type StatoEvento = 'pianificato' | 'in_corso' | 'completato'
 
 export interface Evento {

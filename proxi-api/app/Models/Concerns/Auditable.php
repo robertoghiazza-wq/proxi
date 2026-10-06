@@ -35,10 +35,24 @@ trait Auditable
 
     protected function auditable(array $attributes): array
     {
-        return Arr::except($attributes, array_merge(
+        $out = Arr::except($attributes, array_merge(
             $this->getHidden(),
-            ['password', 'remember_token', 'created_at', 'updated_at'],
+            ['password', 'remember_token', 'invito_hash', 'created_at', 'updated_at'],
         ));
+
+        foreach ($this->auditMascherati() as $campo) {
+            if (array_key_exists($campo, $out)) {
+                $out[$campo] = '••••';
+            }
+        }
+
+        return $out;
+    }
+
+    // Campi sensibili: nel log compare solo che sono cambiati.
+    protected function auditMascherati(): array
+    {
+        return [];
     }
 
     // Dati collegati che il DB cancella a cascata e che vanno salvati prima.

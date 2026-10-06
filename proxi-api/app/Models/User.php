@@ -14,7 +14,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 #[Fillable(['name', 'email', 'password', 'institution_id', 'role', 'lingue'])]
-#[Hidden(['password', 'remember_token'])]
+#[Hidden(['password', 'remember_token', 'invito_hash'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -31,7 +31,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'lingue' => 'array',
+            'attivo' => 'boolean',
+            'invito_scade_il' => 'datetime',
+            'ultimo_accesso_il' => 'datetime',
         ];
+    }
+
+    public function persona(): BelongsTo
+    {
+        return $this->belongsTo(Persona::class);
     }
 
     public function institution(): BelongsTo
