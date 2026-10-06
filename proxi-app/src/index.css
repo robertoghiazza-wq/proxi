@@ -73,16 +73,16 @@ html, body {
 /* Sfondo bianco sotto tutto (se la tab bar non arriva al bordo, sotto non compare il grigio) */
 html { background: var(--prox-surface); }
 
+/* 100vh (non 100svh): su iPhone, nella PWA, se il documento è alto quanto la finestra "corta" iOS la lascia corta di quanto è alta la
+   fascia in alto, e la tab bar fissa resta sollevata. Con 100vh (altezza piena) la finestra si allinea al bordo fisico, come in Weekiosk. */
 body {
-  min-height: 100svh;
+  min-height: 100vh;
   background: var(--prox-bg);
 }
 
-/* Mobile: il documento non scorre (scorre solo l'area centrale dentro MobileLayout) */
-html.app-shell, html.app-shell body { height: 100%; overflow: hidden; }
 
 #root {
-  min-height: 100svh;
+  min-height: 100vh;
   padding-top: var(--sat);
 }
 

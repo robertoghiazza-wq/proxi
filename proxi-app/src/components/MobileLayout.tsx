@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Home, Users, Calendar, MapPin, User } from 'lucide-react'
 import { useIsDesktop } from '../hooks/useIsDesktop'
@@ -48,13 +48,6 @@ export function MobileLayout({ children }: MobileLayoutProps) {
     tocchi.current = [...tocchi.current.filter(t => ora - t < 3000), ora]
     if (tocchi.current.length >= 5) { tocchi.current = []; setDiag(d => !d) }
   }
-
-  // Su mobile il documento non scorre: scorre solo l'area centrale, così la tab bar sta sempre nello stesso punto
-  useEffect(() => {
-    if (isDesktop) return
-    document.documentElement.classList.add('app-shell')
-    return () => document.documentElement.classList.remove('app-shell')
-  }, [isDesktop])
 
   if (isDesktop) {
     return (
