@@ -1,6 +1,6 @@
 // Luoghi — lista con ricerca
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useMatch, Outlet } from 'react-router-dom'
 import { Search, Plus, List, Map as MapIcon, MapPin } from 'lucide-react'
 import { MobileLayout } from '../components/MobileLayout'
@@ -10,6 +10,7 @@ import { Card } from '../components/Card'
 import { LuogoThumb } from '../components/LuogoThumb'
 import { LuoghiMap } from '../components/LuoghiMap'
 import { TIPO_LUOGO_LABEL } from '../lib/mock-data'
+import { useIsDesktop } from '../hooks/useIsDesktop'
 import { useLuoghi } from '../hooks/useLuoghi'
 import type { TipoLuogo } from '../types'
 
@@ -27,6 +28,22 @@ export function LuoghiScreen() {
   const isDetailOpen = !!useMatch('/luoghi/:id/*') && !isNuovoOpen
   const [query, setQuery] = useState('')
   const [vista, setVista] = useState<'lista' | 'mappa'>('lista')
+  const isDesktop = useIsDesktop()
+
+  // La mappa occupa tutto il corpo: parte dove finisce l'intestazione fissa (misurata) e arriva in fondo
+  const headerRef = useRef<HTMLDivElement>(null)
+  const [sotto, setSotto] = useState(0)
+  useEffect(() => {
+    const el = headerRef.current
+    if (!el) return
+    const misura = () => setSotto(Math.round(el.getBoundingClientRect().bottom))
+    misura()
+    const ro = new ResizeObserver(misura)
+    ro.observe(el)
+    window.addEventListener('resize', misura)
+    return () => { ro.disconnect(); window.removeEventListener('resize', misura) }
+  }, [])
+  useEffect(() => { if (vista === 'mappa') window.scrollTo(0, 0) }, [vista])
 
   const { data: tuttiLuoghi = [], isLoading, isError, error } = useLuoghi()
 
@@ -39,7 +56,7 @@ export function LuoghiScreen() {
   return (
     <MobileLayout>
       {/* Header sticky */}
-      <div style={{
+      <div ref={headerRef} style={{
         padding: '20px 16px 12px',
         background: 'var(--prox-surface2)', boxShadow: '0 4px 10px rgba(20,23,28,0.05)',
         borderBottom: '1px solid var(--prox-line)',
@@ -100,9 +117,6 @@ export function LuoghiScreen() {
             ? <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-accent)', fontSize: 14 }}>Errore di caricamento<div style={{ fontSize: 12, color: 'var(--prox-ink3)', marginTop: 6 }}>{(error as Error)?.message}</div></div>
             : null
         }
-        {vista === 'mappa' && !isLoading && (
-          <LuoghiMap luoghi={luoghi} colors={TIPO_COLOR} onOpen={id => navigate(`/luoghi/${id}`)} />
-        )}
         {vista === 'lista' && luoghi.map(l => {
           const color = TIPO_COLOR[l.tipo]
           return (
@@ -140,6 +154,14 @@ export function LuoghiScreen() {
           )
         })}
       </div>
+      {vista === 'mappa' && !isLoading && sotto > 0 && (
+        <div style={{
+          position: 'fixed', left: 0, right: 0, top: sotto, zIndex: 5,
+          bottom: isDesktop ? 0 : 'calc(60px + var(--sab))',
+        }}>
+          <LuoghiMap luoghi={luoghi} colors={TIPO_COLOR} onOpen={id => navigate(`/luoghi/${id}`)} />
+        </div>
+      )}
       {isNuovoOpen ? (
         <Modal open onClose={() => navigate('/luoghi')}>
           <Outlet />

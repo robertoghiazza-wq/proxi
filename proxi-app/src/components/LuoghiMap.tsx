@@ -31,17 +31,17 @@ interface Props {
   luoghi: Luogo[]
   colors: Record<string, string>
   onOpen: (id: number) => void
-  height?: number
 }
 
-export function LuoghiMap({ luoghi, colors, onOpen, height = 420 }: Props) {
+// Riempie il contenitore che la ospita (nessun box, bordo o raggio)
+export function LuoghiMap({ luoghi, colors, onOpen }: Props) {
   const [base, setBase] = useState<BaseKey>('swisstopo')
   const conCoord = luoghi.filter(l => l.lat != null && l.lng != null)
   const bm = BASEMAPS[base]
 
   return (
-    <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--prox-line)' }}>
-      <MapContainer center={[46.0, 8.95]} zoom={10} style={{ height, width: '100%', zIndex: 0 }}>
+    <div style={{ position: 'relative', height: '100%', width: '100%' }}>
+      <MapContainer center={[46.0, 8.95]} zoom={10} style={{ height: '100%', width: '100%', zIndex: 0 }}>
         <TileLayer key={base} url={bm.url} attribution={bm.attribution} maxZoom={bm.maxZoom} />
         <FitBounds luoghi={conCoord} />
         {conCoord.map(l => (
