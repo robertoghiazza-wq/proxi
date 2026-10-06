@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api, setToken } from '../lib/api-client'
+import { api, setToken, setCurrentUser } from '../lib/api-client'
+import { ProxiLogo } from '../components/ProxiLogo'
 
 export function LoginScreen() {
   const navigate = useNavigate()
@@ -15,8 +16,9 @@ export function LoginScreen() {
     setLoading(true)
 
     try {
-      const res = await api.post<{ token: string }>('/auth/login', { email, password })
+      const res = await api.post<{ token: string; user: { id: number; name: string; role: string } }>('/auth/login', { email, password })
       setToken(res.token)
+      setCurrentUser({ id: res.user.id, name: res.user.name, role: res.user.role })
       navigate('/', { replace: true })
     } catch (err: any) {
       setError(err.message ?? 'Errore di accesso')
@@ -32,22 +34,11 @@ export function LoginScreen() {
       alignItems: 'center', justifyContent: 'center',
       background: 'var(--prox-bg)', padding: '24px 20px',
     }}>
-      {/* Logo / nome */}
-      <div style={{ textAlign: 'center', marginBottom: 40 }}>
-        <div style={{
-          width: 56, height: 56, borderRadius: 16,
-          background: 'var(--prox-accent)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          margin: '0 auto 16px',
-          boxShadow: '0 4px 16px rgba(220,29,39,0.3)',
-        }}>
-          <span style={{ fontSize: 28, color: '#fff', fontWeight: 700, letterSpacing: -1 }}>P</span>
-        </div>
-        <div className="prox-display" style={{ fontSize: 26, fontWeight: 700, letterSpacing: -0.5 }}>
-          Proxi
-        </div>
-        <div style={{ fontSize: 13, color: 'var(--prox-ink3)', marginTop: 4 }}>
-          Associazione Prometheus
+      {/* Logo */}
+      <div style={{ textAlign: 'center', marginBottom: 36 }}>
+        <ProxiLogo height={44} style={{ margin: '0 auto' }} />
+        <div style={{ fontSize: 13, color: 'var(--prox-ink3)', marginTop: 14 }}>
+          Rendicontazione dei servizi di prossimità
         </div>
       </div>
 
