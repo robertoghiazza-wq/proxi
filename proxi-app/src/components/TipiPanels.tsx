@@ -3,10 +3,11 @@
 import { useState } from 'react'
 import { ArrowUp, ArrowDown, Trash2, Plus } from 'lucide-react'
 import { Card } from './Card'
-import { ColoreSelect } from './ColoreSelect'
+import { ColoreCampo } from './ColoreCampo'
 import { Titolo, campo, vuoto, etichetta, ghost } from './SchedaUi'
 import { useTipi, useGestioneTipi, type TipoEvento, type TipoLuogo, type CategoriaEvento } from '../hooks/useTipi'
 import { useGestore } from '../hooks/useAuth'
+import { coloreHex } from '../lib/colori'
 
 type Risorsa = 'categorie-evento' | 'tipi-evento' | 'tipi-luogo'
 
@@ -44,7 +45,7 @@ function Attivo({ valore, onChange, disabled }: { valore: boolean; onChange: (v:
 
 function NuovoRiga({ segnaposto, onAggiungi, conColore, disabled }: { segnaposto: string; onAggiungi: (nome: string, colore: string) => void; conColore?: boolean; disabled?: boolean }) {
   const [nome, setNome] = useState('')
-  const [colore, setColore] = useState<string>('azzurro')
+  const [colore, setColore] = useState<string>(coloreHex('azzurro'))
   const invia = () => { const t = nome.trim(); if (!t) return; onAggiungi(t, colore); setNome('') }
   return (
     <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 8 }}>
@@ -53,7 +54,7 @@ function NuovoRiga({ segnaposto, onAggiungi, conColore, disabled }: { segnaposto
         onKeyDown={e => { if (e.key === 'Enter') invia() }}
         style={{ ...campo, padding: '8px 10px', flex: 1, minWidth: 140 }}
       />
-      {conColore && <ColoreSelect value={colore} onChange={v => setColore(v ?? 'grigio')} disabled={disabled} />}
+      {conColore && <ColoreCampo value={colore} onChange={v => setColore(v ?? coloreHex('grigio'))} disabled={disabled} />}
       <button onClick={invia} disabled={disabled || !nome.trim()} style={{
         display: 'flex', alignItems: 'center', gap: 4, padding: '8px 14px', borderRadius: 999, border: 'none', cursor: 'pointer',
         background: 'var(--prox-accent)', color: '#fff', fontSize: 14, fontWeight: 600, opacity: nome.trim() ? 1 : 0.5, fontFamily: 'inherit',
@@ -104,7 +105,7 @@ export function TipiEventoPanel() {
               <button onClick={() => eliminaCategoria(c)} disabled={!gestore} style={{ ...ghost, color: 'var(--prox-danger)' }} aria-label="Elimina la categoria"><Trash2 size={15} /></button>
             </div>
             <div style={{ margin: '6px 0 8px' }}>
-              <ColoreSelect value={c.colore} disabled={!gestore} onChange={v => g.aggiorna.mutate({ risorsa: 'categorie-evento', id: c.id, colore: v ?? 'grigio' }, { ...ko, ...ok })} />
+              <ColoreCampo value={c.colore} disabled={!gestore} onChange={v => g.aggiorna.mutate({ risorsa: 'categorie-evento', id: c.id, colore: v ?? coloreHex('grigio') }, { ...ko, ...ok })} />
             </div>
 
             {tipi.map((t, ti) => (
@@ -115,7 +116,7 @@ export function TipiEventoPanel() {
                   <button onClick={() => eliminaTipo(t)} disabled={!gestore || t.usi > 0} title={t.usi > 0 ? `Usato da ${t.usi} eventi` : 'Elimina'} style={{ ...ghost, color: 'var(--prox-danger)', opacity: t.usi > 0 ? 0.25 : 1 }} aria-label="Elimina il tipo"><Trash2 size={15} /></button>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 6 }}>
-                  <ColoreSelect value={t.colore} vuoto="Come la categoria" disabled={!gestore} onChange={v => g.aggiorna.mutate({ risorsa: 'tipi-evento', id: t.id, colore: v }, { ...ko, ...ok })} />
+                  <ColoreCampo value={t.colore} vuoto="Come la categoria" disabled={!gestore} onChange={v => g.aggiorna.mutate({ risorsa: 'tipi-evento', id: t.id, colore: v }, { ...ko, ...ok })} />
                   <Attivo valore={t.attivo} disabled={!gestore} onChange={attivo => g.aggiorna.mutate({ risorsa: 'tipi-evento', id: t.id, attivo }, { ...ko, ...ok })} />
                   {t.usi > 0 && <span style={{ fontSize: 12, color: 'var(--prox-ink3)' }}>{t.usi} {t.usi === 1 ? 'evento' : 'eventi'}</span>}
                   <select
@@ -170,7 +171,7 @@ export function TipiLuogoPanel() {
               <button onClick={() => g.elimina.mutate({ risorsa: 'tipi-luogo', id: t.id }, { ...ko, ...ok })} disabled={!gestore || t.usi > 0} title={t.usi > 0 ? `Usato da ${t.usi} luoghi` : 'Elimina'} style={{ ...ghost, color: 'var(--prox-danger)', opacity: t.usi > 0 ? 0.25 : 1 }} aria-label="Elimina il tipo"><Trash2 size={15} /></button>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 6 }}>
-              <ColoreSelect value={t.colore} disabled={!gestore} onChange={v => g.aggiorna.mutate({ risorsa: 'tipi-luogo', id: t.id, colore: v ?? 'grigio' }, { ...ko, ...ok })} />
+              <ColoreCampo value={t.colore} disabled={!gestore} onChange={v => g.aggiorna.mutate({ risorsa: 'tipi-luogo', id: t.id, colore: v ?? coloreHex('grigio') }, { ...ko, ...ok })} />
               <Attivo valore={t.attivo} disabled={!gestore} onChange={attivo => g.aggiorna.mutate({ risorsa: 'tipi-luogo', id: t.id, attivo }, { ...ko, ...ok })} />
               {t.usi > 0 && <span style={{ fontSize: 12, color: 'var(--prox-ink3)' }}>{t.usi} {t.usi === 1 ? 'luogo' : 'luoghi'}</span>}
             </div>

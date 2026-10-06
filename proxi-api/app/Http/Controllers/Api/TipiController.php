@@ -40,6 +40,7 @@ class TipiController extends Controller
     {
         $this->gestori($request);
         $d = $request->validate(['nome' => 'required|string|max:80', 'colore' => ['required', $this->colore()]]);
+        $d['colore'] = strtolower($d['colore']);
         $i = $request->user()->institution_id;
         $cat = CategoriaEvento::create($d + ['institution_id' => $i, 'ordine' => (int) CategoriaEvento::where('institution_id', $i)->max('ordine') + 1]);
 
@@ -160,9 +161,14 @@ class TipiController extends Controller
         abort_unless($request->user()->isGestore(), 403);
     }
 
-    private function colore(): \Illuminate\Validation\Rules\In
+    // Un colore è un esadecimale #rrggbb scelto liberamente oppure, per i valori di partenza, la chiave di un colore della palette
+    private function colore(): \Closure
     {
-        return Rule::in(array_keys(TipiDefault::PALETTE));
+        return function (string $attribute, mixed $value, \Closure $fail) {
+            if (! is_string($value) || ! (preg_match('/^#[0-9a-fA-F]{6}$/', $value) || array_key_exists($value, TipiDefault::PALETTE))) {
+                $fail('Il colore deve essere nel formato #rrggbb.');
+            }
+        };
     }
 
     // Chiave stabile ricavata dal nome (non cambia se poi si rinomina); unica per ente

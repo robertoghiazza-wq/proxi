@@ -51,6 +51,8 @@ class TipiEnteTest extends TestCase
         $id = $this->postJson('/api/tipi-luogo', ['nome' => 'Parco giochi', 'colore' => 'verde'])->assertCreated()->assertJsonPath('chiave', 'parco_giochi')->json('id');
         $this->patchJson("/api/tipi-luogo/{$id}", ['colore' => 'rosa', 'nome' => 'Parco'])->assertOk()->assertJsonPath('colore', 'rosa')->assertJsonPath('chiave', 'parco_giochi');
         $this->postJson('/api/tipi-luogo', ['nome' => 'X', 'colore' => 'fucsia'])->assertUnprocessable();
+        $this->postJson('/api/tipi-luogo', ['nome' => 'X', 'colore' => '#12ab3'])->assertUnprocessable();
+        $this->patchJson("/api/tipi-luogo/{$id}", ['colore' => '#12AB3C'])->assertOk()->assertJsonPath('colore', '#12AB3C');
         $this->deleteJson("/api/tipi-luogo/{$id}")->assertNoContent();
     }
 
