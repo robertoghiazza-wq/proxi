@@ -1,13 +1,13 @@
 // Persone — lista con ricerca e filtri per ruolo
 
-import { nomeAvatar, nomePersona, etichettaRuolo } from '../lib/persona'
+import { nomePersona, etichettaRuolo } from '../lib/persona'
 import { useState } from 'react'
 import { useNavigate, useMatch, Outlet } from 'react-router-dom'
 import { Search, AlertTriangle, Plus } from 'lucide-react'
 import { MobileLayout } from '../components/MobileLayout'
 import { Drawer } from '../components/Drawer'
 import { Modal } from '../components/Modal'
-import { Avatar } from '../components/Avatar'
+import { AvatarPersona } from '../components/AvatarPersona'
 import { PersoneServiziSwitch } from '../components/PersoneServiziSwitch'
 import { usePersone } from '../hooks/usePersone'
 import { useRuoli } from '../hooks/useRuoli'
@@ -36,7 +36,7 @@ function PersonaRow({ persona }: { persona: Persona }) {
         borderBottom: '1px solid var(--prox-line2)',
       }}
     >
-      <Avatar nome={nomeAvatar(persona)} anonimo={persona.anonimo} size={40} />
+      <AvatarPersona persona={persona} size={40} />
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>

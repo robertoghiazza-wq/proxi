@@ -3,13 +3,14 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ChevronLeft, Phone, Edit, Plus, AlertTriangle, Trash2, Mail, MapPin } from 'lucide-react'
-import { Avatar } from '../components/Avatar'
+import { FotoPersona } from '../components/FotoPersona'
 import { Tag } from '../components/Tag'
 import { Card } from '../components/Card'
 import { EventTypeDot } from '../components/EventTypeDot'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { InfoPanel, NotePanel, DiarioPanel } from './SchedaUtentePanels'
 import { ContrattoPanel, AccountPanel } from './SchedaDipendentePanels'
+import { DocumentiPanel } from './SchedaDocumenti'
 import { OreView } from '../components/OreView'
 import { BarraTab, BarraSalva, BtnModifica, Titolo, Voce, testoStile } from '../components/SchedaUi'
 import {
@@ -18,27 +19,27 @@ import {
 } from '../components/PersonaCampi'
 import { getCurrentUser } from '../lib/api-client'
 import { colorForTipo } from '../lib/mock-data'
-import { nomeAvatar, nomePersona, etichettaRuolo, etichettaTipo } from '../lib/persona'
+import { nomePersona, etichettaRuolo, etichettaTipo } from '../lib/persona'
 import { usePersona, useDeletePersona, useUpdatePersona } from '../hooks/usePersone'
 import { useRuoli } from '../hooks/useRuoli'
 import type { Persona, Evento } from '../types'
 
 const TAG_VULNERABILI = ['senza fissa dimora', 'minore', 'dipendenza', 'prostituzione']
 
-type TabKey = 'anagrafica' | 'contatti' | 'eventi' | 'servizi' | 'info' | 'note' | 'diario' | 'ore' | 'contratto' | 'user'
+type TabKey = 'anagrafica' | 'contatti' | 'eventi' | 'servizi' | 'info' | 'note' | 'diario' | 'ore' | 'documenti' | 'contratto' | 'user'
 
 function tabPer(p: Persona, gestore: boolean): { key: TabKey; label: string }[] {
   const base = [{ key: 'anagrafica' as const, label: 'Anagrafica' }, { key: 'contatti' as const, label: 'Contatti' }]
   if (p.ruolo === 'utente') {
-    return [...base, { key: 'eventi', label: 'Eventi' }, { key: 'info', label: 'Info' }, { key: 'note', label: 'Note' }, { key: 'diario', label: 'Diario' }]
+    return [...base, { key: 'eventi', label: 'Eventi' }, { key: 'info', label: 'Info' }, { key: 'note', label: 'Note' }, { key: 'diario', label: 'Diario' }, { key: 'documenti', label: 'Documenti' }]
   }
   if (p.ruolo === 'dipendente') {
     return [
       ...base, { key: 'eventi', label: 'Eventi' }, { key: 'note', label: 'Note' },
-      ...(gestore ? [{ key: 'ore' as const, label: 'Ore' }, { key: 'contratto' as const, label: 'Contratto' }, { key: 'user' as const, label: 'User' }] : []),
+      ...(gestore ? [{ key: 'ore' as const, label: 'Ore' }, { key: 'contratto' as const, label: 'Contratto' }, { key: 'documenti' as const, label: 'Documenti' }, { key: 'user' as const, label: 'User' }] : []),
     ]
   }
-  return [...base, { key: 'servizi', label: 'Servizi' }, { key: 'eventi', label: 'Eventi' }, { key: 'note', label: 'Note' }]
+  return [...base, { key: 'servizi', label: 'Servizi' }, { key: 'eventi', label: 'Eventi' }, { key: 'note', label: 'Note' }, { key: 'documenti', label: 'Documenti' }]
 }
 
 function ore(min: number) {
@@ -109,7 +110,7 @@ export function PersonaDetail({ apriInModifica }: { apriInModifica?: boolean }) 
         </button>
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginTop: 16 }}>
-          <Avatar nome={nomeAvatar(persona)} anonimo={persona.anonimo} size={72} />
+          <FotoPersona persona={persona} size={72} />
 
           <div style={{ textAlign: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
@@ -186,6 +187,7 @@ export function PersonaDetail({ apriInModifica }: { apriInModifica?: boolean }) 
         {tabAttiva === 'diario' && persona.ruolo === 'utente' && <DiarioPanel persona={persona} />}
         {tabAttiva === 'note' && persona.ruolo === 'utente' && <NotePanel persona={persona} />}
         {tabAttiva === 'note' && persona.ruolo !== 'utente' && <PannelloNote persona={persona} />}
+        {tabAttiva === 'documenti' && <DocumentiPanel persona={persona} />}
         {tabAttiva === 'ore' && persona.ruolo === 'dipendente' && gestore && <OreView persona={persona.id} gestore />}
         {tabAttiva === 'contratto' && persona.ruolo === 'dipendente' && gestore && <ContrattoPanel persona={persona} />}
         {tabAttiva === 'user' && persona.ruolo === 'dipendente' && gestore && <AccountPanel persona={persona} />}

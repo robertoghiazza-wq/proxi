@@ -5,6 +5,7 @@ interface AvatarProps {
   nome?: string | null
   anonimo?: boolean
   size?: number
+  foto?: string | null
 }
 
 function hashColor(str: string): string {
@@ -23,7 +24,7 @@ function initials(nome: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
-export function Avatar({ nome, anonimo, size = 36 }: AvatarProps) {
+export function Avatar({ nome, anonimo, size = 36, foto }: AvatarProps) {
   const bg = nome ? hashColor(nome) : '#e8e9ec'
   const fs = size * 0.38
 
@@ -34,11 +35,13 @@ export function Avatar({ nome, anonimo, size = 36 }: AvatarProps) {
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexShrink: 0,
       fontSize: fs, fontWeight: 600, color: '#444a55',
-      fontFamily: "'Inter', sans-serif",
+      fontFamily: "'Inter', sans-serif", overflow: 'hidden',
     }}>
-      {anonimo || !nome
-        ? <AnonymousGlyph size={size * 0.52} />
-        : initials(nome)
+      {foto
+        ? <img src={foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        : anonimo || !nome
+          ? <AnonymousGlyph size={size * 0.52} />
+          : initials(nome)
       }
     </div>
   )

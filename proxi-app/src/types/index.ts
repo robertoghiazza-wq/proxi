@@ -63,6 +63,8 @@ export interface Persona {
   cantone?: string | null
   paese?: string | null
   note_contatti?: string | null
+  ha_foto?: boolean
+  updated_at?: string
   // calcolato/caricato dal backend
   eventi_count?: number
   eventi?: Evento[]
@@ -263,4 +265,18 @@ export interface Obiettivo {
   stato: 'in_corso' | 'raggiunto' | 'a_rischio'
   periodo: string | null
   responsabile?: User
+}
+
+export interface DocumentoPersona {
+  id: number
+  persona_id: number
+  tipo: string | null
+  titolo: string
+  note: string | null
+  nome_originale: string
+  mime: string
+  dimensione: number
+  caricato_da: number | null
+  autore?: { id: number; name: string } | null
+  created_at: string
 }

@@ -46,6 +46,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/diario/{id}', [\App\Http\Controllers\Api\PersonaDiarioController::class, 'update']);
     Route::delete('/diario/{id}', [\App\Http\Controllers\Api\PersonaDiarioController::class, 'destroy']);
 
+    // Documenti allegati e foto delle persone
+    Route::get('/persone/{id}/documenti', [\App\Http\Controllers\Api\PersonaDocumentoController::class, 'index']);
+    Route::post('/persone/{id}/documenti', [\App\Http\Controllers\Api\PersonaDocumentoController::class, 'store']);
+    Route::patch('/documenti/{id}', [\App\Http\Controllers\Api\PersonaDocumentoController::class, 'update']);
+    Route::get('/documenti/{id}/file', [\App\Http\Controllers\Api\PersonaDocumentoController::class, 'scarica']);
+    Route::delete('/documenti/{id}', [\App\Http\Controllers\Api\PersonaDocumentoController::class, 'destroy']);
+    Route::get('/persone/{id}/foto', [\App\Http\Controllers\Api\PersonaFotoController::class, 'show']);
+    Route::post('/persone/{id}/foto', [\App\Http\Controllers\Api\PersonaFotoController::class, 'update']);
+    Route::delete('/persone/{id}/foto', [\App\Http\Controllers\Api\PersonaFotoController::class, 'destroy']);
+
     // Dipendenti: contratti (dati sensibili) e account di accesso, solo coordinatori/admin
     Route::get('/persone/{id}/contratti', [\App\Http\Controllers\Api\ContrattoController::class, 'index']);
     Route::post('/persone/{id}/contratti', [\App\Http\Controllers\Api\ContrattoController::class, 'store']);

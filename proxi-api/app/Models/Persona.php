@@ -20,10 +20,13 @@ class Persona extends Model
         'institution_id', 'ruolo', 'nome', 'cognome', 'soprannome', 'anonimo', 'data_nascita', 'ruolo_id',
         'indirizzo', 'npa', 'localita', 'comune_politico', 'bfs', 'cantone', 'paese', 'note_contatti',
         'eta', 'sesso', 'lingue', 'tag', 'bisogni', 'note',
-        'telefono', 'email',
+        'telefono', 'email', 'foto_percorso',
     ];
 
-    protected $appends = ['eta'];
+    protected $appends = ['eta', 'ha_foto'];
+
+    // Il percorso del file non esce dall'API: si espone solo se la foto c'è
+    protected $hidden = ['foto_percorso'];
 
     protected $casts = [
         'anonimo' => 'boolean',
@@ -47,6 +50,16 @@ class Persona extends Model
     public function getEtaAttribute($value): ?int
     {
         return $this->data_nascita ? (int) $this->data_nascita->diffInYears(now()) : ($value === null ? null : (int) $value);
+    }
+
+    public function getHaFotoAttribute(): bool
+    {
+        return ! empty($this->attributes['foto_percorso'] ?? null);
+    }
+
+    public function documenti(): HasMany
+    {
+        return $this->hasMany(PersonaDocumento::class)->orderByDesc('created_at')->orderByDesc('id');
     }
 
     public function telefoni(): HasMany
