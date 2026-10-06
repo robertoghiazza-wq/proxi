@@ -1,5 +1,6 @@
 // Evento detail — tipo, orario, durata, persone, luogo, note, educatore
 
+import { useTipiEvento } from '../hooks/useTipi'
 import { nomeAvatar, nomePersona, etichettaRuolo } from '../lib/persona'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -7,7 +8,6 @@ import { ChevronLeft, MapPin, Clock, FileText, Edit, CheckCircle, Circle, PlayCi
 import { Avatar } from '../components/Avatar'
 import { Tag } from '../components/Tag'
 import { Card } from '../components/Card'
-import { colorForTipo, tipoLabel } from '../lib/mock-data'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { daCompletare, mancantiTesto } from '../lib/completezza'
 import { useEvento, useUpdateEvento, useDeleteEvento } from '../hooks/useEventi'
@@ -46,6 +46,7 @@ function StatoInfo({ stato }: { stato: StatoEvento }) {
 }
 
 export function EventoDetail() {
+  const { label: tipoLabel, colore: colorForTipo } = useTipiEvento()
   const { id } = useParams()
   const navigate = useNavigate()
   const { data: evento, isLoading, error } = useEvento(Number(id))

@@ -33,3 +33,19 @@ export async function ritagliaQuadrata(file: File, lato = 480, qualita = 0.85): 
 
 export const eImmagine = (f: { type: string; name?: string }) =>
   f.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name ?? '')
+
+// Logo: ridotto a un lato massimo mantenendo la trasparenza (PNG); gli SVG si inviano così come sono
+export async function ridimensionaPng(file: File, latoMax = 512): Promise<Blob> {
+  const bmp = await createImageBitmap(file)
+  const scala = Math.min(1, latoMax / Math.max(bmp.width, bmp.height))
+  const w = Math.max(1, Math.round(bmp.width * scala))
+  const h = Math.max(1, Math.round(bmp.height * scala))
+  const canvas = document.createElement('canvas')
+  canvas.width = w
+  canvas.height = h
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Immagine non elaborabile')
+  ctx.drawImage(bmp, 0, 0, w, h)
+  bmp.close()
+  return new Promise((ok, ko) => canvas.toBlob(b => (b ? ok(b) : ko(new Error('Immagine non elaborabile'))), 'image/png'))
+}

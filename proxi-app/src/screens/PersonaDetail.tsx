@@ -1,5 +1,6 @@
 // Scheda persona — identità + tab (Contatti, Eventi, Servizi, Note)
 
+import { useTipiEvento } from '../hooks/useTipi'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ChevronLeft, Phone, Edit, Plus, AlertTriangle, Trash2, Mail, MapPin } from 'lucide-react'
@@ -18,7 +19,6 @@ import {
   datiAnagrafica, datiContatti, datiNote,
 } from '../components/PersonaCampi'
 import { useGestore } from '../hooks/useAuth'
-import { colorForTipo } from '../lib/mock-data'
 import { nomePersona, etichettaRuolo, etichettaTipo } from '../lib/persona'
 import { usePersona, useDeletePersona, useUpdatePersona } from '../hooks/usePersone'
 import { useRuoli } from '../hooks/useRuoli'
@@ -388,6 +388,7 @@ function PannelloContatti({ persona }: { persona: Persona }) {
 }
 
 function PannelloEventi({ eventi, onApri }: { eventi: Evento[]; onApri: (id: number) => void }) {
+  const { colore: colorForTipo } = useTipiEvento()
   const [solo, setSolo] = useState<'tutti' | 'settimana'>('tutti')
   const ordinati = eventi.slice().sort((a, b) => b.data.localeCompare(a.data))
   const visibili = solo === 'settimana' ? ordinati.filter(e => e.data.slice(0, 10) >= inizioSettimana()) : ordinati

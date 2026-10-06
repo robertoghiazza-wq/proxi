@@ -9,18 +9,10 @@ import { ServizioForm } from './ServizioFormScreen'
 import { LuogoMap } from '../components/LuogoMap'
 import { Tag } from '../components/Tag'
 import { EventTypeDot } from '../components/EventTypeDot'
-import { TIPO_LUOGO_LABEL, colorForTipo } from '../lib/mock-data'
+import { useTipiLuogo, useTipiEvento } from '../hooks/useTipi'
 import { useLuogo } from '../hooks/useLuoghi'
 import { useEventi } from '../hooks/useEventi'
-import type { TipoLuogo } from '../types'
 
-const TIPO_COLOR: Record<TipoLuogo, string> = {
-  strada:    'oklch(0.62 0.14 40)',
-  informale: 'oklch(0.62 0.14 80)',
-  diurno:    'oklch(0.62 0.14 160)',
-  sanitario: 'oklch(0.62 0.14 200)',
-  ufficio:   'oklch(0.62 0.14 280)',
-}
 
 function fmtData(d: string) {
   return new Date(d + 'T00:00:00').toLocaleDateString('it-CH', {
@@ -35,6 +27,8 @@ function minToHM(m: number) {
 }
 
 export function LuogoDetail() {
+  const { label: tipoLuogoLabel, colore: coloreLuogo } = useTipiLuogo()
+  const { colore: colorForTipo } = useTipiEvento()
   const { id } = useParams()
   const navigate = useNavigate()
   const { data: luogo, isLoading } = useLuogo(Number(id))
@@ -59,7 +53,7 @@ export function LuogoDetail() {
     )
   }
 
-  const color = TIPO_COLOR[luogo.tipo]
+  const color = coloreLuogo(luogo.tipo)
 
   return (
     <div style={{ background: 'var(--prox-bg)', minHeight: '100svh' }}>
@@ -115,7 +109,7 @@ export function LuogoDetail() {
               {luogo.nome}
             </h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-              <Tag label={TIPO_LUOGO_LABEL[luogo.tipo]} soft />
+              <Tag label={tipoLuogoLabel(luogo.tipo)} soft />
               {(luogo.indirizzo || luogo.localita) && (
                 <span style={{ fontSize: 12, color: 'var(--prox-ink3)' }}>{[luogo.indirizzo, [luogo.npa, luogo.localita].filter(Boolean).join(' ')].filter(Boolean).join(', ')}</span>
               )}

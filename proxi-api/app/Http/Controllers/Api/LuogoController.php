@@ -28,7 +28,7 @@ class LuogoController extends Controller
     {
         $data = $request->validate([
             'nome'      => 'required|string|max:255',
-            'tipo'      => 'required|in:strada,informale,diurno,sanitario,ufficio',
+            'tipo'      => ['required', \Illuminate\Validation\Rule::exists('tipi_luogo', 'chiave')->where('institution_id', $request->user()->institution_id)],
             'indirizzo' => 'nullable|string|max:255',
             'orari'     => 'nullable|string|max:255',
             'note'      => 'nullable|string',
@@ -63,7 +63,7 @@ class LuogoController extends Controller
 
         $data = $request->validate([
             'nome'      => 'string|max:255',
-            'tipo'      => 'in:strada,informale,diurno,sanitario,ufficio',
+            'tipo'      => [\Illuminate\Validation\Rule::exists('tipi_luogo', 'chiave')->where('institution_id', $request->user()->institution_id)],
             'indirizzo' => 'nullable|string|max:255',
             'orari'     => 'nullable|string|max:255',
             'note'      => 'nullable|string',

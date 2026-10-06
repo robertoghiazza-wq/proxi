@@ -1,9 +1,9 @@
 // Conteggio ore di un dipendente: mese con settimane ed elenco delle ore lavorate, totali e report annuale
 
+import { useTipiEvento } from '../hooks/useTipi'
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight, Edit } from 'lucide-react'
 import { Card } from './Card'
-import { colorForTipo, tipoLabel } from '../lib/mock-data'
 import { BarraSalva, campo, etichetta } from './SchedaUi'
 import { useOreMese, useOreAnno, useSalvaVoceMese, type OreMese, type PersonaOre, type VoceMese } from '../hooks/useOre'
 
@@ -109,6 +109,7 @@ export function OreView({ persona, gestore }: { persona: PersonaOre | null; gest
 function Mese({ data, sett, setSett, persona, gestore }: {
   data: OreMese; sett: number | null; setSett: (n: number | null) => void; persona: PersonaOre | null; gestore: boolean
 }) {
+  const { label: tipoLabel, colore: colorForTipo } = useTipiEvento()
   const salva = useSalvaVoceMese(persona)
   const [modifica, setModifica] = useState(false)
   const [bozza, setBozza] = useState<VoceMese>(data.voce)

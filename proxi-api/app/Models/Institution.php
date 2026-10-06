@@ -15,12 +15,23 @@ class Institution extends Model
         static::created(function (self $i) {
             \App\Support\RuoliDefault::seed($i->id);
             \App\Support\VocaboliDefault::seed($i->id);
+            \App\Support\TipiDefault::seed($i->id);
         });
     }
 
     protected $fillable = ['nome', 'slug', 'email', 'attiva'];
 
     protected $casts = ['attiva' => 'boolean'];
+
+    // Il percorso del logo non esce dall'API: si espone solo se c'è
+    protected $hidden = ['logo_path'];
+
+    protected $appends = ['ha_logo'];
+
+    public function getHaLogoAttribute(): bool
+    {
+        return ! empty($this->attributes['logo_path'] ?? null);
+    }
 
     public function users(): HasMany
     {

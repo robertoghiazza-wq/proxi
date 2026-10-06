@@ -43,4 +43,5 @@ export function applyTenantTheme(accentHex: string) {
   root.style.setProperty('--prox-accent',      accentHex)
   root.style.setProperty('--prox-accent-soft', softOf(accentHex))
   root.style.setProperty('--prox-accent-ink',  inkOf(accentHex))
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', accentHex)
 }

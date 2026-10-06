@@ -36,7 +36,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
   // Su desktop il profilo è l'avatar a destra; le ore stanno nel menu per chi gestisce l'équipe
   const tabsDesktop  = [
     ...TABS.filter(t => t.path !== '/profilo'),
-    ...(gestore ? [{ path: '/ore', label: 'Ore' }] : []),
+    ...(gestore ? [{ path: '/ore', label: 'Ore' }, { path: '/impostazioni', label: 'Impostazioni' }] : []),
   ]
 
   if (isDesktop) {
@@ -51,7 +51,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
           <ProxiLogo height={26} />
           <div style={{ width: 1, height: 22, background: 'var(--prox-line)' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-            <OrgLogo nome={ente} size={28} />
+            <OrgLogo nome={ente} size={28} haLogo={me?.institution?.ha_logo} versione={me?.institution?.updated_at} />
             <div style={{ minWidth: 0 }}>
               <div style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.1, color: 'var(--prox-ink)' }}>{ente ?? 'Proxi'}</div>
               <div style={{ fontSize: 10, color: 'var(--prox-ink3)', marginTop: 1 }}>Servizio di prossimità</div>
@@ -116,7 +116,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
         <ProxiLogo height={22} />
         <div style={{ width: 1, height: 22, background: 'var(--prox-line)' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-          <OrgLogo nome={ente} size={26} />
+          <OrgLogo nome={ente} size={26} haLogo={me?.institution?.ha_logo} versione={me?.institution?.updated_at} />
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.1, color: 'var(--prox-ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ente ?? 'Proxi'}</div>
             <div style={{ fontSize: 10, color: 'var(--prox-ink3)', marginTop: 1 }}>Servizio di prossimità</div>

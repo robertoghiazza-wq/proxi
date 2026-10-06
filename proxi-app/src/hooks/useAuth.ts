@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { eGestore } from '../lib/ruoli'
+import { applyTenantTheme } from '../lib/theme'
 import { api, setToken, clearToken, setCurrentUser, getCurrentUser } from '../lib/api-client'
 
 interface LoginPayload { email: string; password: string }
@@ -20,7 +21,7 @@ export interface Me {
   name: string
   email: string
   role: string
-  institution?: { id: number; name: string } | null
+  institution?: { id: number; name: string; accent_color?: string; ha_logo?: boolean; updated_at?: string } | null
 }
 
 // Utente collegato e suo ente; tiene allineata la copia locale (ruolo) usata per mostrare o nascondere le sezioni
@@ -30,6 +31,10 @@ export function useMe() {
     queryFn: async () => {
       const me = await api.get<Me>('/me')
       setCurrentUser({ id: me.id, name: me.name, role: me.role })
+      if (me.institution?.accent_color) {
+        applyTenantTheme(me.institution.accent_color)
+        try { localStorage.setItem('proxi_accent', me.institution.accent_color) } catch { /* ignora */ }
+      }
       return me
     },
     staleTime: 1000 * 60 * 10,

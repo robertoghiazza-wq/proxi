@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Download, Bell, Shield, Tag, FileText, LogOut, ChevronRight, BadgeCheck, KeyRound, ListChecks, Clock,
+  Download, Bell, Shield, Tag, FileText, LogOut, ChevronRight, BadgeCheck, KeyRound, ListChecks, Clock, Settings,
 } from 'lucide-react'
 import { RuoliManager } from '../components/RuoliManager'
 import { ElenchiManager } from '../components/ElenchiManager'
@@ -13,7 +13,7 @@ import { Avatar } from '../components/Avatar'
 import { Card } from '../components/Card'
 import { getCurrentUser } from '../lib/api-client'
 import { useEventi } from '../hooks/useEventi'
-import { useLogout } from '../hooks/useAuth'
+import { useLogout, useGestore, useMe } from '../hooks/useAuth'
 
 const TODAY = new Date().toISOString().slice(0, 10)
 
@@ -89,6 +89,8 @@ function Voce({ icon, label, sublabel, danger, onClick }: VoceProps) {
 
 export function ProfiloScreen() {
   const user      = getCurrentUser()
+  const gestore   = useGestore()
+  const { data: me } = useMe()
   const navigate  = useNavigate()
   const [ruoliAperti, setRuoliAperti] = useState(false)
   const [passwordAperta, setPasswordAperta] = useState(false)
@@ -110,7 +112,7 @@ export function ProfiloScreen() {
               {user?.name ?? '—'}
             </div>
             <div style={{ fontSize: 13, color: 'var(--prox-ink3)', marginTop: 2 }}>
-              {user?.role ?? ''} · Prometheus
+              {user?.role ?? ''} · {me?.institution?.name ?? ''}
             </div>
           </div>
         </div>
@@ -140,6 +142,14 @@ export function ProfiloScreen() {
 
         {/* IMPOSTAZIONI */}
         <Card padding={0}>
+          {gestore && (
+            <Voce
+              icon={<Settings size={18} strokeWidth={1.75} />}
+              label="Impostazioni"
+              sublabel="Brand e logo, tipi di evento, tipi di luogo"
+              onClick={() => navigate('/impostazioni')}
+            />
+          )}
           <Voce
             icon={<Clock size={18} strokeWidth={1.75} />}
             label="Conteggio ore"

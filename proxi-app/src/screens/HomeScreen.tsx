@@ -1,9 +1,9 @@
+import { useTipiEvento } from '../hooks/useTipi'
 import { nomeAvatar, nomePersona } from '../lib/persona'
 import { MobileLayout } from '../components/MobileLayout'
 import { Card } from '../components/Card'
 import { Avatar } from '../components/Avatar'
 import { EventTypeDot } from '../components/EventTypeDot'
-import { colorForTipo } from '../lib/mock-data'
 import { useEventi } from '../hooks/useEventi'
 import { usePersone } from '../hooks/usePersone'
 import { getCurrentUser } from '../lib/api-client'
@@ -48,6 +48,7 @@ function StatoBadge({ stato }: { stato: Evento['stato'] }) {
 }
 
 function EventRow({ evento }: { evento: Evento }) {
+  const { colore: colorForTipo } = useTipiEvento()
   const navigate = useNavigate()
   const color = colorForTipo(evento.tipo)
   const luogo = evento.luogo ?? null

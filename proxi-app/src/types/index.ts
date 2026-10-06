@@ -7,8 +7,10 @@ export interface Institution {
   name: string
   slug: string
   accent_color: string
-  logo_path: string | null
-  active: boolean
+  logo_path?: string | null
+  ha_logo?: boolean
+  updated_at?: string
+  active?: boolean
 }
 
 export interface User {
@@ -71,7 +73,7 @@ export interface Persona {
   servizi?: Pick<Servizio, 'id' | 'nome' | 'localita'>[]
 }
 
-export type TipoLuogo = 'strada' | 'informale' | 'diurno' | 'sanitario' | 'ufficio'
+export type TipoLuogo = string
 
 export interface Luogo {
   id: number

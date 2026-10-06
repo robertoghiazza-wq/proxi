@@ -71,6 +71,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/ore/{persona}/anno', [\App\Http\Controllers\Api\OreController::class, 'anno']);
     Route::put('/ore/{persona}/mese', [\App\Http\Controllers\Api\OreController::class, 'salvaMese']);
 
+    // Impostazioni dell'ente: brand (colore, logo), categorie e tipi di evento, tipi di luogo
+    Route::put('/ente', [\App\Http\Controllers\Api\EnteController::class, 'update']);
+    Route::get('/ente/logo', [\App\Http\Controllers\Api\EnteController::class, 'logo']);
+    Route::post('/ente/logo', [\App\Http\Controllers\Api\EnteController::class, 'caricaLogo']);
+    Route::delete('/ente/logo', [\App\Http\Controllers\Api\EnteController::class, 'rimuoviLogo']);
+    Route::get('/tipi', [\App\Http\Controllers\Api\TipiController::class, 'index']);
+    Route::post('/categorie-evento', [\App\Http\Controllers\Api\TipiController::class, 'storeCategoria']);
+    Route::patch('/categorie-evento/{id}', [\App\Http\Controllers\Api\TipiController::class, 'updateCategoria']);
+    Route::delete('/categorie-evento/{id}', [\App\Http\Controllers\Api\TipiController::class, 'destroyCategoria']);
+    Route::post('/tipi-evento', [\App\Http\Controllers\Api\TipiController::class, 'storeTipoEvento']);
+    Route::patch('/tipi-evento/{id}', [\App\Http\Controllers\Api\TipiController::class, 'updateTipoEvento']);
+    Route::delete('/tipi-evento/{id}', [\App\Http\Controllers\Api\TipiController::class, 'destroyTipoEvento']);
+    Route::post('/tipi-luogo', [\App\Http\Controllers\Api\TipiController::class, 'storeTipoLuogo']);
+    Route::patch('/tipi-luogo/{id}', [\App\Http\Controllers\Api\TipiController::class, 'updateTipoLuogo']);
+    Route::delete('/tipi-luogo/{id}', [\App\Http\Controllers\Api\TipiController::class, 'destroyTipoLuogo']);
+
     // Elenchi a tendina
     Route::apiResource('vocaboli', \App\Http\Controllers\Api\VocaboloController::class)->except('show');
 

@@ -9,18 +9,10 @@ import { Modal } from '../components/Modal'
 import { Card } from '../components/Card'
 import { LuogoThumb } from '../components/LuogoThumb'
 import { LuoghiMap } from '../components/LuoghiMap'
-import { TIPO_LUOGO_LABEL } from '../lib/mock-data'
+import { useTipiLuogo } from '../hooks/useTipi'
 import { useIsDesktop } from '../hooks/useIsDesktop'
 import { useLuoghi } from '../hooks/useLuoghi'
-import type { TipoLuogo } from '../types'
 
-const TIPO_COLOR: Record<TipoLuogo, string> = {
-  strada:    'oklch(0.62 0.14 40)',
-  informale: 'oklch(0.62 0.14 80)',
-  diurno:    'oklch(0.62 0.14 160)',
-  sanitario: 'oklch(0.62 0.14 200)',
-  ufficio:   'oklch(0.62 0.14 280)',
-}
 
 export function LuoghiScreen() {
   const navigate = useNavigate()
@@ -29,6 +21,8 @@ export function LuoghiScreen() {
   const [query, setQuery] = useState('')
   const [vista, setVista] = useState<'lista' | 'mappa'>('lista')
   const isDesktop = useIsDesktop()
+  const { tipi: tipiLuogo, label: tipoLuogoLabel, colore: coloreLuogo } = useTipiLuogo()
+  const TIPO_COLOR: Record<string, string> = Object.fromEntries(tipiLuogo.map(t => [t.chiave, coloreLuogo(t.chiave)]))
 
   // La mappa occupa tutto il corpo: parte dove finisce l'intestazione fissa (misurata) e arriva in fondo
   const headerRef = useRef<HTMLDivElement>(null)
@@ -118,7 +112,7 @@ export function LuoghiScreen() {
             : null
         }
         {vista === 'lista' && luoghi.map(l => {
-          const color = TIPO_COLOR[l.tipo]
+          const color = coloreLuogo(l.tipo)
           return (
             <Card
               key={l.id}
@@ -138,7 +132,7 @@ export function LuoghiScreen() {
                   fontSize: 11, color: 'var(--prox-ink3)',
                   display: 'flex', gap: 6, alignItems: 'center', minWidth: 0,
                 }}>
-                  <span style={{ flexShrink: 0 }}>{TIPO_LUOGO_LABEL[l.tipo]}</span>
+                  <span style={{ flexShrink: 0 }}>{tipoLuogoLabel(l.tipo)}</span>
                   {(l.indirizzo || l.localita) && <><span>·</span>
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[l.indirizzo, l.localita].filter(Boolean).join(', ')}</span></>}
                 </div>

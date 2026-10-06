@@ -1,5 +1,6 @@
 // Eventi — lista raggruppata per giorno con filtri stato
 
+import { useTipiEvento } from '../hooks/useTipi'
 import { nomeAvatar } from '../lib/persona'
 import { useState } from 'react'
 import { useNavigate, useMatch, Outlet } from 'react-router-dom'
@@ -9,7 +10,6 @@ import { Modal } from '../components/Modal'
 import { Card } from '../components/Card'
 import { SwipeRow } from '../components/SwipeRow'
 import { ConfirmDialog } from '../components/ConfirmDialog'
-import { colorForTipo, tipoLabel } from '../lib/mock-data'
 import { daCompletare, mancantiTesto } from '../lib/completezza'
 import { useEventi, useDeleteEvento } from '../hooks/useEventi'
 import type { Evento, StatoEvento } from '../types'
@@ -37,6 +37,7 @@ function fmtData(d: string) {
 }
 
 export function EventiScreen() {
+  const { label: tipoLabel, colore: colorForTipo } = useTipiEvento()
   const navigate = useNavigate()
   const isNuovoOpen  = !!useMatch('/eventi/nuovo')
   const isDetailOpen = !!useMatch('/eventi/:id/*') && !isNuovoOpen

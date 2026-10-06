@@ -6,11 +6,9 @@ import { X } from 'lucide-react'
 import { MapPicker, type LatLng, type ParteIndirizzo } from '../components/MapPicker'
 import { IndirizzoField } from '../components/IndirizzoField'
 import { INDIRIZZO_VUOTO, validaIndirizzo, type Indirizzo } from '../lib/geo'
-import { TIPO_LUOGO_LABEL } from '../lib/mock-data'
+import { useTipiLuogo } from '../hooks/useTipi'
 import { useCreateLuogo, useLuogo, useUpdateLuogo } from '../hooks/useLuoghi'
 import type { Luogo, TipoLuogo } from '../types'
-
-const TIPI = Object.keys(TIPO_LUOGO_LABEL) as TipoLuogo[]
 
 export function NuovoLuogoScreen() {
   const { id } = useParams()
@@ -47,7 +45,11 @@ export function LuogoForm({ luogo, initial, onClose, onSaved }: {
 
   const base = luogo ?? initial
   const [nome, setNome] = useState(base?.nome ?? '')
-  const [tipo, setTipo] = useState<TipoLuogo>(base?.tipo ?? 'strada')
+  const { attivi, label: tipoLuogoLabel } = useTipiLuogo()
+  const [tipoScelto, setTipo] = useState<TipoLuogo | null>(base?.tipo ?? null)
+  const tipo: TipoLuogo = tipoScelto ?? attivi[0]?.chiave ?? 'strada'
+  // i tipi disattivati non si propongono, ma quello già assegnato a questo luogo resta visibile
+  const TIPI = attivi.map(t => t.chiave).concat(attivi.some(t => t.chiave === tipo) ? [] : [tipo])
   const [addr, setAddr] = useState<Indirizzo>({
     ...INDIRIZZO_VUOTO,
     indirizzo: base?.indirizzo ?? '',
@@ -153,7 +155,7 @@ export function LuogoForm({ luogo, initial, onClose, onSaved }: {
                     color: active ? '#fff' : 'var(--prox-ink2)',
                   }}
                 >
-                  {TIPO_LUOGO_LABEL[t]}
+                  {tipoLuogoLabel(t)}
                 </button>
               )
             })}

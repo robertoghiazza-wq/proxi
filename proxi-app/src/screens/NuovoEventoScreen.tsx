@@ -7,11 +7,8 @@ import { X, ChevronLeft, Search, Navigation, MapPin, Plus } from 'lucide-react'
 import { NuovoLuogoModal } from '../components/NuovoLuogoModal'
 import { DateField, TimeField } from '../components/DateFields'
 import { PersonePicker } from '../components/PersonePicker'
-import {
-  MACRO_CATEGORIE, TIPI_EVENTO,
-  tipoLabel, hueToColor,
-} from '../lib/mock-data'
 import { useCreateEvento } from '../hooks/useEventi'
+import { useTipiEvento } from '../hooks/useTipi'
 import { useLuoghi } from '../hooks/useLuoghi'
 import { api } from '../lib/api-client'
 import type { Luogo } from '../types'
@@ -295,7 +292,10 @@ export function NuovoEventoScreen() {
 // ─── STEP 1: TIPO (due livelli) ────────────────────────────────────────────
 
 // Icone per le macro categorie (Lucide inline)
-function MacroIcon({ id, size = 18 }: { id: string; size?: number }) {
+function MacroIcon({ nome, size = 18 }: { nome: string; size?: number }) {
+  const n = nome.toLowerCase()
+  const id = n.includes('territorio') ? 'territorio' : n.includes('riunion') ? 'riunioni' : n.includes('intern') ? 'interno'
+    : n.includes('svilupp') || n.includes('formaz') ? 'sviluppo' : n.includes('assenz') ? 'assenze' : ''
   const paths: Record<string, React.ReactNode> = {
     territorio: <><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></>,
     riunioni:   <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>,
@@ -306,22 +306,21 @@ function MacroIcon({ id, size = 18 }: { id: string; size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
       stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      {paths[id] ?? null}
+      {paths[id] ?? <circle cx="12" cy="12" r="4" />}
     </svg>
   )
 }
 
 export function StepTipo({ form, set }: { form: WizardState; set: SetFn }) {
-  // Macro selezionata: se ho già un tipo scelto, preseleziona la sua macro
-  const macroDefault = form.tipo
-    ? (TIPI_EVENTO[form.tipo]?.macro ?? MACRO_CATEGORIE[0].id)
-    : MACRO_CATEGORIE[0].id
-  const [macroAttiva, setMacroAttiva] = useState<string>(macroDefault)
+  const { categorie, tipi, categoriaDi, coloreCategoria, colore } = useTipiEvento()
+  // Categoria selezionata: se c'è già un tipo scelto, quella del tipo
+  const [catScelta, setCatScelta] = useState<number | null>(null)
+  const catAttiva = catScelta ?? categoriaDi(form.tipo ?? '')?.id ?? categorie[0]?.id ?? -1
+  const categoria = categorie.find(c => c.id === catAttiva)
 
-  const tipiMacro = Object.entries(TIPI_EVENTO)
-    .filter(([, def]) => def.macro === macroAttiva)
-
-  const macroColor = hueToColor(MACRO_CATEGORIE.find(m => m.id === macroAttiva)?.hue ?? 200)
+  // i tipi disattivati non si propongono, ma quello già scelto resta visibile
+  const tipiMacro = tipi.filter(t => t.categoria_id === catAttiva && (t.attivo || t.chiave === form.tipo))
+  const macroColor = categoria ? coloreCategoria(categoria) : colore(form.tipo ?? '')
 
   return (
     <div>
@@ -332,13 +331,13 @@ export function StepTipo({ form, set }: { form: WizardState; set: SetFn }) {
         scrollbarWidth: 'none',
         WebkitOverflowScrolling: 'touch',
       } as React.CSSProperties}>
-        {MACRO_CATEGORIE.map(m => {
-          const active = macroAttiva === m.id
-          const c = hueToColor(m.hue)
+        {categorie.map(m => {
+          const active = catAttiva === m.id
+          const c = coloreCategoria(m)
           return (
             <button
               key={m.id}
-              onClick={() => setMacroAttiva(m.id)}
+              onClick={() => setCatScelta(m.id)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '7px 14px 7px 10px', borderRadius: 999,
@@ -350,8 +349,8 @@ export function StepTipo({ form, set }: { form: WizardState; set: SetFn }) {
                 transition: 'all 0.15s',
               }}
             >
-              <MacroIcon id={m.id} size={16} />
-              {m.label}
+              <MacroIcon nome={m.nome} size={16} />
+              {m.nome}
             </button>
           )
         })}
@@ -364,12 +363,13 @@ export function StepTipo({ form, set }: { form: WizardState; set: SetFn }) {
         background: 'var(--prox-surface)',
         overflow: 'hidden',
       }}>
-        {tipiMacro.map(([key, def], i) => {
+        {tipiMacro.map((def, i) => {
+          const key = def.chiave
           const active = form.tipo === key
           return (
             <button
               key={key}
-              onClick={() => { set('tipo', key); setMacroAttiva(def.macro) }}
+              onClick={() => { set('tipo', key); setCatScelta(def.categoria_id) }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 12,
                 width: '100%', padding: '13px 14px',
@@ -394,7 +394,7 @@ export function StepTipo({ form, set }: { form: WizardState; set: SetFn }) {
                 fontSize: 14, fontWeight: active ? 600 : 500,
                 color: active ? 'var(--prox-ink)' : 'var(--prox-ink2)',
               }}>
-                {def.label}
+                {def.nome}
               </span>
             </button>
           )
@@ -705,6 +705,7 @@ function StepPersone({
 // ─── STEP 5: NOTE & RIEPILOGO ──────────────────────────────────────────────
 
 function StepNote({ form, set, luoghi }: { form: WizardState; set: SetFn; luoghi: Luogo[] }) {
+  const { label: tipoLabel } = useTipiEvento()
   const luoghiRep = form.soste.length === 0
     ? 'Nessuno'
     : form.soste.map(s => {
