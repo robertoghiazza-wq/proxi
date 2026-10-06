@@ -37,6 +37,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('servizi', \App\Http\Controllers\Api\ServizioController::class);
     Route::put('/servizi/{servizio}/persone', [\App\Http\Controllers\Api\ServizioController::class, 'syncPersone']);
 
+    // Scheda utente: info, note, sostanze (lettura registrata nel log) e diario
+    Route::get('/persone/{id}/profilo', [\App\Http\Controllers\Api\PersonaProfiloController::class, 'show']);
+    Route::put('/persone/{id}/profilo', [\App\Http\Controllers\Api\PersonaProfiloController::class, 'update']);
+    Route::post('/persone/{id}/diario', [\App\Http\Controllers\Api\PersonaDiarioController::class, 'store']);
+    Route::patch('/diario/{id}', [\App\Http\Controllers\Api\PersonaDiarioController::class, 'update']);
+    Route::delete('/diario/{id}', [\App\Http\Controllers\Api\PersonaDiarioController::class, 'destroy']);
+
+    // Elenchi a tendina
+    Route::apiResource('vocaboli', \App\Http\Controllers\Api\VocaboloController::class)->except('show');
+
     // Luoghi
     Route::apiResource('luoghi', \App\Http\Controllers\Api\LuogoController::class);
 

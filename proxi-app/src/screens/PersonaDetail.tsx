@@ -8,6 +8,7 @@ import { Tag } from '../components/Tag'
 import { Card } from '../components/Card'
 import { EventTypeDot } from '../components/EventTypeDot'
 import { ConfirmDialog } from '../components/ConfirmDialog'
+import { InfoPanel, NotePanel, DiarioPanel } from './SchedaUtentePanels'
 import { colorForTipo } from '../lib/mock-data'
 import { nomeAvatar, nomePersona, etichettaRuolo, etichettaTipo } from '../lib/persona'
 import { usePersona, useDeletePersona } from '../hooks/usePersone'
@@ -16,9 +17,15 @@ import type { Persona, Evento } from '../types'
 
 const TAG_VULNERABILI = ['senza fissa dimora', 'minore', 'dipendenza', 'prostituzione']
 
-type TabKey = 'contatti' | 'eventi' | 'servizi' | 'note'
+type TabKey = 'contatti' | 'eventi' | 'servizi' | 'info' | 'note' | 'diario'
 
 function tabPer(p: Persona): { key: TabKey; label: string }[] {
+  if (p.ruolo === 'utente') {
+    return [
+      { key: 'contatti', label: 'Contatti' }, { key: 'eventi', label: 'Eventi' }, { key: 'info', label: 'Info' },
+      { key: 'note', label: 'Note' }, { key: 'diario', label: 'Diario' },
+    ]
+  }
   return [
     { key: 'contatti', label: 'Contatti' },
     ...(p.ruolo === 'rete' ? [{ key: 'servizi' as const, label: 'Servizi' }] : []),
@@ -183,7 +190,10 @@ export function PersonaDetail() {
               )}
           </Section>
         )}
-        {tabAttiva === 'note' && (
+        {tabAttiva === 'info' && persona.ruolo === 'utente' && <InfoPanel persona={persona} />}
+        {tabAttiva === 'diario' && persona.ruolo === 'utente' && <DiarioPanel persona={persona} />}
+        {tabAttiva === 'note' && persona.ruolo === 'utente' && <NotePanel persona={persona} />}
+        {tabAttiva === 'note' && persona.ruolo !== 'utente' && (
           <>
             {persona.bisogni && persona.bisogni.length > 0 && (
               <Section title="Bisogni attivi">

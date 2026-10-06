@@ -12,7 +12,10 @@ class Institution extends Model
 
     protected static function booted(): void
     {
-        static::created(fn (self $i) => \App\Support\RuoliDefault::seed($i->id));
+        static::created(function (self $i) {
+            \App\Support\RuoliDefault::seed($i->id);
+            \App\Support\VocaboliDefault::seed($i->id);
+        });
     }
 
     protected $fillable = ['nome', 'slug', 'email', 'attiva'];

@@ -75,6 +75,10 @@ class DeployController extends Controller
             'persona_telefoni' => ['numero'],
             'persona_servizio' => ['ruolo', 'principale'],
             'audit_logs' => ['action', 'auditable_type'],
+            'vocaboli' => ['categoria', 'valore'],
+            'persona_profili' => ['persona_id', 'storia_medica'],
+            'persona_sostanze' => ['sostanza', 'frequenza'],
+            'persona_diario' => ['persona_id', 'data', 'nota'],
         ];
         foreach ($attese as $tabella => $colonne) {
             $prova("tabella {$tabella}", function () use ($tabella, $colonne) {
@@ -96,6 +100,7 @@ class DeployController extends Controller
         $prova('lista luoghi', fn () => \App\Models\Luogo::forInstitution($inst)->withStats()->attivi()->get()->count() . ' luoghi');
         $prova('lista servizi', fn () => \App\Models\Servizio::forInstitution($inst)->withCount('persone')->get()->count() . ' servizi');
         $prova('lista ruoli', fn () => \App\Models\Ruolo::forInstitution($inst)->where('attivo', true)->count() . ' ruoli (ente ' . $inst . ')');
+        $prova('elenchi a tendina', fn () => \App\Models\Vocabolo::forInstitution($inst)->count() . ' voci');
         $prova('lista eventi', fn () => \App\Models\Evento::forInstitution($inst)->with(['luogo', 'persone'])->get()->toJson() ? 'ok' : null);
         $prova('dettaglio persona', function () use ($inst) {
             $p = \App\Models\Persona::forInstitution($inst)->first();

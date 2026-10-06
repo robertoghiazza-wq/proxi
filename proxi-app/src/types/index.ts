@@ -117,6 +117,53 @@ export interface Servizio {
   })[]
 }
 
+export interface Vocabolo {
+  id: number
+  categoria: string
+  valore: string
+  ordine: number
+}
+
+export interface Sostanza {
+  sostanza: string | null
+  con_chi: string | null
+  frequenza: string | null
+  abuso: string | null
+  note: string | null
+}
+
+export interface ProfiloUtente {
+  situazione_familiare: string | null
+  fratelli: string | null
+  modalita_educativa: string | null
+  liberta_uscita: string | null
+  origine: string | null
+  madrelingua: string | null
+  formazione_madre: string | null
+  formazione_padre: string | null
+  patente: string | null
+  occupazione: string | null
+  sport_hobby: string | null
+  storia_familiare: string | null
+  storia_scolastica: string | null
+  storia_medica: string | null
+  progetti_interventi: string | null
+}
+
+export interface VoceDiario {
+  id: number
+  data: string
+  nota: string
+  autore_id: number | null
+  autore?: { id: number; name: string } | null
+}
+
+export interface SchedaUtente {
+  profilo: ProfiloUtente
+  sostanze: Sostanza[]
+  diario: VoceDiario[]
+}
+
 export type StatoEvento = 'pianificato' | 'in_corso' | 'completato'
 
 export interface Evento {

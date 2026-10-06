@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import {
-  Download, Bell, Shield, Tag, FileText, LogOut, ChevronRight, BadgeCheck, KeyRound,
+  Download, Bell, Shield, Tag, FileText, LogOut, ChevronRight, BadgeCheck, KeyRound, ListChecks,
 } from 'lucide-react'
 import { RuoliManager } from '../components/RuoliManager'
+import { ElenchiManager } from '../components/ElenchiManager'
 import { CambiaPasswordModal } from '../components/CambiaPasswordModal'
 import { MobileLayout } from '../components/MobileLayout'
 import { Avatar } from '../components/Avatar'
@@ -89,6 +90,7 @@ export function ProfiloScreen() {
   const user      = getCurrentUser()
   const [ruoliAperti, setRuoliAperti] = useState(false)
   const [passwordAperta, setPasswordAperta] = useState(false)
+  const [elenchiAperti, setElenchiAperti] = useState(false)
   const logout    = useLogout()
   const { data: eventiOggi = [] } = useEventi({ data: TODAY })
 
@@ -159,6 +161,12 @@ export function ProfiloScreen() {
             onClick={() => setRuoliAperti(true)}
           />
           <Voce
+            icon={<ListChecks size={18} strokeWidth={1.75} />}
+            label="Elenchi"
+            sublabel="Voci delle tendine: origine, famiglia, sostanze…"
+            onClick={() => setElenchiAperti(true)}
+          />
+          <Voce
             icon={<Tag size={18} strokeWidth={1.75} />}
             label="Categorie & tag"
             sublabel="Personalizza tag e bisogni"
@@ -211,6 +219,7 @@ export function ProfiloScreen() {
 
       </div>
       {ruoliAperti && <RuoliManager onClose={() => setRuoliAperti(false)} />}
+      {elenchiAperti && <ElenchiManager onClose={() => setElenchiAperti(false)} />}
       {passwordAperta && <CambiaPasswordModal onClose={() => setPasswordAperta(false)} />}
     </MobileLayout>
   )

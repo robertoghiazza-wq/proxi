@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Persona extends Model
 {
@@ -51,6 +52,21 @@ class Persona extends Model
     public function telefoni(): HasMany
     {
         return $this->hasMany(PersonaTelefono::class)->orderBy('ordine');
+    }
+
+    public function profilo(): HasOne
+    {
+        return $this->hasOne(PersonaProfilo::class);
+    }
+
+    public function sostanze(): HasMany
+    {
+        return $this->hasMany(PersonaSostanza::class)->orderBy('ordine');
+    }
+
+    public function diario(): HasMany
+    {
+        return $this->hasMany(PersonaDiario::class)->orderByDesc('data')->orderByDesc('id');
     }
 
     public function servizi(): BelongsToMany
