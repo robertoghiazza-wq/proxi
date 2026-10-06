@@ -7,6 +7,10 @@
      Sui telefoni senza notch (status bar da 20px) resta intera, così l'orologio rimane sul rosso. */
   --sat: max(calc(env(safe-area-inset-top, 0px) - 10px), min(env(safe-area-inset-top, 0px), 24px));
   --sab: env(safe-area-inset-bottom, 0px);
+  /* Tab bar mobile: altezza fissa; sotto, solo una frazione della safe area (l'indicatore di home occupa poco) */
+  --tab-sotto: calc(var(--sab) * 0.3);
+  --tab-h: 50px;
+  --tabbar: calc(var(--tab-h) + var(--tab-sotto));
   --marchio: 46px; /* altezza della barra col logo (solo mobile) */
 
   /* Superfici e testo */

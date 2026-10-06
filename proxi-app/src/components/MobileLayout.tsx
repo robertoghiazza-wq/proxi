@@ -124,7 +124,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
           </div>
         </div>
       </div>
-      <div style={{ flex: 1, paddingBottom: 'calc(60px + var(--sab))' }}>
+      <div style={{ flex: 1, paddingBottom: 'var(--tabbar)' }}>
         {children}
       </div>
 
@@ -136,7 +136,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
         zIndex: 99,
-        paddingBottom: 'var(--sab)',
+        height: 'var(--tabbar)', paddingBottom: 'var(--tab-sotto)', boxSizing: 'border-box',
       }}>
         {TABS.map(({ path, icon: Icon, label }) => {
           const active = tabAttiva(pathname, path)
@@ -145,9 +145,9 @@ export function MobileLayout({ children }: MobileLayoutProps) {
               key={path}
               onClick={() => navigate(path)}
               style={{
-                flex: 1, padding: '8px 4px 7px',
+                flex: 1, height: 'var(--tab-h)', padding: '0 4px',
                 display: 'flex', flexDirection: 'column',
-                alignItems: 'center', gap: 3,
+                alignItems: 'center', justifyContent: 'center', gap: 3,
                 background: 'none', border: 'none', cursor: 'pointer',
                 color: active ? 'var(--prox-accent)' : 'var(--prox-ink3)',
                 transition: 'color 0.15s',
