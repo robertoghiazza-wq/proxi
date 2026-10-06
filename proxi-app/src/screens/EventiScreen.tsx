@@ -59,7 +59,7 @@ export function EventiScreen() {
       {/* Header sticky */}
       <div style={{
         padding: '20px 16px 12px',
-        background: 'var(--prox-surface)',
+        background: 'var(--prox-surface2)', boxShadow: '0 4px 10px rgba(20,23,28,0.05)',
         borderBottom: '1px solid var(--prox-line)',
         position: 'sticky', top: 'var(--sat)', zIndex: 10,
       }}>
@@ -80,9 +80,9 @@ export function EventiScreen() {
                 key={key}
                 onClick={() => setFiltro(key)}
                 style={{
-                  padding: '4px 10px', borderRadius: 999, border: 'none',
+                  padding: '4px 10px', borderRadius: 999, border: `1px solid ${active ? 'transparent' : 'var(--prox-line)'}`,
                   fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
-                  background: active ? 'var(--prox-accent)' : 'var(--prox-surface2)',
+                  background: active ? 'var(--prox-accent)' : 'var(--prox-surface)',
                   color: active ? '#fff' : 'var(--prox-ink2)',
                 }}
               >

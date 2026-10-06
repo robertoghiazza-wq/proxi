@@ -83,6 +83,12 @@ body::before {
   pointer-events: none;
 }
 
+/* Desktop: la stessa fascia rossa, fissa in cima alla finestra (continuità con la versione mobile) */
+@media (min-width: 768px) {
+  body::before { height: 4px; }
+  #root { padding-top: 4px; }
+}
+
 /* Utility classes dal design handoff */
 .prox-display {
   font-family: 'Inter Tight', 'Inter', sans-serif;

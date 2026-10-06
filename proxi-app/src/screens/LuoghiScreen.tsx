@@ -41,7 +41,7 @@ export function LuoghiScreen() {
       {/* Header sticky */}
       <div style={{
         padding: '20px 16px 12px',
-        background: 'var(--prox-surface)',
+        background: 'var(--prox-surface2)', boxShadow: '0 4px 10px rgba(20,23,28,0.05)',
         borderBottom: '1px solid var(--prox-line)',
         position: 'sticky', top: 'var(--sat)', zIndex: 10,
       }}>
@@ -57,7 +57,7 @@ export function LuoghiScreen() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8, flex: 1,
-            background: 'var(--prox-surface2)', borderRadius: 12,
+            background: 'var(--prox-surface)', borderRadius: 12,
             padding: '8px 12px', border: '1px solid var(--prox-line)',
           }}>
             <Search size={16} color="var(--prox-ink3)" strokeWidth={1.75} />
@@ -71,7 +71,7 @@ export function LuoghiScreen() {
               }}
             />
           </div>
-          <div style={{ display: 'flex', background: 'var(--prox-surface2)', borderRadius: 10, padding: 2, border: '1px solid var(--prox-line)' }}>
+          <div style={{ display: 'flex', background: 'var(--prox-surface)', borderRadius: 10, padding: 2, border: '1px solid var(--prox-line)' }}>
             {(['lista', 'mappa'] as const).map(v => (
               <button
                 key={v}
@@ -80,7 +80,7 @@ export function LuoghiScreen() {
                 style={{
                   width: 34, height: 30, borderRadius: 8, border: 'none', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: vista === v ? 'var(--prox-surface)' : 'transparent',
+                  background: vista === v ? 'var(--prox-surface2)' : 'transparent',
                   color: vista === v ? 'var(--prox-ink)' : 'var(--prox-ink3)',
                   boxShadow: vista === v ? '0 1px 2px rgba(0,0,0,0.08)' : 'none',
                 }}

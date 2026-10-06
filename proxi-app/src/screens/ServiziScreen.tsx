@@ -28,7 +28,7 @@ export function ServiziScreen() {
   return (
     <MobileLayout>
       <div style={{
-        padding: '20px 16px 12px', background: 'var(--prox-surface)',
+        padding: '20px 16px 12px', background: 'var(--prox-surface2)', boxShadow: '0 4px 10px rgba(20,23,28,0.05)',
         borderBottom: '1px solid var(--prox-line)',
         position: 'sticky', top: 'var(--sat)', zIndex: 10,
       }}>
@@ -40,7 +40,7 @@ export function ServiziScreen() {
         </div>
 
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 8, background: 'var(--prox-surface2)',
+          display: 'flex', alignItems: 'center', gap: 8, background: 'var(--prox-surface)',
           borderRadius: 12, padding: '8px 12px', border: '1px solid var(--prox-line)',
         }}>
           <Search size={16} color="var(--prox-ink3)" strokeWidth={1.75} />

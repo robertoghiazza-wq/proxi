@@ -40,7 +40,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
 
   if (isDesktop) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--prox-bg)' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100dvh - 4px)', background: 'var(--prox-bg)' }}>
 
         {/* ── Topbar (come nel design: logo Proxi | ente | navigazione | utente) ── */}
         <header style={{
@@ -108,6 +108,21 @@ export function MobileLayout({ children }: MobileLayoutProps) {
       minHeight: '100svh', background: 'var(--prox-bg)',
       width: '100%',
     }}>
+      {/* Contesto: sotto la fascia rossa della notch, logo Proxi e dell'ente (scorre via col contenuto) */}
+      <div style={{
+        flexShrink: 0, padding: '9px 16px', background: 'var(--prox-surface)', borderBottom: '1px solid var(--prox-line)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+      }}>
+        <ProxiLogo height={22} />
+        <div style={{ width: 1, height: 22, background: 'var(--prox-line)' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+          <OrgLogo nome={ente} size={26} />
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.1, color: 'var(--prox-ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ente ?? 'Proxi'}</div>
+            <div style={{ fontSize: 10, color: 'var(--prox-ink3)', marginTop: 1 }}>Servizio di prossimità</div>
+          </div>
+        </div>
+      </div>
       <div style={{ flex: 1, paddingBottom: 'calc(60px + var(--sab))' }}>
         {children}
       </div>

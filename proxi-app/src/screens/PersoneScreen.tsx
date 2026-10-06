@@ -117,7 +117,7 @@ export function PersoneScreen() {
       <div style={{
         padding: '20px 16px 12px',
         borderBottom: '1px solid var(--prox-line)',
-        background: 'var(--prox-surface)',
+        background: 'var(--prox-surface2)', boxShadow: '0 4px 10px rgba(20,23,28,0.05)',
         position: 'sticky', top: 'var(--sat)', zIndex: 10,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -130,7 +130,7 @@ export function PersoneScreen() {
         {/* Search */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
-          background: 'var(--prox-surface2)',
+          background: 'var(--prox-surface)',
           borderRadius: 12, padding: '8px 12px',
           border: '1px solid var(--prox-line)',
         }}>
@@ -155,9 +155,9 @@ export function PersoneScreen() {
                 key={key}
                 onClick={() => setFiltro(key)}
                 style={{
-                  padding: '4px 10px', borderRadius: 999, border: 'none',
+                  padding: '4px 10px', borderRadius: 999, border: `1px solid ${active ? 'transparent' : 'var(--prox-line)'}`,
                   fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
-                  background: active ? 'var(--prox-accent)' : 'var(--prox-surface2)',
+                  background: active ? 'var(--prox-accent)' : 'var(--prox-surface)',
                   color: active ? '#fff' : 'var(--prox-ink2)',
                   transition: 'background 0.15s',
                 }}

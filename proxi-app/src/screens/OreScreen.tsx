@@ -22,7 +22,7 @@ export function OreScreen() {
   return (
     <MobileLayout>
       <div style={{
-        padding: '16px 16px 12px', background: 'var(--prox-surface)', borderBottom: '1px solid var(--prox-line)',
+        padding: '16px 16px 12px', background: 'var(--prox-surface2)', borderBottom: '1px solid var(--prox-line)', boxShadow: '0 4px 10px rgba(20,23,28,0.05)',
         position: 'sticky', top: 'var(--sat)', zIndex: 10,
       }}>
         <button onClick={() => navigate('/profilo')} style={{
@@ -40,7 +40,7 @@ export function OreScreen() {
             onChange={e => { const v = Number(e.target.value); setScelta(v); setParams({ persona: String(v) }, { replace: true }) }}
             style={{
               width: '100%', boxSizing: 'border-box', padding: '10px 12px', borderRadius: 12, border: '1px solid var(--prox-line)',
-              background: 'var(--prox-surface2)', fontSize: 14, color: 'var(--prox-ink)', fontFamily: 'inherit', appearance: 'auto',
+              background: 'var(--prox-surface)', fontSize: 14, color: 'var(--prox-ink)', fontFamily: 'inherit', appearance: 'auto',
             }}
           >
             {dipendenti.length === 0 && <option value="">Nessun dipendente</option>}
