@@ -22,7 +22,7 @@ export function Modal({ open, onClose, children, width = 600 }: ModalProps) {
   if (!isDesktop) {
     return (
       <div style={{
-        position: 'fixed', top: 0, left: 0, right: 0, height: 'var(--h-app, 100%)', zIndex: 100,
+        position: 'fixed', inset: 0, zIndex: 100,
         background: 'var(--prox-bg)',
         display: 'flex', flexDirection: 'column',
         paddingTop: 'var(--sat)', paddingBottom: 'var(--sab)',

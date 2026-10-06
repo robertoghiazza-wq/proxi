@@ -15,7 +15,7 @@ export function Drawer({ open, onClose, children, width = 600 }: DrawerProps) {
   if (!isDesktop) {
     return (
       <div style={{
-        position: 'fixed', top: 0, left: 0, right: 0, height: 'var(--h-app, 100%)',
+        position: 'fixed', inset: 0,
         background: 'var(--prox-bg)',
         zIndex: 200, overflowY: 'auto',
         display: 'flex', flexDirection: 'column',

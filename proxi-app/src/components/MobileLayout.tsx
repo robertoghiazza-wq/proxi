@@ -112,7 +112,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
   // ── Mobile ──
   return (
     <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, height: 'var(--h-app, 100%)', paddingTop: 'var(--sat)', boxSizing: 'border-box',
+      position: 'fixed', inset: 0, paddingTop: 'var(--sat)',
       display: 'flex', flexDirection: 'column', background: 'var(--prox-bg)',
     }}>
       {/* Contesto: sotto la fascia rossa della notch, logo Proxi e dell'ente (fuori dall'area che scorre, quindi sempre visibile) */}
@@ -138,7 +138,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
       </div>
 
       <nav style={{
-        position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 99, // la schermata sopra è fixed a tutta altezza: il fondo è il bordo fisico
+        position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 99,
         background: 'var(--prox-surface)',
         borderTop: '1px solid var(--prox-line)',
         display: 'flex',

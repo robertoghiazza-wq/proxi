@@ -156,7 +156,7 @@ export function LuoghiScreen() {
       </div>
       {vista === 'mappa' && !isLoading && sotto > 0 && (
         <div style={{
-          position: isDesktop ? 'fixed' : 'absolute', left: 0, right: 0, top: sotto, zIndex: 5,
+          position: 'fixed', left: 0, right: 0, top: sotto, zIndex: 5,
           bottom: isDesktop ? 0 : 'var(--tabbar)',
         }}>
           <LuoghiMap luoghi={luoghi} colors={TIPO_COLOR} onOpen={id => navigate(`/luoghi/${id}`)} />
