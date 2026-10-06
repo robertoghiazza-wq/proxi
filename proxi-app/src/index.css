@@ -3,8 +3,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700&display=swap');
 
 :root {
-  --sat: env(safe-area-inset-top, 0px);
+  /* Zona sopra al contenuto: la fascia rossa finisce dove finisce fisicamente notch/isola (la safe area è ~10px più bassa).
+     Sui telefoni senza notch (status bar da 20px) resta intera, così l'orologio rimane sul rosso. */
+  --sat: max(calc(env(safe-area-inset-top, 0px) - 10px), min(env(safe-area-inset-top, 0px), 24px));
   --sab: env(safe-area-inset-bottom, 0px);
+  --marchio: 46px; /* altezza della barra col logo (solo mobile) */
 
   /* Superfici e testo */
   --prox-bg:        #f1f2f4;
@@ -85,6 +88,7 @@ body::before {
 
 /* Desktop: la stessa fascia rossa, fissa in cima alla finestra (continuità con la versione mobile) */
 @media (min-width: 768px) {
+  :root { --marchio: 0px; }
   body::before { height: 4px; }
   #root { padding-top: 4px; }
 }

@@ -23,7 +23,7 @@ export function OreScreen() {
     <MobileLayout>
       <div style={{
         padding: '16px 16px 12px', background: 'var(--prox-surface2)', borderBottom: '1px solid var(--prox-line)', boxShadow: '0 4px 10px rgba(20,23,28,0.05)',
-        position: 'sticky', top: 'var(--sat)', zIndex: 10,
+        position: 'sticky', top: 'calc(var(--sat) + var(--marchio))', zIndex: 10,
       }}>
         <button onClick={() => navigate('/profilo')} style={{
           display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer',

@@ -118,7 +118,7 @@ export function PersoneScreen() {
         padding: '20px 16px 12px',
         borderBottom: '1px solid var(--prox-line)',
         background: 'var(--prox-surface2)', boxShadow: '0 4px 10px rgba(20,23,28,0.05)',
-        position: 'sticky', top: 'var(--sat)', zIndex: 10,
+        position: 'sticky', top: 'calc(var(--sat) + var(--marchio))', zIndex: 10,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <PersoneServiziSwitch current="persone" />

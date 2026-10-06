@@ -108,10 +108,11 @@ export function MobileLayout({ children }: MobileLayoutProps) {
       minHeight: '100svh', background: 'var(--prox-bg)',
       width: '100%',
     }}>
-      {/* Contesto: sotto la fascia rossa della notch, logo Proxi e dell'ente (scorre via col contenuto) */}
+      {/* Contesto: sotto la fascia rossa della notch, logo Proxi e dell'ente (fissa in alto) */}
       <div style={{
-        flexShrink: 0, padding: '9px 16px', background: 'var(--prox-surface)', borderBottom: '1px solid var(--prox-line)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+        flexShrink: 0, height: 'var(--marchio)', padding: '0 16px', background: 'var(--prox-surface)', borderBottom: '1px solid var(--prox-line)',
+        display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 12,
+        position: 'sticky', top: 'var(--sat)', zIndex: 11,
       }}>
         <ProxiLogo height={22} />
         <div style={{ width: 1, height: 22, background: 'var(--prox-line)' }} />
