@@ -1,6 +1,7 @@
 // Riquadro di misura per capire dove arriva davvero lo schermo su iPhone (si apre toccando 5 volte il logo Proxi)
 
 import { useEffect, useRef, useState } from 'react'
+import { logAltezza, ripara } from '../lib/altezzaApp'
 
 export function Diagnostica({ onChiudi }: { onChiudi: () => void }) {
   const [righe, setRighe] = useState<string[]>([])
@@ -28,6 +29,7 @@ export function Diagnostica({ onChiudi }: { onChiudi: () => void }) {
         `safe area top ${cs?.paddingTop} · bottom ${cs?.paddingBottom}`,
         `tab bar top ${Math.round(nav?.top ?? -1)} · bottom ${Math.round(nav?.bottom ?? -1)} · h ${Math.round(nav?.height ?? -1)}`,
         `--sat ${getComputedStyle(document.documentElement).getPropertyValue('--sat').trim().slice(0, 40)}`,
+        ...logAltezza.map(l => `» ${l}`),
       ])
     }
     misura()
@@ -56,6 +58,7 @@ export function Diagnostica({ onChiudi }: { onChiudi: () => void }) {
       }}>
         <div style={{ fontWeight: 700, marginBottom: 4 }}>Diagnostica · tocca per chiudere</div>
         {righe.map((r, i) => <div key={i}>{r}</div>)}
+        <button onClick={e => { e.stopPropagation(); ripara('manuale') }} style={{ marginTop: 6, padding: '4px 10px', borderRadius: 6, border: '1px solid #fff', background: 'none', color: '#fff', font: 'inherit' }}>Riprova ricalcolo</button>
         <div style={{ marginTop: 4, opacity: 0.7 }}>magenta = fondo di bottom:0 · ciano = fondo di 100lvh</div>
       </div>
     </>
