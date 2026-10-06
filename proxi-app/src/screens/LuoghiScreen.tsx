@@ -43,7 +43,7 @@ export function LuoghiScreen() {
     window.addEventListener('resize', misura)
     return () => { ro.disconnect(); window.removeEventListener('resize', misura) }
   }, [])
-  useEffect(() => { if (vista === 'mappa') window.scrollTo(0, 0) }, [vista])
+  useEffect(() => { if (vista === 'mappa') document.getElementById('area-scorrevole')?.scrollTo(0, 0) }, [vista])
 
   const { data: tuttiLuoghi = [], isLoading, isError, error } = useLuoghi()
 
@@ -60,7 +60,7 @@ export function LuoghiScreen() {
         padding: '20px 16px 12px',
         background: 'var(--prox-surface2)', boxShadow: '0 4px 10px rgba(20,23,28,0.05)',
         borderBottom: '1px solid var(--prox-line)',
-        position: 'sticky', top: 'calc(var(--sat) + var(--marchio))', zIndex: 10,
+        position: 'sticky', top: 0, zIndex: 10,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div className="prox-display" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 22, fontWeight: 700 }}>

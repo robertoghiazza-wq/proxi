@@ -73,12 +73,13 @@ html, body {
 /* Sfondo bianco sotto tutto (se la tab bar non arriva al bordo, sotto non compare il grigio) */
 html { background: var(--prox-surface); }
 
-/* Il documento è sempre un filo più alto dello schermo: su iOS la barra fissa in fondo si comporta
-   allo stesso modo in tutte le sezioni (altrimenti cambia tra pagine corte e lunghe) */
 body {
-  min-height: calc(100svh + 1px);
+  min-height: 100svh;
   background: var(--prox-bg);
 }
+
+/* Mobile: il documento non scorre (scorre solo l'area centrale dentro MobileLayout) */
+html.app-shell, html.app-shell body { height: 100%; overflow: hidden; }
 
 #root {
   min-height: 100svh;
@@ -98,7 +99,6 @@ body::before {
 /* Desktop: la stessa fascia rossa, fissa in cima alla finestra (continuità con la versione mobile) */
 @media (min-width: 768px) {
   :root { --marchio: 0px; }
-  body { min-height: 100svh; }
   body::before { height: 4px; }
   #root { padding-top: 4px; }
 }

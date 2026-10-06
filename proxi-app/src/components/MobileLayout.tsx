@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Home, Users, Calendar, MapPin, User } from 'lucide-react'
 import { useIsDesktop } from '../hooks/useIsDesktop'
@@ -37,6 +38,13 @@ export function MobileLayout({ children }: MobileLayoutProps) {
     ...TABS.filter(t => t.path !== '/profilo'),
     ...(gestore ? [{ path: '/ore', label: 'Ore' }] : []),
   ]
+
+  // Su mobile il documento non scorre: scorre solo l'area centrale, così la tab bar sta sempre nello stesso punto
+  useEffect(() => {
+    if (isDesktop) return
+    document.documentElement.classList.add('app-shell')
+    return () => document.documentElement.classList.remove('app-shell')
+  }, [isDesktop])
 
   if (isDesktop) {
     return (
@@ -104,15 +112,13 @@ export function MobileLayout({ children }: MobileLayoutProps) {
   // ── Mobile ──
   return (
     <div style={{
-      display: 'flex', flexDirection: 'column',
-      minHeight: '100svh', background: 'var(--prox-bg)',
-      width: '100%',
+      position: 'fixed', inset: 0, paddingTop: 'var(--sat)',
+      display: 'flex', flexDirection: 'column', background: 'var(--prox-bg)',
     }}>
-      {/* Contesto: sotto la fascia rossa della notch, logo Proxi e dell'ente (fissa in alto) */}
+      {/* Contesto: sotto la fascia rossa della notch, logo Proxi e dell'ente (fuori dall'area che scorre, quindi sempre visibile) */}
       <div style={{
         flexShrink: 0, height: 'var(--marchio)', padding: '0 16px', background: 'var(--prox-surface)', borderBottom: '1px solid var(--prox-line)',
         display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 12,
-        position: 'sticky', top: 'var(--sat)', zIndex: 11,
       }}>
         <ProxiLogo height={22} />
         <div style={{ width: 1, height: 22, background: 'var(--prox-line)' }} />
@@ -124,18 +130,15 @@ export function MobileLayout({ children }: MobileLayoutProps) {
           </div>
         </div>
       </div>
-      <div style={{ flex: 1, paddingBottom: 'var(--tabbar)' }}>
+      <div id="area-scorrevole" style={{ flex: 1, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}>
         {children}
       </div>
 
       <nav style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0,
-        background: 'rgba(255,255,255,0.92)',
+        flexShrink: 0,
+        background: 'var(--prox-surface)',
         borderTop: '1px solid var(--prox-line)',
         display: 'flex',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        zIndex: 99,
         height: 'var(--tabbar)', paddingBottom: 'var(--tab-sotto)', boxSizing: 'border-box',
         boxShadow: '0 60px 0 0 var(--prox-surface)', // il bianco continua sotto la barra, fino al bordo fisico
       }}>
