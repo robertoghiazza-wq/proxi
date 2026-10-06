@@ -5,12 +5,12 @@ import { X, Plus, Trash2 } from 'lucide-react'
 import { Modal } from './Modal'
 import { ConfirmDialog } from './ConfirmDialog'
 import { useRuoli, useCreateRuolo, useUpdateRuolo, useDeleteRuolo } from '../hooks/useRuoli'
-import { getCurrentUser } from '../lib/api-client'
+import { useGestore } from '../hooks/useAuth'
 import type { Ruolo } from '../types'
 
 export function RuoliManager({ onClose }: { onClose: () => void }) {
   const { data: ruoli = [], isLoading } = useRuoli()
-  const puoModificare = ['coordinatore', 'admin'].includes(getCurrentUser()?.role ?? '')
+  const puoModificare = useGestore()
   const [modifica, setModifica] = useState<Ruolo | 'nuovo' | null>(null)
   const [query, setQuery] = useState('')
 

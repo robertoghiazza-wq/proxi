@@ -4,13 +4,13 @@ import { useState } from 'react'
 import { X, Trash2, Check } from 'lucide-react'
 import { Modal } from './Modal'
 import { useVocaboli, useSalvaVocabolo, useEliminaVocabolo } from '../hooks/useSchedaUtente'
-import { getCurrentUser } from '../lib/api-client'
+import { useGestore } from '../hooks/useAuth'
 
 export function ElenchiManager({ onClose }: { onClose: () => void }) {
   const { data } = useVocaboli()
   const salva = useSalvaVocabolo()
   const elimina = useEliminaVocabolo()
-  const puoModificare = ['coordinatore', 'admin'].includes(getCurrentUser()?.role ?? '')
+  const puoModificare = useGestore()
 
   const categorie = Object.entries(data?.categorie ?? {})
   const [scelta, setScelta] = useState<string | null>(null)

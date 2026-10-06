@@ -17,7 +17,7 @@ import {
   AnagraficaCampi, ContattiCampi, NoteCampi, anagraficaDa, contattiDa, noteDa,
   datiAnagrafica, datiContatti, datiNote,
 } from '../components/PersonaCampi'
-import { getCurrentUser } from '../lib/api-client'
+import { useGestore } from '../hooks/useAuth'
 import { colorForTipo } from '../lib/mock-data'
 import { nomePersona, etichettaRuolo, etichettaTipo } from '../lib/persona'
 import { usePersona, useDeletePersona, useUpdatePersona } from '../hooks/usePersone'
@@ -68,7 +68,7 @@ export function PersonaDetail({ apriInModifica }: { apriInModifica?: boolean }) 
   const [confermaElimina, setConfermaElimina] = useState(false)
   const [tab, setTab] = useState<TabKey>(apriInModifica ? 'anagrafica' : 'contatti')
   const [modificaAnag, setModificaAnag] = useState(!!apriInModifica)
-  const gestore = ['coordinatore', 'admin'].includes(getCurrentUser()?.role ?? '')
+  const gestore = useGestore()
 
   if (isLoading) {
     return <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Caricamento…</div>

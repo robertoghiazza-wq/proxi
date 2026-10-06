@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { api, setToken, clearToken, setCurrentUser } from '../lib/api-client'
+import { api, setToken, clearToken, setCurrentUser, getCurrentUser } from '../lib/api-client'
 
 interface LoginPayload { email: string; password: string }
 interface LoginResponse { token: string; user: { id: number; name: string; role: string } }
@@ -34,6 +34,16 @@ export function useMe() {
     staleTime: 1000 * 60 * 10,
     enabled: !!localStorage.getItem('proxi_token'),
   })
+}
+
+// Ruolo dell'utente collegato, riletto dal server (non solo dalla copia locale): coordinatori e admin gestiscono contratti, ore, elenchi
+export function useRuolo(): string {
+  const { data: me } = useMe()
+  return me?.role ?? getCurrentUser()?.role ?? ''
+}
+
+export function useGestore(): boolean {
+  return ['coordinatore', 'admin'].includes(useRuolo())
 }
 
 export function useLogout() {

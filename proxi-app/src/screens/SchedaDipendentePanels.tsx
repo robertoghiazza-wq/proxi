@@ -8,7 +8,7 @@ import { ConfirmDialog } from '../components/ConfirmDialog'
 import { Tag } from '../components/Tag'
 import { Titolo, Voce, BarraSalva, etichetta, vuoto, testoStile, campo, btn, azione } from '../components/SchedaUi'
 import { useContratti, useSalvaContratto, useEliminaContratto, useAccount, useGestioneAccount, type DatiContratto } from '../hooks/useDipendente'
-import { getCurrentUser } from '../lib/api-client'
+import { useRuolo } from '../hooks/useAuth'
 import type { Contratto, Persona, Role } from '../types'
 
 const chf = (v: string | null) => (v === null ? '—' : `CHF ${new Intl.NumberFormat('de-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(v))}`)
@@ -189,7 +189,7 @@ const RUOLI_ACCOUNT: { key: Role; label: string }[] = [
 export function AccountPanel({ persona }: { persona: Persona }) {
   const { data, isLoading, error } = useAccount(persona.id)
   const g = useGestioneAccount(persona.id)
-  const sonoAdmin = getCurrentUser()?.role === 'admin'
+  const sonoAdmin = useRuolo() === 'admin'
   const ruoliPossibili = RUOLI_ACCOUNT.filter(r => sonoAdmin || r.key === 'educatore')
 
   const [email, setEmail] = useState(persona.email ?? '')

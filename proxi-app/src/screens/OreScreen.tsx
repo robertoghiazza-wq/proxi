@@ -5,14 +5,14 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ChevronLeft, Clock } from 'lucide-react'
 import { MobileLayout } from '../components/MobileLayout'
 import { OreView } from '../components/OreView'
-import { getCurrentUser } from '../lib/api-client'
+import { useGestore } from '../hooks/useAuth'
 import { usePersone } from '../hooks/usePersone'
 import { nomePersona } from '../lib/persona'
 
 export function OreScreen() {
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
-  const gestore = ['coordinatore', 'admin'].includes(getCurrentUser()?.role ?? '')
+  const gestore = useGestore()
   const { data: persone = [] } = usePersone()
   const dipendenti = persone.filter(p => p.ruolo === 'dipendente')
 
