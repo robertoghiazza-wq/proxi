@@ -7,6 +7,7 @@ import { MobileLayout } from '../components/MobileLayout'
 import { Drawer } from '../components/Drawer'
 import { Modal } from '../components/Modal'
 import { Card } from '../components/Card'
+import { LuogoThumb } from '../components/LuogoThumb'
 import { LuoghiMap } from '../components/LuoghiMap'
 import { TIPO_LUOGO_LABEL } from '../lib/mock-data'
 import { useLuoghi } from '../hooks/useLuoghi'
@@ -113,7 +114,7 @@ export function LuoghiScreen() {
             >
               <div style={{ width: 4, height: 40, borderRadius: 2, background: color, flexShrink: 0 }} />
               {/* stessa colonna dell'orario negli eventi, così il nome parte alla stessa distanza */}
-              <div style={{ width: 42, flexShrink: 0 }} />
+              <LuogoThumb lat={l.lat} lng={l.lng} color={color} size={42} radius={8} />
 
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13.5, fontWeight: 600, marginBottom: 2, color: 'var(--prox-ink)' }}>

@@ -57,10 +57,6 @@ export function LuogoThumb({ lat, lng, color, size = 44, radius = 10 }: Props) {
           }}
         />
       </span>
-      <span style={{
-        position: 'absolute', inset: 0, borderRadius: radius,
-        boxShadow: `inset 0 0 0 1.5px ${color}`, pointerEvents: 'none',
-      }} />
     </div>
   )
 }
