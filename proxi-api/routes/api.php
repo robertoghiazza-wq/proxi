@@ -56,6 +56,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/persone/{id}/account', [\App\Http\Controllers\Api\AccountController::class, 'update']);
     Route::post('/persone/{id}/account/reset', [\App\Http\Controllers\Api\AccountController::class, 'reset']);
 
+    // Conteggio ore dei dipendenti ("me" = il proprio)
+    Route::get('/ore/{persona}', [\App\Http\Controllers\Api\OreController::class, 'mese']);
+    Route::get('/ore/{persona}/anno', [\App\Http\Controllers\Api\OreController::class, 'anno']);
+    Route::put('/ore/{persona}/mese', [\App\Http\Controllers\Api\OreController::class, 'salvaMese']);
+
     // Elenchi a tendina
     Route::apiResource('vocaboli', \App\Http\Controllers\Api\VocaboloController::class)->except('show');
 

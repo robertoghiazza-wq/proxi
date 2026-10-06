@@ -10,6 +10,7 @@ import { EventTypeDot } from '../components/EventTypeDot'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { InfoPanel, NotePanel, DiarioPanel } from './SchedaUtentePanels'
 import { ContrattoPanel, AccountPanel } from './SchedaDipendentePanels'
+import { OreView } from '../components/OreView'
 import { BarraTab, BarraSalva, BtnModifica, Titolo, Voce, testoStile } from '../components/SchedaUi'
 import {
   AnagraficaCampi, ContattiCampi, NoteCampi, anagraficaDa, contattiDa, noteDa,
@@ -24,7 +25,7 @@ import type { Persona, Evento } from '../types'
 
 const TAG_VULNERABILI = ['senza fissa dimora', 'minore', 'dipendenza', 'prostituzione']
 
-type TabKey = 'anagrafica' | 'contatti' | 'eventi' | 'servizi' | 'info' | 'note' | 'diario' | 'contratto' | 'user'
+type TabKey = 'anagrafica' | 'contatti' | 'eventi' | 'servizi' | 'info' | 'note' | 'diario' | 'ore' | 'contratto' | 'user'
 
 function tabPer(p: Persona, gestore: boolean): { key: TabKey; label: string }[] {
   const base = [{ key: 'anagrafica' as const, label: 'Anagrafica' }, { key: 'contatti' as const, label: 'Contatti' }]
@@ -34,7 +35,7 @@ function tabPer(p: Persona, gestore: boolean): { key: TabKey; label: string }[] 
   if (p.ruolo === 'dipendente') {
     return [
       ...base, { key: 'eventi', label: 'Eventi' }, { key: 'note', label: 'Note' },
-      ...(gestore ? [{ key: 'contratto' as const, label: 'Contratto' }, { key: 'user' as const, label: 'User' }] : []),
+      ...(gestore ? [{ key: 'ore' as const, label: 'Ore' }, { key: 'contratto' as const, label: 'Contratto' }, { key: 'user' as const, label: 'User' }] : []),
     ]
   }
   return [...base, { key: 'servizi', label: 'Servizi' }, { key: 'eventi', label: 'Eventi' }, { key: 'note', label: 'Note' }]
@@ -185,6 +186,7 @@ export function PersonaDetail({ apriInModifica }: { apriInModifica?: boolean }) 
         {tabAttiva === 'diario' && persona.ruolo === 'utente' && <DiarioPanel persona={persona} />}
         {tabAttiva === 'note' && persona.ruolo === 'utente' && <NotePanel persona={persona} />}
         {tabAttiva === 'note' && persona.ruolo !== 'utente' && <PannelloNote persona={persona} />}
+        {tabAttiva === 'ore' && persona.ruolo === 'dipendente' && gestore && <OreView persona={persona.id} gestore />}
         {tabAttiva === 'contratto' && persona.ruolo === 'dipendente' && gestore && <ContrattoPanel persona={persona} />}
         {tabAttiva === 'user' && persona.ruolo === 'dipendente' && gestore && <AccountPanel persona={persona} />}
 

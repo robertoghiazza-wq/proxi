@@ -1,8 +1,9 @@
 // Profilo educatore — ore lavorate + impostazioni
 
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
-  Download, Bell, Shield, Tag, FileText, LogOut, ChevronRight, BadgeCheck, KeyRound, ListChecks,
+  Download, Bell, Shield, Tag, FileText, LogOut, ChevronRight, BadgeCheck, KeyRound, ListChecks, Clock,
 } from 'lucide-react'
 import { RuoliManager } from '../components/RuoliManager'
 import { ElenchiManager } from '../components/ElenchiManager'
@@ -88,6 +89,7 @@ function Voce({ icon, label, sublabel, danger, onClick }: VoceProps) {
 
 export function ProfiloScreen() {
   const user      = getCurrentUser()
+  const navigate  = useNavigate()
   const [ruoliAperti, setRuoliAperti] = useState(false)
   const [passwordAperta, setPasswordAperta] = useState(false)
   const [elenchiAperti, setElenchiAperti] = useState(false)
@@ -138,6 +140,12 @@ export function ProfiloScreen() {
 
         {/* IMPOSTAZIONI */}
         <Card padding={0}>
+          <Voce
+            icon={<Clock size={18} strokeWidth={1.75} />}
+            label="Conteggio ore"
+            sublabel="Ore dovute, lavorate e saldo per mese e settimana"
+            onClick={() => navigate('/ore')}
+          />
           <Voce
             icon={<KeyRound size={18} strokeWidth={1.75} />}
             label="Cambia password"
