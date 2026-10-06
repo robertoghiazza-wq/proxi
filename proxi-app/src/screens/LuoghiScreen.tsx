@@ -7,7 +7,6 @@ import { MobileLayout } from '../components/MobileLayout'
 import { Drawer } from '../components/Drawer'
 import { Modal } from '../components/Modal'
 import { Card } from '../components/Card'
-import { LuogoThumb } from '../components/LuogoThumb'
 import { LuoghiMap } from '../components/LuoghiMap'
 import { TIPO_LUOGO_LABEL } from '../lib/mock-data'
 import { useLuoghi } from '../hooks/useLuoghi'
@@ -47,7 +46,7 @@ export function LuoghiScreen() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div className="prox-display" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 22, fontWeight: 700 }}>
-            <MapPin size={22} strokeWidth={2.2} />
+            <MapPin size={18} strokeWidth={1.75} />
             Luoghi
           </div>
           <button onClick={() => navigate('/luoghi/nuovo')} style={newBtn} aria-label="Nuovo luogo">
@@ -109,17 +108,19 @@ export function LuoghiScreen() {
             <Card
               key={l.id}
               onClick={() => navigate(`/luoghi/${l.id}`)}
-              padding={12}
-              style={{ display: 'flex', gap: 12, alignItems: 'center' }}
+              padding={10}
+              style={{ display: 'flex', gap: 10, alignItems: 'center' }}
             >
-              <LuogoThumb lat={l.lat} lng={l.lng} color={color} />
+              <div style={{ width: 4, height: 40, borderRadius: 2, background: color, flexShrink: 0 }} />
+              {/* stessa colonna dell'orario negli eventi, così il nome parte alla stessa distanza */}
+              <div style={{ width: 42, flexShrink: 0 }} />
 
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--prox-ink)' }}>
+                <div style={{ fontSize: 13.5, fontWeight: 600, marginBottom: 2, color: 'var(--prox-ink)' }}>
                   {l.nome}
                 </div>
                 <div style={{
-                  fontSize: 11.5, color: 'var(--prox-ink3)', marginTop: 2,
+                  fontSize: 11, color: 'var(--prox-ink3)',
                   display: 'flex', gap: 6, alignItems: 'center', minWidth: 0,
                 }}>
                   <span style={{ flexShrink: 0 }}>{TIPO_LUOGO_LABEL[l.tipo]}</span>

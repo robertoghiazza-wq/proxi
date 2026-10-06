@@ -65,7 +65,7 @@ export function EventiScreen() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div className="prox-display" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 22, fontWeight: 700 }}>
-            <Calendar size={22} strokeWidth={2.2} />
+            <Calendar size={18} strokeWidth={1.75} />
             Eventi
           </div>
           <button onClick={() => navigate('/eventi/nuovo')} style={newBtn} aria-label="Nuovo evento">

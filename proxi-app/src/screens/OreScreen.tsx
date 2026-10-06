@@ -32,7 +32,7 @@ export function OreScreen() {
           <ChevronLeft size={18} strokeWidth={1.75} /> Profilo
         </button>
         <div className="prox-display" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 22, fontWeight: 700, marginBottom: gestore ? 10 : 0 }}>
-          <Clock size={22} strokeWidth={2.2} /> Conteggio ore
+          <Clock size={18} strokeWidth={1.75} /> Conteggio ore
         </div>
         {gestore && (
           <select

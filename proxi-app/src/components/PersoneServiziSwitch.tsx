@@ -28,7 +28,7 @@ export function PersoneServiziSwitch({ current }: { current: 'persone' | 'serviz
               opacity: attivo ? 1 : 0.7,
             }}
           >
-            <v.icona size={22} strokeWidth={attivo ? 2.2 : 1.75} />
+            <v.icona size={18} strokeWidth={attivo ? 1.75 : 1.5} />
             {v.label}
           </button>
         )
