@@ -1,5 +1,6 @@
 // Servizio — dettaglio con mappa, contatti collegati e dettagli
 
+import { tenue } from '../lib/colori'
 import { nomeAvatar, nomePersona } from '../lib/persona'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -78,7 +79,7 @@ export function ServizioDetail() {
       <div style={{ padding: '16px 16px 0' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 14 }}>
           <div style={{
-            width: 44, height: 44, borderRadius: 12, background: TINTA + '22', flexShrink: 0,
+            width: 44, height: 44, borderRadius: 12, background: tenue(TINTA, 14), flexShrink: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <Building2 size={22} color={TINTA} strokeWidth={1.75} />

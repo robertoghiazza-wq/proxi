@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { MapPin } from 'lucide-react'
+import { tenue, scuro } from '../lib/colori'
 
 export function satelliteUrl(lat: number, lng: number, px: number, metri = 22) {
   const d = metri / 111320
@@ -30,14 +31,14 @@ export function LuogoThumb({ lat, lng, color, size = 44, radius = 10 }: Props) {
 
   if (lat == null || lng == null || failed) {
     return (
-      <div style={{ ...box, background: color + '22', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <MapPin size={Math.round(size / 2)} color={color} strokeWidth={1.75} />
+      <div style={{ ...box, background: tenue(color, 14), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <MapPin size={Math.round(size / 2)} color={scuro(color)} strokeWidth={1.75} />
       </div>
     )
   }
 
   return (
-    <div style={{ ...box, background: color + '22' }}>
+    <div style={{ ...box, background: tenue(color, 14) }}>
       <img
         src={satelliteUrl(lat, lng, size)}
         alt=""

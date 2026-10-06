@@ -9,6 +9,7 @@ import { DateField, TimeField } from '../components/DateFields'
 import { PersonePicker } from '../components/PersonePicker'
 import { useCreateEvento } from '../hooks/useEventi'
 import { useTipiEvento } from '../hooks/useTipi'
+import { tenue, scuro } from '../lib/colori'
 import { useLuoghi } from '../hooks/useLuoghi'
 import { api } from '../lib/api-client'
 import type { Luogo } from '../types'
@@ -342,8 +343,8 @@ export function StepTipo({ form, set }: { form: WizardState; set: SetFn }) {
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '7px 14px 7px 10px', borderRadius: 999,
                 border: `1.5px solid ${active ? c : 'var(--prox-line)'}`,
-                background: active ? c + '18' : 'var(--prox-surface)',
-                color: active ? c : 'var(--prox-ink3)',
+                background: active ? tenue(c, 14) : 'var(--prox-surface)',
+                color: active ? scuro(c) : 'var(--prox-ink3)',
                 fontSize: 13, fontWeight: 600, cursor: 'pointer',
                 whiteSpace: 'nowrap', flexShrink: 0,
                 transition: 'all 0.15s',
@@ -373,7 +374,7 @@ export function StepTipo({ form, set }: { form: WizardState; set: SetFn }) {
               style={{
                 display: 'flex', alignItems: 'center', gap: 12,
                 width: '100%', padding: '13px 14px',
-                background: active ? macroColor + '12' : 'transparent',
+                background: active ? tenue(macroColor, 10) : 'transparent',
                 border: 'none',
                 borderTop: i > 0 ? '1px solid var(--prox-line2)' : 'none',
                 cursor: 'pointer', textAlign: 'left',

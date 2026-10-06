@@ -10,6 +10,7 @@ import { LuogoMap } from '../components/LuogoMap'
 import { Tag } from '../components/Tag'
 import { EventTypeDot } from '../components/EventTypeDot'
 import { useTipiLuogo, useTipiEvento } from '../hooks/useTipi'
+import { tenue, scuro } from '../lib/colori'
 import { useLuogo } from '../hooks/useLuoghi'
 import { useEventi } from '../hooks/useEventi'
 
@@ -96,10 +97,10 @@ export function LuogoDetail() {
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
           <div style={{
             width: 44, height: 44, borderRadius: 12,
-            background: color + '22', flexShrink: 0,
+            background: tenue(color, 14), flexShrink: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <MapPin size={22} color={color} strokeWidth={1.75} />
+            <MapPin size={22} color={scuro(color)} strokeWidth={1.75} />
           </div>
           <div style={{ flex: 1 }}>
             <h1 className="prox-display" style={{
@@ -151,13 +152,13 @@ export function LuogoDetail() {
         {/* Stats */}
         <Card padding={0}>
           <div style={{ display: 'flex' }}>
-            <StatBox icon={<Users size={16} strokeWidth={1.75} color={color} />}
+            <StatBox icon={<Users size={16} strokeWidth={1.75} color={scuro(color)} />}
               value={Number(luogo.persone_count ?? 0)} label="Persone" />
             <div style={{ width: 1, background: 'var(--prox-line)' }} />
-            <StatBox icon={<Calendar size={16} strokeWidth={1.75} color={color} />}
+            <StatBox icon={<Calendar size={16} strokeWidth={1.75} color={scuro(color)} />}
               value={Number(luogo.eventi_settimana ?? 0)} label="Eventi/sett" />
             <div style={{ width: 1, background: 'var(--prox-line)' }} />
-            <StatBox icon={<Calendar size={16} strokeWidth={1.75} color={color} />}
+            <StatBox icon={<Calendar size={16} strokeWidth={1.75} color={scuro(color)} />}
               value={Number(luogo.eventi_totali ?? eventiTutti.length)} label="Totali" />
           </div>
         </Card>
