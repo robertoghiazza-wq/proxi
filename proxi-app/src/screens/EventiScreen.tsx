@@ -13,7 +13,7 @@ import { colorForTipo, tipoLabel } from '../lib/mock-data'
 import { daCompletare, mancantiTesto } from '../lib/completezza'
 import { useEventi, useDeleteEvento } from '../hooks/useEventi'
 import type { Evento, StatoEvento } from '../types'
-import { Plus, Check, CircleDashed, Calendar } from 'lucide-react'
+import { Plus, Check, CircleDashed, Calendar, Search } from 'lucide-react'
 
 type Filtro = 'tutti' | StatoEvento | 'incompleti'
 
@@ -41,14 +41,24 @@ export function EventiScreen() {
   const isNuovoOpen  = !!useMatch('/eventi/nuovo')
   const isDetailOpen = !!useMatch('/eventi/:id/*') && !isNuovoOpen
   const [filtro, setFiltro] = useState<Filtro>('tutti')
+  const [query, setQuery] = useState('')
   const [daEliminare, setDaEliminare] = useState<Evento | null>(null)
   const eliminaEvento = useDeleteEvento()
 
   const { data: tuttiEventi = [], isLoading } = useEventi({})
 
+  // Ricerca su tipo, luogo, persone, note e data (senza distinguere maiuscole e accenti)
+  const norm = (t: string) => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  const q = norm(query.trim())
+  const corrisponde = (e: Evento) => !q || norm([
+    tipoLabel(e.tipo), e.luogo?.nome, e.note, fmtData(e.data), e.data,
+    ...(e.persone ?? []).flatMap(p => [p.nome, p.cognome, p.soprannome]),
+  ].filter(Boolean).join(' ')).includes(q)
+
   const filtrati = tuttiEventi
     .filter(e => filtro === 'tutti'
       || (filtro === 'incompleti' ? daCompletare(e) : e.stato === filtro))
+    .filter(corrisponde)
   const nIncompleti = tuttiEventi.filter(daCompletare).length
 
   // Raggruppa per giorno
@@ -71,6 +81,18 @@ export function EventiScreen() {
           <button onClick={() => navigate('/eventi/nuovo')} style={newBtn} aria-label="Nuovo evento">
             <Plus size={18} strokeWidth={2.5} />
           </button>
+        </div>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10,
+          background: 'var(--prox-surface)', borderRadius: 12, padding: '8px 12px', border: '1px solid var(--prox-line)',
+        }}>
+          <Search size={16} color="var(--prox-ink3)" strokeWidth={1.75} />
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Cerca persona, luogo, tipo, nota…"
+            style={{ flex: 1, minWidth: 0, border: 'none', background: 'none', fontSize: 14, color: 'var(--prox-ink)', outline: 'none' }}
+          />
         </div>
         <div style={{ display: 'flex', gap: 6, overflowX: 'auto', margin: '0 -16px', padding: '0 16px', scrollbarWidth: 'none' }}>
           {FILTRI.map(({ key, label }) => {
@@ -102,7 +124,7 @@ export function EventiScreen() {
           <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-ink3)', fontSize: 14 }}>Caricamento…</div>
         )}
         {!isLoading && filtrati.length === 0 && (
-          <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-ink3)', fontSize: 14 }}>Nessun evento</div>
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-ink3)', fontSize: 14 }}>{q ? 'Nessun risultato' : 'Nessun evento'}</div>
         )}
         {giorni.map(data => {
           const eventiGiorno = filtrati.filter(e => e.data === data)
