@@ -23,10 +23,8 @@ const TIPO_COLOR: Record<TipoLuogo, string> = {
 
 export function LuoghiScreen() {
   const navigate = useNavigate()
-  const isModificaOpen = !!useMatch('/luoghi/:id/modifica')
-  const isNuovoOpen  = !!useMatch('/luoghi/nuovo') || isModificaOpen
-  const hasIdMatch   = !!useMatch('/luoghi/:id')
-  const isDetailOpen = hasIdMatch && !isNuovoOpen
+  const isNuovoOpen  = !!useMatch('/luoghi/nuovo')
+  const isDetailOpen = !!useMatch('/luoghi/:id/*') && !isNuovoOpen
   const [query, setQuery] = useState('')
   const [vista, setVista] = useState<'lista' | 'mappa'>('lista')
 

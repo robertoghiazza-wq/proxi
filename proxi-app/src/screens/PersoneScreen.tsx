@@ -84,9 +84,8 @@ const FILTRI: { key: Filtro; label: string }[] = [
 
 export function PersoneScreen() {
   const navigate = useNavigate()
-  const isModificaOpen = !!useMatch('/persone/:id/modifica')
-  const isNuovoOpen  = !!useMatch('/persone/nuovo') || isModificaOpen
-  const isDetailOpen = !!useMatch('/persone/:id') && !isNuovoOpen
+  const isNuovoOpen = !!useMatch('/persone/nuovo')
+  const isDetailOpen = !!useMatch('/persone/:id/*') && !isNuovoOpen
   const [query, setQuery]   = useState('')
   const [filtro, setFiltro] = useState<Filtro>('tutti')
 
@@ -122,15 +121,11 @@ export function PersoneScreen() {
         position: 'sticky', top: 'var(--sat)', zIndex: 10,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <div className="prox-display" style={{ fontSize: 22, fontWeight: 700 }}>
-            Persone
-          </div>
+          <PersoneServiziSwitch current="persone" />
           <button onClick={() => navigate('/persone/nuovo')} style={newBtn} aria-label="Nuova persona">
             <Plus size={18} strokeWidth={2.5} />
           </button>
         </div>
-
-        <PersoneServiziSwitch current="persone" />
 
         {/* Search */}
         <div style={{

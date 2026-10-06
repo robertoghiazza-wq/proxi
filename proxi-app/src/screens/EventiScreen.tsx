@@ -38,10 +38,8 @@ function fmtData(d: string) {
 
 export function EventiScreen() {
   const navigate = useNavigate()
-  const isModificaOpen = !!useMatch('/eventi/:id/modifica')
-  const isNuovoOpen  = !!useMatch('/eventi/nuovo') || isModificaOpen
-  const hasIdMatch   = !!useMatch('/eventi/:id')
-  const isDetailOpen = hasIdMatch && !isNuovoOpen
+  const isNuovoOpen  = !!useMatch('/eventi/nuovo')
+  const isDetailOpen = !!useMatch('/eventi/:id/*') && !isNuovoOpen
   const [filtro, setFiltro] = useState<Filtro>('tutti')
   const [daEliminare, setDaEliminare] = useState<Evento | null>(null)
   const eliminaEvento = useDeleteEvento()

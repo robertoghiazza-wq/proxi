@@ -14,9 +14,8 @@ const TINTA = 'oklch(0.58 0.12 245)'
 
 export function ServiziScreen() {
   const navigate = useNavigate()
-  const isModificaOpen = !!useMatch('/servizi/:id/modifica')
-  const isNuovoOpen = !!useMatch('/servizi/nuovo') || isModificaOpen
-  const isDetailOpen = !!useMatch('/servizi/:id') && !isNuovoOpen
+  const isNuovoOpen = !!useMatch('/servizi/nuovo')
+  const isDetailOpen = !!useMatch('/servizi/:id/*') && !isNuovoOpen
   const [query, setQuery] = useState('')
 
   const { data: tutti = [], isLoading, isError, error } = useServizi()
@@ -34,13 +33,11 @@ export function ServiziScreen() {
         position: 'sticky', top: 'var(--sat)', zIndex: 10,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <div className="prox-display" style={{ fontSize: 22, fontWeight: 700 }}>Servizi</div>
+          <PersoneServiziSwitch current="servizi" />
           <button onClick={() => navigate('/servizi/nuovo')} style={newBtn} aria-label="Nuovo servizio">
             <Plus size={18} strokeWidth={2.5} />
           </button>
         </div>
-
-        <PersoneServiziSwitch current="servizi" />
 
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8, background: 'var(--prox-surface2)',

@@ -106,7 +106,7 @@ body::before {
 .prox-label {
   font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: 0.55em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--prox-ink3);
 }
@@ -120,3 +120,6 @@ body::before {
 @media (pointer: coarse) {
   input, select, textarea { font-size: 16px !important; }
 }
+
+/* Contenuto del drawer: colonna a tutta altezza, così i moduli (header + corpo che scorre + pulsante) funzionano come nei modal */
+.prox-drawer > * { flex-shrink: 0; }
