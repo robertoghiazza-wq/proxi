@@ -130,12 +130,15 @@ export function MobileLayout({ children }: MobileLayoutProps) {
           </div>
         </div>
       </div>
-      <div id="area-scorrevole" style={{ flex: 1, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}>
+      <div id="area-scorrevole" style={{
+        flex: 1, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch',
+        paddingBottom: 'var(--tabbar)', // lo spazio della barra, che è fissa sopra
+      }}>
         {children}
       </div>
 
       <nav style={{
-        flexShrink: 0,
+        position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 99,
         background: 'var(--prox-surface)',
         borderTop: '1px solid var(--prox-line)',
         display: 'flex',
