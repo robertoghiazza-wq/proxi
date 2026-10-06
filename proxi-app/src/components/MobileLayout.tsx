@@ -50,7 +50,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
           <ProxiLogo height={26} />
           <div style={{ width: 1, height: 22, background: 'var(--prox-line)' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-            <OrgLogo nome={ente} size={22} />
+            <OrgLogo nome={ente} size={28} />
             <div style={{ minWidth: 0 }}>
               <div style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.1, color: 'var(--prox-ink)' }}>{ente ?? 'Proxi'}</div>
               <div style={{ fontSize: 10, color: 'var(--prox-ink3)', marginTop: 1 }}>Servizio di prossimità</div>

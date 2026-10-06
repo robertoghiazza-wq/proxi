@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker } from 'react-leaflet'
 import { BASEMAPS, BaseMapSwitch, type BaseKey } from './MapBase'
 
 export function LuogoMap({ lat, lng, height = 220 }: { lat: number; lng: number; height?: number }) {
-  const [base, setBase] = useState<BaseKey>('swisstopo')
+  const [base, setBase] = useState<BaseKey>('satellite')
   const bm = BASEMAPS[base]
 
   return (
