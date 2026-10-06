@@ -1,4 +1,3 @@
-import { useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Home, Users, Calendar, MapPin, User } from 'lucide-react'
 import { useIsDesktop } from '../hooks/useIsDesktop'
@@ -7,7 +6,6 @@ import { getCurrentUser } from '../lib/api-client'
 import { ProxiLogo } from './ProxiLogo'
 import { OrgLogo } from './OrgLogo'
 import { Avatar } from './Avatar'
-import { Diagnostica } from './Diagnostica'
 
 const TABS = [
   { path: '/',        icon: Home,     label: 'Oggi'    },
@@ -39,15 +37,6 @@ export function MobileLayout({ children }: MobileLayoutProps) {
     ...TABS.filter(t => t.path !== '/profilo'),
     ...(gestore ? [{ path: '/ore', label: 'Ore' }] : []),
   ]
-
-  // Diagnostica nascosta: 5 tocchi sul logo Proxi
-  const [diag, setDiag] = useState(false)
-  const tocchi = useRef<number[]>([])
-  const tocco = () => {
-    const ora = Date.now()
-    tocchi.current = [...tocchi.current.filter(t => ora - t < 3000), ora]
-    if (tocchi.current.length >= 5) { tocchi.current = []; setDiag(d => !d) }
-  }
 
   if (isDesktop) {
     return (
@@ -123,7 +112,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
         flexShrink: 0, height: 'var(--marchio)', padding: '0 16px', background: 'var(--prox-surface)', borderBottom: '1px solid var(--prox-line)',
         display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 12,
       }}>
-        <span onClick={tocco}><ProxiLogo height={22} /></span>
+        <ProxiLogo height={22} />
         <div style={{ width: 1, height: 22, background: 'var(--prox-line)' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
           <OrgLogo nome={ente} size={26} />
@@ -139,7 +128,6 @@ export function MobileLayout({ children }: MobileLayoutProps) {
       }}>
         {children}
       </div>
-      {diag && <Diagnostica onChiudi={() => setDiag(false)} />}
 
       <nav style={{
         position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 99,
