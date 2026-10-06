@@ -97,6 +97,6 @@ class ContrattoController extends Controller
 
     private function soloGestori(Request $request): void
     {
-        abort_unless(in_array($request->user()->role, ['coordinatore', 'admin'], true), 403);
+        abort_unless($request->user()->isGestore(), 403);
     }
 }

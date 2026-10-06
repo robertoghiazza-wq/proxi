@@ -3,6 +3,7 @@ import { Home, Users, Calendar, MapPin, User } from 'lucide-react'
 import { useIsDesktop } from '../hooks/useIsDesktop'
 import { useMe } from '../hooks/useAuth'
 import { getCurrentUser } from '../lib/api-client'
+import { eGestore } from '../lib/ruoli'
 import { ProxiLogo } from './ProxiLogo'
 import { OrgLogo } from './OrgLogo'
 import { Avatar } from './Avatar'
@@ -31,7 +32,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
   const isDesktop    = useIsDesktop()
   const { data: me } = useMe()
   const ente         = me?.institution?.name
-  const gestore      = ['coordinatore', 'admin'].includes(me?.role ?? getCurrentUser()?.role ?? '')
+  const gestore      = eGestore(me?.role ?? getCurrentUser()?.role)
   // Su desktop il profilo è l'avatar a destra; le ore stanno nel menu per chi gestisce l'équipe
   const tabsDesktop  = [
     ...TABS.filter(t => t.path !== '/profilo'),

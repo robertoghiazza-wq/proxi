@@ -134,12 +134,12 @@ class AccountController extends Controller
     // Coordinatori e admin gestiscono gli account; coordinatore e admin possono assegnarli solo gli admin.
     private function verificaRuolo(Request $request, string $role): void
     {
-        abort_if($role !== 'educatore' && $request->user()->role !== 'admin', 403, 'Solo un admin può assegnare il ruolo di coordinatore o admin.');
+        abort_if($role !== 'educatore' && ! $request->user()->isAdmin(), 403, 'Solo un admin può assegnare il ruolo di coordinatore o admin.');
     }
 
     private function dipendente(Request $request, int $id): Persona
     {
-        abort_unless(in_array($request->user()->role, ['coordinatore', 'admin'], true), 403);
+        abort_unless($request->user()->isGestore(), 403);
         $persona = Persona::forInstitution($request->user()->institution_id)->findOrFail($id);
         abort_unless($persona->ruolo === 'dipendente', 404);
 

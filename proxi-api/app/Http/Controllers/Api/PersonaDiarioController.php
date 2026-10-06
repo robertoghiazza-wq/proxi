@@ -53,7 +53,7 @@ class PersonaDiarioController extends Controller
         $user = $request->user();
         $voce = PersonaDiario::where('institution_id', $user->institution_id)->findOrFail($id);
 
-        abort_unless($voce->autore_id === $user->id || in_array($user->role, ['coordinatore', 'admin'], true), 403);
+        abort_unless($voce->autore_id === $user->id || $user->isGestore(), 403);
 
         return $voce;
     }

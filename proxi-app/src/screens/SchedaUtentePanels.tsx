@@ -12,6 +12,7 @@ import { useScheda, useSalvaScheda, useDiario } from '../hooks/useSchedaUtente'
 import { useUpdatePersona } from '../hooks/usePersone'
 import { NoteCampi, noteDa, datiNote, type NoteBozza } from '../components/PersonaCampi'
 import { getCurrentUser } from '../lib/api-client'
+import { eGestore } from '../lib/ruoli'
 import type { Persona, ProfiloUtente, Sostanza, VoceDiario } from '../types'
 
 type CampoInfo = { key: keyof ProfiloUtente; label: string; categoria?: string }
@@ -252,7 +253,7 @@ export function DiarioPanel({ persona }: { persona: Persona }) {
   const { data, isLoading, error } = useScheda(persona.id)
   const diario = useDiario(persona.id)
   const utente = getCurrentUser()
-  const gestore = utente?.role === 'coordinatore' || utente?.role === 'admin'
+  const gestore = eGestore(utente?.role)
 
   const [data_, setData] = useState(oggi())
   const [nota, setNota] = useState('')

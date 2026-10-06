@@ -41,6 +41,18 @@ class ContrattoAccountTest extends TestCase
         $this->assertNull(Validazione::avs('123.4567.8901.23'));
     }
 
+    public function test_il_superadmin_ha_i_permessi_dei_gestori(): void
+    {
+        $super = User::factory()->create(['institution_id' => $this->inst->id, 'role' => 'superadmin']);
+        Sanctum::actingAs($super);
+
+        $this->getJson("/api/persone/{$this->dip->id}/contratti")->assertOk();
+        $this->postJson("/api/persone/{$this->dip->id}/contratti", ['data_inizio' => '2025-01-01'])->assertCreated();
+        $this->getJson("/api/persone/{$this->dip->id}/documenti")->assertOk();
+        $this->getJson('/api/audit')->assertOk();
+        $this->getJson("/api/ore/{$this->dip->id}?anno=2026&mese=8")->assertOk();
+    }
+
     public function test_contratti_solo_per_gestori_e_dipendenti(): void
     {
         $educatore = User::factory()->create(['institution_id' => $this->inst->id, 'role' => 'educatore']);

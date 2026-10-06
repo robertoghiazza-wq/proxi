@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { eGestore } from '../lib/ruoli'
 import { api, setToken, clearToken, setCurrentUser, getCurrentUser } from '../lib/api-client'
 
 interface LoginPayload { email: string; password: string }
@@ -43,7 +44,7 @@ export function useRuolo(): string {
 }
 
 export function useGestore(): boolean {
-  return ['coordinatore', 'admin'].includes(useRuolo())
+  return eGestore(useRuolo())
 }
 
 export function useLogout() {

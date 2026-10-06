@@ -12,7 +12,7 @@ class AuditController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        abort_unless(in_array($user->role, ['coordinatore', 'admin'], true), 403);
+        abort_unless($user->isGestore(), 403);
 
         $limit = min((int) $request->input('limit', 100), 500);
 

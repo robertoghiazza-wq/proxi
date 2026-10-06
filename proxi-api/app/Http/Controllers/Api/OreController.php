@@ -84,6 +84,6 @@ class OreController extends Controller
 
     private function gestore(Request $request): bool
     {
-        return in_array($request->user()->role, ['coordinatore', 'admin'], true);
+        return $request->user()->isGestore();
     }
 }

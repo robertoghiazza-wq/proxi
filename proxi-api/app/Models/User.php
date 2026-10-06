@@ -37,6 +37,17 @@ class User extends Authenticatable
         ];
     }
 
+    // Chi gestisce l'équipe: contratti, ore, account, elenchi, log. Il superadmin ha almeno gli stessi permessi dell'admin.
+    public function isGestore(): bool
+    {
+        return in_array($this->role, ['coordinatore', 'admin', 'superadmin'], true);
+    }
+
+    public function isAdmin(): bool
+    {
+        return in_array($this->role, ['admin', 'superadmin'], true);
+    }
+
     public function persona(): BelongsTo
     {
         return $this->belongsTo(Persona::class);

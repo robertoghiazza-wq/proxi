@@ -132,7 +132,7 @@ class PersonaDocumentoController extends Controller
     private function autorizza(Request $request, Persona $persona): void
     {
         if ($persona->ruolo === 'dipendente') {
-            abort_unless(in_array($request->user()->role, ['coordinatore', 'admin'], true), 403);
+            abort_unless($request->user()->isGestore(), 403);
         }
     }
 }
