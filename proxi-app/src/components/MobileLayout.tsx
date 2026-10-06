@@ -137,6 +137,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
         WebkitBackdropFilter: 'blur(16px)',
         zIndex: 99,
         height: 'var(--tabbar)', paddingBottom: 'var(--tab-sotto)', boxSizing: 'border-box',
+        boxShadow: '0 60px 0 0 var(--prox-surface)', // il bianco continua sotto la barra, fino al bordo fisico
       }}>
         {TABS.map(({ path, icon: Icon, label }) => {
           const active = tabAttiva(pathname, path)

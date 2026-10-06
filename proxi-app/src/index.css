@@ -8,7 +8,7 @@
   --sat: max(calc(env(safe-area-inset-top, 0px) - 10px), min(env(safe-area-inset-top, 0px), 24px));
   --sab: env(safe-area-inset-bottom, 0px);
   /* Tab bar mobile: altezza fissa; sotto, solo una frazione della safe area (l'indicatore di home occupa poco) */
-  --tab-sotto: calc(var(--sab) * 0.3);
+  --tab-sotto: calc(var(--sab) * 0.45);
   --tab-h: 50px;
   --tabbar: calc(var(--tab-h) + var(--tab-sotto));
   --marchio: 46px; /* altezza della barra col logo (solo mobile) */
@@ -70,8 +70,13 @@ html, body {
   -webkit-text-size-adjust: 100%;
 }
 
+/* Sfondo bianco sotto tutto (se la tab bar non arriva al bordo, sotto non compare il grigio) */
+html { background: var(--prox-surface); }
+
+/* Il documento è sempre un filo più alto dello schermo: su iOS la barra fissa in fondo si comporta
+   allo stesso modo in tutte le sezioni (altrimenti cambia tra pagine corte e lunghe) */
 body {
-  min-height: 100svh;
+  min-height: calc(100svh + 1px);
   background: var(--prox-bg);
 }
 
@@ -93,6 +98,7 @@ body::before {
 /* Desktop: la stessa fascia rossa, fissa in cima alla finestra (continuità con la versione mobile) */
 @media (min-width: 768px) {
   :root { --marchio: 0px; }
+  body { min-height: 100svh; }
   body::before { height: 4px; }
   #root { padding-top: 4px; }
 }
