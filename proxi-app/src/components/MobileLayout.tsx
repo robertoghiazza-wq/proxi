@@ -95,13 +95,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
 
         {/* ── Contenuto ── */}
         <main style={{ flex: 1, overflowY: 'auto', position: 'relative', minWidth: 0, background: 'var(--prox-bg)' }}>
-          {/* colonna centrata come le pagine desktop del design (liste e schede non si stirano su schermi larghi) */}
-          <div style={{
-            maxWidth: 1000, margin: '0 auto', minHeight: '100%', boxSizing: 'border-box',
-            background: 'var(--prox-bg)', borderLeft: '1px solid var(--prox-line)', borderRight: '1px solid var(--prox-line)',
-          }}>
-            {children}
-          </div>
+          {children}
         </main>
       </div>
     )

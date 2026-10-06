@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useNavigate, useMatch, Outlet } from 'react-router-dom'
-import { Search, Plus, List, Map as MapIcon } from 'lucide-react'
+import { Search, Plus, List, Map as MapIcon, MapPin } from 'lucide-react'
 import { MobileLayout } from '../components/MobileLayout'
 import { Drawer } from '../components/Drawer'
 import { Modal } from '../components/Modal'
@@ -46,7 +46,8 @@ export function LuoghiScreen() {
         position: 'sticky', top: 'var(--sat)', zIndex: 10,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <div className="prox-display" style={{ fontSize: 22, fontWeight: 700 }}>
+          <div className="prox-display" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 22, fontWeight: 700 }}>
+            <MapPin size={22} strokeWidth={2.2} />
             Luoghi
           </div>
           <button onClick={() => navigate('/luoghi/nuovo')} style={newBtn} aria-label="Nuovo luogo">

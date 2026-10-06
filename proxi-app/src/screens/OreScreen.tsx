@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, Clock } from 'lucide-react'
 import { MobileLayout } from '../components/MobileLayout'
 import { OreView } from '../components/OreView'
 import { getCurrentUser } from '../lib/api-client'
@@ -31,7 +31,9 @@ export function OreScreen() {
         }}>
           <ChevronLeft size={18} strokeWidth={1.75} /> Profilo
         </button>
-        <div className="prox-display" style={{ fontSize: 22, fontWeight: 700, marginBottom: gestore ? 10 : 0 }}>Conteggio ore</div>
+        <div className="prox-display" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 22, fontWeight: 700, marginBottom: gestore ? 10 : 0 }}>
+          <Clock size={22} strokeWidth={2.2} /> Conteggio ore
+        </div>
         {gestore && (
           <select
             value={personaId ?? ''}

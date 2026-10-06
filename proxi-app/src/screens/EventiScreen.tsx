@@ -13,7 +13,7 @@ import { colorForTipo, tipoLabel } from '../lib/mock-data'
 import { daCompletare, mancantiTesto } from '../lib/completezza'
 import { useEventi, useDeleteEvento } from '../hooks/useEventi'
 import type { Evento, StatoEvento } from '../types'
-import { Plus, Check, CircleDashed } from 'lucide-react'
+import { Plus, Check, CircleDashed, Calendar } from 'lucide-react'
 
 type Filtro = 'tutti' | StatoEvento | 'incompleti'
 
@@ -64,7 +64,8 @@ export function EventiScreen() {
         position: 'sticky', top: 'var(--sat)', zIndex: 10,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <div className="prox-display" style={{ fontSize: 22, fontWeight: 700 }}>
+          <div className="prox-display" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 22, fontWeight: 700 }}>
+            <Calendar size={22} strokeWidth={2.2} />
             Eventi
           </div>
           <button onClick={() => navigate('/eventi/nuovo')} style={newBtn} aria-label="Nuovo evento">
