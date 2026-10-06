@@ -42,7 +42,7 @@ export function ImpostaPasswordScreen() {
 
   return (
     <div style={{
-      minHeight: '100svh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      minHeight: 'calc(100vh - var(--sat) - var(--fascia))', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       background: 'var(--prox-bg)', padding: '24px 20px',
     }}>
       <div style={{ textAlign: 'center', marginBottom: 28 }}>

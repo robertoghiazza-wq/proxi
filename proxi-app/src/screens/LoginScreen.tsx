@@ -29,7 +29,7 @@ export function LoginScreen() {
 
   return (
     <div style={{
-      minHeight: '100svh',
+      minHeight: 'calc(100vh - var(--sat) - var(--fascia))',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       background: 'var(--prox-bg)', padding: '24px 20px',

@@ -34,9 +34,12 @@ function tabPer(p: Persona, gestore: boolean): { key: TabKey; label: string }[] 
     return [...base, { key: 'eventi', label: 'Eventi' }, { key: 'info', label: 'Info' }, { key: 'note', label: 'Note' }, { key: 'diario', label: 'Diario' }, { key: 'documenti', label: 'Documenti' }]
   }
   if (p.ruolo === 'dipendente') {
+    // contratto e ore subito dopo i dati base: su mobile le ultime tab restano fuori schermo
     return [
-      ...base, { key: 'eventi', label: 'Eventi' }, { key: 'note', label: 'Note' },
-      ...(gestore ? [{ key: 'ore' as const, label: 'Ore' }, { key: 'contratto' as const, label: 'Contratto' }, { key: 'documenti' as const, label: 'Documenti' }, { key: 'user' as const, label: 'User' }] : []),
+      ...base,
+      ...(gestore ? [{ key: 'contratto' as const, label: 'Contratto' }, { key: 'ore' as const, label: 'Ore' }] : []),
+      { key: 'eventi', label: 'Eventi' }, { key: 'note', label: 'Note' },
+      ...(gestore ? [{ key: 'documenti' as const, label: 'Documenti' }, { key: 'user' as const, label: 'User' }] : []),
     ]
   }
   return [...base, { key: 'servizi', label: 'Servizi' }, { key: 'eventi', label: 'Eventi' }, { key: 'note', label: 'Note' }, { key: 'documenti', label: 'Documenti' }]

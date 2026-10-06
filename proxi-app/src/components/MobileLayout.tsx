@@ -41,7 +41,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
 
   if (isDesktop) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100dvh - 4px)', background: 'var(--prox-bg)' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100dvh - var(--fascia))', background: 'var(--prox-bg)' }}>
 
         {/* ── Topbar (come nel design: logo Proxi | ente | navigazione | utente) ── */}
         <header style={{

@@ -11,7 +11,8 @@
   --tab-sotto: calc(var(--sab) * 0.6);
   --tab-h: 50px;
   --tabbar: calc(var(--tab-h) + var(--tab-sotto));
-  --marchio: 46px; /* altezza della barra col logo (solo mobile) */
+  --marchio: 46px;
+  --fascia: 0px; /* striscia rossa in cima su desktop */ /* altezza della barra col logo (solo mobile) */
 
   /* Superfici e testo */
   --prox-bg:        #f1f2f4;
@@ -98,9 +99,9 @@ body::before {
 
 /* Desktop: la stessa fascia rossa, fissa in cima alla finestra (continuità con la versione mobile) */
 @media (min-width: 768px) {
-  :root { --marchio: 0px; }
-  body::before { height: 4px; }
-  #root { padding-top: 4px; }
+  :root { --marchio: 0px; --fascia: 7px; }
+  body::before { height: var(--fascia); }
+  #root { padding-top: var(--fascia); }
 }
 
 /* Utility classes dal design handoff */
