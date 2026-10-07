@@ -55,7 +55,7 @@ class TipiDefault
             'servizi_sociosanitari'    => ['Servizi sociali e sanitari', 'rosso', false],
             'aziende_officine'         => ['Aziende, società e officine', 'lime', false],
             'abitazioni_private'       => ['Abitazioni private', 'rosa', true],
-            'sedi_associazione'        => ['Sedi dell\'associazione', 'viola', false],
+            'sedi_associazione'        => ['Sedi dell\'ente', 'viola', false],
             'zone_comuni'              => ['Zone e comuni', 'azzurro', false],
             'strade_senza_riferimento' => ['Strade, parcheggi e aree senza altro riferimento', 'grigio', false],
         ];
