@@ -87,6 +87,7 @@ export interface Luogo {
   lng: number | null
   attivo: boolean
   visibilita?: 'pubblico' | 'riservato'
+  posizione_da_controllare?: boolean
   punto_esatto?: string | null
   servizio_id?: number | null
   servizio?: { id: number; nome: string } | null

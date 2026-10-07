@@ -44,6 +44,7 @@ class LuogoController extends Controller
             'attivo'    => 'boolean',
             'visibilita'   => 'in:pubblico,riservato',
             'punto_esatto' => 'nullable|string|max:120',
+            'posizione_da_controllare' => 'sometimes|boolean',
             'servizio_id'  => ['nullable', \Illuminate\Validation\Rule::exists('servizi', 'id')->where('institution_id', $request->user()->institution_id)->whereNull('deleted_at')],
         ]);
 
@@ -96,6 +97,13 @@ class LuogoController extends Controller
             'servizio_id'  => ['nullable', \Illuminate\Validation\Rule::exists('servizi', 'id')->where('institution_id', $request->user()->institution_id)->whereNull('deleted_at')],
         ]);
 
+        // modificare indirizzo o coordinate a mano vale come controllo della posizione
+        $cambiata = (array_key_exists('lat', $data) && abs((float) $data['lat'] - (float) $luogo->lat) > 1e-7)
+            || (array_key_exists('lng', $data) && abs((float) $data['lng'] - (float) $luogo->lng) > 1e-7)
+            || (array_key_exists('indirizzo', $data) && trim((string) $data['indirizzo']) !== trim((string) $luogo->indirizzo));
+        if ($cambiata) {
+            $data['posizione_da_controllare'] = false;
+        }
         $luogo->update($data);
 
         return response()->json($luogo->load('servizio:id,nome'));

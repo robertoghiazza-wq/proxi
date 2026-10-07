@@ -7,14 +7,17 @@ import { MobileLayout } from '../components/MobileLayout'
 import { BarraTab } from '../components/SchedaUi'
 import { BrandPanel } from '../components/BrandPanel'
 import { TipiEventoPanel, TipiLuogoPanel } from '../components/TipiPanels'
-import { useGestore, useMe } from '../hooks/useAuth'
+import { ImportazioniPanel } from '../components/ImportazioniPanel'
+import { useGestore, useMe, useRuolo } from '../hooks/useAuth'
+import { eAdmin } from '../lib/ruoli'
 
-type Tab = 'brand' | 'eventi' | 'luoghi'
+type Tab = 'brand' | 'eventi' | 'luoghi' | 'importazioni'
 
 export function ImpostazioniScreen() {
   const navigate = useNavigate()
   const { isLoading } = useMe()
   const gestore = useGestore()
+  const admin = eAdmin(useRuolo())
   const [tab, setTab] = useState<Tab>('brand')
 
   return (
@@ -39,13 +42,14 @@ export function ImpostazioniScreen() {
         : (
           <>
             <BarraTab
-              tabs={[{ key: 'brand', label: 'Brand' }, { key: 'eventi', label: 'Tipi di evento' }, { key: 'luoghi', label: 'Tipi di luogo' }]}
+              tabs={[{ key: 'brand', label: 'Brand' }, { key: 'eventi', label: 'Tipi di evento' }, { key: 'luoghi', label: 'Tipi di luogo' }, ...(admin ? [{ key: 'importazioni' as const, label: 'Importazioni' }] : [])]}
               attiva={tab} onScegli={setTab}
             />
             <div style={{ padding: '14px 16px 32px', display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 760 }}>
               {tab === 'brand' && <BrandPanel />}
               {tab === 'eventi' && <TipiEventoPanel />}
               {tab === 'luoghi' && <TipiLuogoPanel />}
+              {tab === 'importazioni' && <ImportazioniPanel />}
             </div>
           </>
         )}

@@ -19,13 +19,14 @@ class Luogo extends Model
         'institution_id', 'nome', 'tipo', 'indirizzo',
         'orari', 'note', 'lat', 'lng', 'attivo',
         'npa', 'localita', 'comune_politico', 'bfs', 'cantone',
-        'visibilita', 'punto_esatto', 'servizio_id',
+        'visibilita', 'punto_esatto', 'servizio_id', 'posizione_da_controllare',
     ];
 
     protected $casts = [
         'lat'    => 'float',
         'lng'    => 'float',
         'attivo' => 'boolean',
+        'posizione_da_controllare' => 'boolean',
     ];
 
     public function institution(): BelongsTo
@@ -37,6 +38,12 @@ class Luogo extends Model
     public function servizio(): BelongsTo
     {
         return $this->belongsTo(Servizio::class);
+    }
+
+    // Id di FileMaker (anche dei luoghi fusi in questo)
+    public function origini(): HasMany
+    {
+        return $this->hasMany(LuogoOrigine::class);
     }
 
     public function eventi(): HasMany

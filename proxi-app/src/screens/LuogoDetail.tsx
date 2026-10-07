@@ -117,6 +117,11 @@ export function LuogoDetail() {
             </h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
               <Tag label={tipoLuogoLabel(luogo.tipo)} soft />
+              {luogo.posizione_da_controllare && (
+                <span title="Posizione ricostruita o approssimata: correggi l'indirizzo o sposta il pin" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: 'oklch(0.50 0.13 70)', background: 'oklch(0.95 0.06 85)', borderRadius: 999, padding: '2px 8px' }}>
+                  <MapPin size={11} strokeWidth={2.4} /> Posizione da controllare
+                </span>
+              )}
               {luogo.visibilita === 'riservato' && (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: 'oklch(0.50 0.13 70)', background: 'oklch(0.95 0.06 85)', borderRadius: 999, padding: '2px 8px' }}>
                   <Lock size={11} strokeWidth={2.4} /> Riservato

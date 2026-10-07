@@ -102,6 +102,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/report/automatico', [\App\Http\Controllers\Api\ReportController::class, 'salvaAutomatico']);
     Route::post('/report/automatico/chiave', [\App\Http\Controllers\Api\ReportController::class, 'nuovaChiave']);
 
+    // Importazioni da CSV (solo admin): luoghi
+    Route::post('/importazioni/luoghi', [\App\Http\Controllers\Api\ImportazioneController::class, 'luoghi']);
+
     // Elenchi a tendina
     Route::apiResource('vocaboli', \App\Http\Controllers\Api\VocaboloController::class)->except('show');
 
