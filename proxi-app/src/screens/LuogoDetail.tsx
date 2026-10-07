@@ -9,6 +9,7 @@ import { ServizioForm } from './ServizioFormScreen'
 import { LuogoMap } from '../components/LuogoMap'
 import { Tag } from '../components/Tag'
 import { EventTypeDot } from '../components/EventTypeDot'
+import { RiferimentoSticky, useTitoloSticky } from '../components/RiferimentoSticky'
 import { useTipiLuogo, useTipiEvento } from '../hooks/useTipi'
 import { tenue, scuro } from '../lib/colori'
 import { useLuogo } from '../hooks/useLuoghi'
@@ -28,6 +29,7 @@ function minToHM(m: number) {
 }
 
 export function LuogoDetail() {
+  const { setTitolo, fuori } = useTitoloSticky()
   const { label: tipoLuogoLabel, colore: coloreLuogo } = useTipiLuogo()
   const { colore: colorForTipo } = useTipiEvento()
   const { id } = useParams()
@@ -57,7 +59,11 @@ export function LuogoDetail() {
   const color = coloreLuogo(luogo.tipo)
 
   return (
-    <div style={{ background: 'var(--prox-bg)', minHeight: '100svh' }}>
+    <div style={{ background: 'var(--prox-bg)', minHeight: '100%' }}>
+      <RiferimentoSticky
+        visibile={fuori} titolo={luogo.nome} sottotitolo={tipoLuogoLabel(luogo.tipo)} onIndietro={() => navigate('/luoghi')} etichettaIndietro="Luoghi"
+        icona={<span style={{ width: 10, height: 10, borderRadius: '50%', background: color, flexShrink: 0 }} />}
+      />
 
       {/* MAPPA HEADER */}
       <div style={{ position: 'relative' }}>
@@ -103,7 +109,7 @@ export function LuogoDetail() {
             <MapPin size={22} color={scuro(color)} strokeWidth={1.75} />
           </div>
           <div style={{ flex: 1 }}>
-            <h1 className="prox-display" style={{
+            <h1 ref={setTitolo} className="prox-display" style={{
               fontSize: 22, fontWeight: 700, letterSpacing: -0.3,
               color: 'var(--prox-ink)', margin: 0,
             }}>

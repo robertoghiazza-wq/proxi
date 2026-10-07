@@ -4,6 +4,8 @@ import { useTipiEvento } from '../hooks/useTipi'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ChevronLeft, Phone, Edit, Plus, AlertTriangle, Trash2, Mail, MapPin } from 'lucide-react'
+import { RiferimentoSticky, useTitoloSticky } from '../components/RiferimentoSticky'
+import { AvatarPersona } from '../components/AvatarPersona'
 import { FotoPersona } from '../components/FotoPersona'
 import { Tag } from '../components/Tag'
 import { Card } from '../components/Card'
@@ -63,6 +65,7 @@ function inizioSettimana(): string {
 }
 
 export function PersonaDetail({ apriInModifica }: { apriInModifica?: boolean }) {
+  const { setTitolo, fuori } = useTitoloSticky()
   const { id } = useParams()
   const navigate = useNavigate()
   const { data: persona, isLoading } = usePersona(Number(id))
@@ -96,7 +99,12 @@ export function PersonaDetail({ apriInModifica }: { apriInModifica?: boolean }) 
   const tabAttiva = tabs.some(t => t.key === tab) ? tab : 'anagrafica'
 
   return (
-    <div style={{ background: 'var(--prox-bg)', minHeight: '100svh' }}>
+    <div style={{ background: 'var(--prox-bg)', minHeight: '100%' }}>
+      <RiferimentoSticky
+        visibile={fuori} titolo={name} onIndietro={() => navigate('/persone')} etichettaIndietro="Persone"
+        sottotitolo={[etichettaTipo(persona.ruolo), ruolo].filter(Boolean).join(' · ')}
+        icona={<AvatarPersona persona={persona} size={28} />}
+      />
       <div style={{
         background: 'linear-gradient(180deg, var(--prox-accent-soft) 0%, var(--prox-bg) 100%)',
         padding: '0 16px 14px',
@@ -117,7 +125,7 @@ export function PersonaDetail({ apriInModifica }: { apriInModifica?: boolean }) 
 
           <div style={{ textAlign: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-              <h1 className="prox-display" style={{ fontSize: 24, fontWeight: 700, letterSpacing: -0.4, color: 'var(--prox-ink)', margin: 0 }}>
+              <h1 ref={setTitolo} className="prox-display" style={{ fontSize: 24, fontWeight: 700, letterSpacing: -0.4, color: 'var(--prox-ink)', margin: 0 }}>
                 {name}
               </h1>
               {isVuln && <AlertTriangle size={16} color="oklch(0.60 0.14 70)" strokeWidth={2} />}

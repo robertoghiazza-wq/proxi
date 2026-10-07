@@ -1,6 +1,7 @@
 // Evento detail — tipo, orario, durata, persone, luogo, note, educatore
 
 import { useTipiEvento } from '../hooks/useTipi'
+import { RiferimentoSticky, useTitoloSticky } from '../components/RiferimentoSticky'
 import { nomeAvatar, nomePersona, etichettaRuolo } from '../lib/persona'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -46,6 +47,7 @@ function StatoInfo({ stato }: { stato: StatoEvento }) {
 }
 
 export function EventoDetail() {
+  const { setTitolo, fuori } = useTitoloSticky()
   const { label: tipoLabel, colore: colorForTipo } = useTipiEvento()
   const { id } = useParams()
   const navigate = useNavigate()
@@ -76,7 +78,12 @@ export function EventoDetail() {
   const educatore = evento.educatore ?? null
 
   return (
-    <div style={{ background: 'var(--prox-bg)', minHeight: '100svh' }}>
+    <div style={{ background: 'var(--prox-bg)', minHeight: '100%' }}>
+      <RiferimentoSticky
+        visibile={fuori} titolo={tipoLabel(evento.tipo)} onIndietro={() => navigate('/eventi')} etichettaIndietro="Eventi"
+        sottotitolo={new Date(evento.data.slice(0, 10) + 'T00:00:00').toLocaleDateString('it-CH', { weekday: 'short', day: 'numeric', month: 'short' })}
+        icona={<span style={{ width: 10, height: 10, borderRadius: '50%', background: color, flexShrink: 0 }} />}
+      />
 
       {/* HEADER con barra colore */}
       <div style={{
@@ -100,7 +107,7 @@ export function EventoDetail() {
 
         {/* Tipo + stato */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-          <h1 className="prox-display" style={{
+          <h1 ref={setTitolo} className="prox-display" style={{
             fontSize: 22, fontWeight: 700, letterSpacing: -0.3,
             color: 'var(--prox-ink)', margin: 0,
           }}>

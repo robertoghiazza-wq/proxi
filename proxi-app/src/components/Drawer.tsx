@@ -32,13 +32,14 @@ export function Drawer({ open, onClose, children, width = 600 }: DrawerProps) {
       <div
         onClick={onClose}
         style={{
-          position: 'absolute', inset: 0,
+          position: 'fixed', top: 'calc(var(--fascia) + var(--topbar))', left: 0, right: 0, bottom: 0,
           background: 'rgba(0,0,0,0.06)',
           zIndex: 40,
         }}
       />
       <div style={{
-        position: 'absolute', right: 0, top: 0, bottom: 0,
+        // a tutta altezza sotto la topbar, ferma anche se la lista sotto è scrollata
+        position: 'fixed', right: 0, top: 'calc(var(--fascia) + var(--topbar))', bottom: 0,
         width,
         background: 'var(--prox-surface)',
         borderLeft: '1px solid var(--prox-line)',

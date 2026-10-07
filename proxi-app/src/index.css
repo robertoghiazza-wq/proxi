@@ -99,7 +99,7 @@ body::before {
 
 /* Desktop: la stessa fascia rossa, fissa in cima alla finestra (continuità con la versione mobile) */
 @media (min-width: 768px) {
-  :root { --marchio: 0px; --fascia: 7px; }
+  :root { --marchio: 0px; --fascia: 7px; --topbar: 57px; }
   body::before { height: var(--fascia); }
   #root { padding-top: var(--fascia); }
 }

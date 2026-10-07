@@ -1,6 +1,7 @@
 // Servizio — dettaglio con mappa, contatti collegati e dettagli
 
 import { tenue } from '../lib/colori'
+import { RiferimentoSticky, useTitoloSticky } from '../components/RiferimentoSticky'
 import { nomeAvatar, nomePersona } from '../lib/persona'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -19,6 +20,7 @@ type Contatto = NonNullable<Servizio['persone']>[number]
 const TINTA = 'oklch(0.58 0.12 245)'
 
 export function ServizioDetail() {
+  const { setTitolo, fuori } = useTitoloSticky()
   const { id } = useParams()
   const navigate = useNavigate()
   const { data: servizio, isLoading } = useServizio(Number(id))
@@ -55,7 +57,8 @@ export function ServizioDetail() {
   }
 
   return (
-    <div style={{ background: 'var(--prox-bg)', minHeight: '100svh' }}>
+    <div style={{ background: 'var(--prox-bg)', minHeight: '100%' }}>
+      <RiferimentoSticky visibile={fuori} titolo={servizio.nome} sottotitolo={servizio.localita ?? undefined} onIndietro={() => navigate('/servizi')} etichettaIndietro="Servizi" />
       <div style={{ position: 'relative' }}>
         {servizio.lat != null && servizio.lng != null
           ? <LuogoMap lat={servizio.lat} lng={servizio.lng} />
@@ -85,7 +88,7 @@ export function ServizioDetail() {
             <Building2 size={22} color={TINTA} strokeWidth={1.75} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <h1 className="prox-display" style={{ fontSize: 21, fontWeight: 700, letterSpacing: -0.3, margin: 0, color: 'var(--prox-ink)' }}>
+            <h1 ref={setTitolo} className="prox-display" style={{ fontSize: 21, fontWeight: 700, letterSpacing: -0.3, margin: 0, color: 'var(--prox-ink)' }}>
               {servizio.nome}
             </h1>
             {indirizzoCompleto && (

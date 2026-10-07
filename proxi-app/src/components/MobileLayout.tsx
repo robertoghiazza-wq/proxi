@@ -45,7 +45,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
 
         {/* ── Topbar (come nel design: logo Proxi | ente | navigazione | utente) ── */}
         <header style={{
-          flexShrink: 0, padding: '10px 28px', display: 'flex', alignItems: 'center', gap: 16,
+          flexShrink: 0, height: 'var(--topbar)', boxSizing: 'border-box', padding: '0 28px', display: 'flex', alignItems: 'center', gap: 16,
           borderBottom: '1px solid var(--prox-line)', background: 'var(--prox-surface)',
         }}>
           <ProxiLogo height={26} />
