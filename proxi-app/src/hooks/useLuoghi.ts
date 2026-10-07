@@ -24,6 +24,17 @@ export function useCreateLuogo() {
   })
 }
 
+export function useDeleteLuogo() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api.delete<void>(`/luoghi/${id}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['luoghi'] })
+      qc.invalidateQueries({ queryKey: ['eventi'] })
+    },
+  })
+}
+
 export function useUpdateLuogo(id: number) {
   const qc = useQueryClient()
   return useMutation({

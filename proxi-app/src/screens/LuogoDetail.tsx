@@ -2,17 +2,18 @@
 
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ChevronLeft, MapPin, Users, Calendar, Clock, Plus, Edit, Lock, Building2 } from 'lucide-react'
+import { ChevronLeft, MapPin, Users, Calendar, Clock, Plus, Edit, Lock, Building2, Trash2 } from 'lucide-react'
 import { Card } from '../components/Card'
 import { Modal } from '../components/Modal'
 import { ServizioForm } from './ServizioFormScreen'
 import { LuogoMap } from '../components/LuogoMap'
 import { Tag } from '../components/Tag'
 import { EventTypeDot } from '../components/EventTypeDot'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { RiferimentoSticky, useTitoloSticky } from '../components/RiferimentoSticky'
 import { useTipiLuogo, useTipiEvento } from '../hooks/useTipi'
 import { tenue, scuro } from '../lib/colori'
-import { useLuogo } from '../hooks/useLuoghi'
+import { useLuogo, useDeleteLuogo } from '../hooks/useLuoghi'
 import { useEventi } from '../hooks/useEventi'
 
 
@@ -29,6 +30,8 @@ function minToHM(m: number) {
 }
 
 export function LuogoDetail() {
+  const elimina = useDeleteLuogo()
+  const [confermaElimina, setConfermaElimina] = useState(false)
   const { setTitolo, fuori } = useTitoloSticky()
   const { label: tipoLuogoLabel, colore: coloreLuogo } = useTipiLuogo()
   const { colore: colorForTipo } = useTipiEvento()
@@ -254,7 +257,23 @@ export function LuogoDetail() {
             )
           }
         </Card>
+
+        <button onClick={() => setConfermaElimina(true)} style={{ ...azioneLuogo, color: 'var(--prox-danger)' }}>
+          <Trash2 size={16} strokeWidth={1.75} /> Elimina luogo
+        </button>
       </div>
+
+      <ConfirmDialog
+        open={confermaElimina}
+        danger
+        title="Eliminare il luogo?"
+        message={`«${luogo.nome}» sparisce dall'elenco e dalla mappa.${Number(luogo.eventi_totali ?? 0) > 0 ? ` I suoi ${luogo.eventi_totali} eventi restano, ma senza luogo (risulteranno "Da completare").` : ''} L'eliminazione resta nel log.`}
+        confirmLabel="Elimina"
+        loading={elimina.isPending}
+        error={elimina.isError ? (elimina.error as Error).message : null}
+        onCancel={() => { setConfermaElimina(false); elimina.reset() }}
+        onConfirm={() => elimina.mutate(luogo.id, { onSuccess: () => navigate('/luoghi') })}
+      />
 
       {creaServizio && luogo && (
         <Modal open onClose={() => setCreaServizio(false)}>
