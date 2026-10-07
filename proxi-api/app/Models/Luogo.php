@@ -19,6 +19,7 @@ class Luogo extends Model
         'institution_id', 'nome', 'tipo', 'indirizzo',
         'orari', 'note', 'lat', 'lng', 'attivo',
         'npa', 'localita', 'comune_politico', 'bfs', 'cantone',
+        'visibilita', 'punto_esatto', 'servizio_id',
     ];
 
     protected $casts = [
@@ -30,6 +31,12 @@ class Luogo extends Model
     public function institution(): BelongsTo
     {
         return $this->belongsTo(Institution::class);
+    }
+
+    // Ente di riferimento (es. IdéeSport per i Midnight): uno degli enti dell'elenco Servizi
+    public function servizio(): BelongsTo
+    {
+        return $this->belongsTo(Servizio::class);
     }
 
     public function eventi(): HasMany

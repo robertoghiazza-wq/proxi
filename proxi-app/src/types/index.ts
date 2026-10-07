@@ -86,6 +86,10 @@ export interface Luogo {
   lat: number | null
   lng: number | null
   attivo: boolean
+  visibilita?: 'pubblico' | 'riservato'
+  punto_esatto?: string | null
+  servizio_id?: number | null
+  servizio?: { id: number; nome: string } | null
   npa?: string | null
   localita?: string | null
   comune_politico?: string | null

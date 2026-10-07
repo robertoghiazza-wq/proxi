@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ChevronLeft, MapPin, Users, Calendar, Clock, Plus, Edit } from 'lucide-react'
+import { ChevronLeft, MapPin, Users, Calendar, Clock, Plus, Edit, Lock, Building2 } from 'lucide-react'
 import { Card } from '../components/Card'
 import { Modal } from '../components/Modal'
 import { ServizioForm } from './ServizioFormScreen'
@@ -111,6 +111,11 @@ export function LuogoDetail() {
             </h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
               <Tag label={tipoLuogoLabel(luogo.tipo)} soft />
+              {luogo.visibilita === 'riservato' && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: 'oklch(0.50 0.13 70)', background: 'oklch(0.95 0.06 85)', borderRadius: 999, padding: '2px 8px' }}>
+                  <Lock size={11} strokeWidth={2.4} /> Riservato
+                </span>
+              )}
               {(luogo.indirizzo || luogo.localita) && (
                 <span style={{ fontSize: 12, color: 'var(--prox-ink3)' }}>{[luogo.indirizzo, [luogo.npa, luogo.localita].filter(Boolean).join(' ')].filter(Boolean).join(', ')}</span>
               )}
@@ -119,6 +124,17 @@ export function LuogoDetail() {
               <div style={{ fontSize: 11.5, color: 'var(--prox-ink3)', marginTop: 3 }}>
                 Comune politico: {luogo.comune_politico}{luogo.cantone ? ` (${luogo.cantone})` : ''}
               </div>
+            )}
+            {luogo.punto_esatto && (
+              <div style={{ fontSize: 12, color: 'var(--prox-ink3)', marginTop: 3 }}>Punto esatto: {luogo.punto_esatto}</div>
+            )}
+            {luogo.servizio && (
+              <button
+                onClick={() => navigate(`/servizi/${luogo.servizio!.id}`)}
+                style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4, padding: 0, border: 'none', background: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--prox-accent)', fontWeight: 600, fontFamily: 'inherit' }}
+              >
+                <Building2 size={12} strokeWidth={2} /> Ente di riferimento: {luogo.servizio.nome}
+              </button>
             )}
             {luogo.orari && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4, fontSize: 12, color: 'var(--prox-ink3)' }}>

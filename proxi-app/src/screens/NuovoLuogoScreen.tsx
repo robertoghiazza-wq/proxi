@@ -7,6 +7,8 @@ import { MapPicker, type LatLng, type ParteIndirizzo } from '../components/MapPi
 import { IndirizzoField } from '../components/IndirizzoField'
 import { INDIRIZZO_VUOTO, validaIndirizzo, type Indirizzo } from '../lib/geo'
 import { useTipiLuogo } from '../hooks/useTipi'
+import { useServizi } from '../hooks/useServizi'
+import { Lock, Globe } from 'lucide-react'
 import { useCreateLuogo, useLuogo, useUpdateLuogo } from '../hooks/useLuoghi'
 import type { Luogo, TipoLuogo } from '../types'
 
@@ -45,7 +47,7 @@ export function LuogoForm({ luogo, initial, onClose, onSaved }: {
 
   const base = luogo ?? initial
   const [nome, setNome] = useState(base?.nome ?? '')
-  const { attivi, label: tipoLuogoLabel } = useTipiLuogo()
+  const { attivi, tipi: tipiTutti, label: tipoLuogoLabel } = useTipiLuogo()
   const [tipoScelto, setTipo] = useState<TipoLuogo | null>(base?.tipo ?? null)
   const tipo: TipoLuogo = tipoScelto ?? attivi[0]?.chiave ?? 'strada'
   // i tipi disattivati non si propongono, ma quello già assegnato a questo luogo resta visibile
@@ -60,6 +62,12 @@ export function LuogoForm({ luogo, initial, onClose, onSaved }: {
     cantone: base?.cantone ?? '',
   })
   const [orari, setOrari] = useState(base?.orari ?? '')
+  const [puntoEsatto, setPuntoEsatto] = useState(base?.punto_esatto ?? '')
+  const [servizioId, setServizioId] = useState<number | null>(base?.servizio_id ?? null)
+  const { data: servizi = [] } = useServizi()
+  // pubblico di default; riservato se il tipo scelto lo è (es. Abitazioni private), finché non lo si cambia a mano
+  const [visibilitaScelta, setVisibilita] = useState<'pubblico' | 'riservato' | null>(base?.visibilita ?? null)
+  const visibilita = visibilitaScelta ?? (tipiTutti.find(t => t.chiave === tipo)?.riservato_default ? 'riservato' : 'pubblico')
   const [note, setNote] = useState(base?.note ?? '')
   const [pos, setPos] = useState<LatLng | null>(
     base?.lat != null && base?.lng != null ? { lat: base.lat, lng: base.lng } : null,
@@ -88,6 +96,9 @@ export function LuogoForm({ luogo, initial, onClose, onSaved }: {
       const saved = await mutation.mutateAsync({
         nome: nome.trim(),
         tipo,
+        visibilita,
+        punto_esatto: puntoEsatto.trim() || null,
+        servizio_id: servizioId,
         indirizzo: a.indirizzo.trim() || null,
         npa: a.npa.trim() || null,
         localita: a.localita.trim() || null,
@@ -160,6 +171,32 @@ export function LuogoForm({ luogo, initial, onClose, onSaved }: {
               )
             })}
           </div>
+          <div style={{ fontSize: 11.5, color: 'var(--prox-ink3)', marginTop: 6 }}>
+            Scegli che cosa c'è lì (es. un supermercato), anche se ti fermi nel suo parcheggio.
+          </div>
+        </Field>
+
+        <Field label="Visibilità">
+          <div style={{ display: 'flex', gap: 6 }}>
+            {([['pubblico', 'Pubblico', Globe], ['riservato', 'Riservato', Lock]] as const).map(([v, etichetta, Icona]) => {
+              const attivo = visibilita === v
+              return (
+                <button
+                  key={v} onClick={() => setVisibilita(v)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 999, cursor: 'pointer',
+                    border: `1px solid ${attivo ? 'var(--prox-accent)' : 'var(--prox-line)'}`, fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
+                    background: attivo ? 'var(--prox-accent-soft)' : 'var(--prox-surface)', color: attivo ? 'var(--prox-accent-ink)' : 'var(--prox-ink2)',
+                  }}
+                ><Icona size={14} strokeWidth={2} /> {etichetta}</button>
+              )
+            })}
+          </div>
+          <div style={{ fontSize: 11.5, color: 'var(--prox-ink3)', marginTop: 6 }}>
+            {visibilita === 'riservato'
+              ? 'Solo per il vostro servizio (es. case di persone). Non compare sulla mappa generale e le consultazioni restano nel log.'
+              : 'Luogo pubblico, utilizzabile da tutto il servizio.'}
+          </div>
         </Field>
 
         <Field label="Posizione">
@@ -173,6 +210,20 @@ export function LuogoForm({ luogo, initial, onClose, onSaved }: {
             onChange={patch => setAddr(a => ({ ...a, ...patch }))}
             onPosizione={(lat, lng) => setPos({ lat, lng })}
           />
+        </Field>
+
+        <Field label="Punto esatto">
+          <input value={puntoEsatto} onChange={e => setPuntoEsatto(e.target.value)} placeholder="Es. parcheggio, campo dietro la palestra" maxLength={120} style={input} />
+        </Field>
+
+        <Field label="Ente di riferimento">
+          <select value={servizioId ?? ''} onChange={e => setServizioId(e.target.value ? Number(e.target.value) : null)} style={{ ...input, appearance: 'auto' }}>
+            <option value="">— nessuno —</option>
+            {servizi.map(sv => <option key={sv.id} value={sv.id}>{sv.nome}</option>)}
+          </select>
+          <div style={{ fontSize: 11.5, color: 'var(--prox-ink3)', marginTop: 6 }}>
+            Chi gestisce o organizza (es. IdéeSport per i Midnight). Si sceglie tra gli enti dell'elenco Servizi.
+          </div>
         </Field>
 
         <Field label="Orari">

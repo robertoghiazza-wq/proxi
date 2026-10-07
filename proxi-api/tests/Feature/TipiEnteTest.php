@@ -38,7 +38,8 @@ class TipiEnteTest extends TestCase
         $r = $this->getJson('/api/tipi')->assertOk();
         $this->assertCount(5, $r->json('categorie'));
         $this->assertCount(22, $r->json('tipi_evento'));
-        $this->assertCount(5, $r->json('tipi_luogo'));
+        $this->assertCount(12, $r->json('tipi_luogo'));
+        $this->assertTrue(collect($r->json('tipi_luogo'))->firstWhere('chiave', 'abitazioni_private')['riservato_default']);
         $this->assertContains('arancio', $r->json('colori'));
         $this->assertSame('uscita', $r->json('tipi_evento.0.chiave'));
     }
@@ -59,12 +60,12 @@ class TipiEnteTest extends TestCase
     public function test_tipo_usato_non_si_elimina_ma_si_disattiva(): void
     {
         Sanctum::actingAs($this->coord);
-        $strada = collect($this->getJson('/api/tipi')->json('tipi_luogo'))->firstWhere('chiave', 'strada');
-        Luogo::forceCreate(['institution_id' => $this->inst->id, 'nome' => 'Piazza', 'tipo' => 'strada', 'attivo' => true]);
+        $strada = collect($this->getJson('/api/tipi')->json('tipi_luogo'))->firstWhere('chiave', 'parchi_piazze_sport');
+        Luogo::forceCreate(['institution_id' => $this->inst->id, 'nome' => 'Piazza', 'tipo' => 'parchi_piazze_sport', 'attivo' => true]);
 
         $this->deleteJson("/api/tipi-luogo/{$strada['id']}")->assertUnprocessable();
         $this->patchJson("/api/tipi-luogo/{$strada['id']}", ['attivo' => false])->assertOk()->assertJsonPath('attivo', false);
-        $this->assertSame(1, collect($this->getJson('/api/tipi')->json('tipi_luogo'))->firstWhere('chiave', 'strada')['usi']);
+        $this->assertSame(1, collect($this->getJson('/api/tipi')->json('tipi_luogo'))->firstWhere('chiave', 'parchi_piazze_sport')['usi']);
     }
 
     public function test_categorie_e_tipi_di_evento(): void
@@ -91,7 +92,7 @@ class TipiEnteTest extends TestCase
     public function test_il_luogo_accetta_solo_tipi_configurati_dell_ente(): void
     {
         Sanctum::actingAs($this->coord);
-        $this->postJson('/api/luoghi', ['nome' => 'A', 'tipo' => 'strada', 'attivo' => true])->assertStatus(201);
+        $this->postJson('/api/luoghi', ['nome' => 'A', 'tipo' => 'parchi_piazze_sport', 'attivo' => true])->assertStatus(201);
         $this->postJson('/api/luoghi', ['nome' => 'B', 'tipo' => 'inventato'])->assertUnprocessable();
         $id = $this->postJson('/api/tipi-luogo', ['nome' => 'Parco', 'colore' => 'lime'])->json('chiave');
         $this->postJson('/api/luoghi', ['nome' => 'C', 'tipo' => $id])->assertStatus(201);
@@ -133,5 +134,50 @@ class TipiEnteTest extends TestCase
         $this->postJson('/api/ente/logo', ['logo' => $cattivo])->assertUnprocessable();
         $buono = UploadedFile::fake()->createWithContent('l.svg', '<svg xmlns="http://www.w3.org/2000/svg"><circle r="5"/></svg>');
         $this->postJson('/api/ente/logo', ['logo' => $buono])->assertOk();
+    }
+
+    public function test_luogo_riservato_ente_di_riferimento_e_punto_esatto(): void
+    {
+        Sanctum::actingAs($this->coord);
+        $servizio = \App\Models\Servizio::create(['institution_id' => $this->inst->id, 'nome' => 'IdéeSport']);
+
+        $r = $this->postJson('/api/luoghi', [
+            'nome' => 'Midnight Bedigliora', 'tipo' => 'centri_giovani', 'punto_esatto' => 'parcheggio della palestra',
+            'servizio_id' => $servizio->id, 'orari' => 'sabato sera, saltuario',
+        ])->assertStatus(201)->assertJsonPath('visibilita', 'pubblico')->assertJsonPath('servizio.nome', 'IdéeSport');
+
+        $id = $this->postJson('/api/luoghi', ['nome' => 'Casa privata', 'tipo' => 'abitazioni_private', 'visibilita' => 'riservato'])->assertStatus(201)->json('id');
+        $this->postJson('/api/luoghi', ['nome' => 'X', 'tipo' => 'centri_giovani', 'visibilita' => 'segreto'])->assertUnprocessable();
+
+        // la lettura di un luogo riservato finisce nel log (una volta); quella di uno pubblico no
+        $this->getJson("/api/luoghi/{$id}")->assertOk();
+        $this->getJson("/api/luoghi/{$id}")->assertOk();
+        $this->getJson('/api/luoghi/'.$r->json('id'))->assertOk();
+        $this->assertSame(1, AuditLog::where('action', 'viewed')->where('auditable_type', 'Luogo')->count());
+
+        // un servizio di un altro ente non si può usare come ente di riferimento
+        $altro = Institution::forceCreate(['name' => 'Altro', 'slug' => 'a']);
+        $estraneo = \App\Models\Servizio::create(['institution_id' => $altro->id, 'nome' => 'Altro servizio']);
+        $this->patchJson('/api/luoghi/'.$r->json('id'), ['servizio_id' => $estraneo->id])->assertUnprocessable();
+        $this->patchJson('/api/luoghi/'.$r->json('id'), ['servizio_id' => null])->assertOk()->assertJsonPath('servizio', null);
+    }
+
+    public function test_aggiornamento_dei_vecchi_tipi_di_luogo(): void
+    {
+        // un ente con i cinque tipi della prima versione, uno dei quali usato
+        $vecchio = Institution::forceCreate(['name' => 'Vecchio', 'slug' => 'v']);
+        \App\Models\TipoLuogo::where('institution_id', $vecchio->id)->delete();
+        foreach (\App\Support\TipiDefault::TIPI_LUOGO_VECCHI as $i => $k) {
+            \App\Models\TipoLuogo::create(['institution_id' => $vecchio->id, 'chiave' => $k, 'nome' => $k, 'colore' => 'grigio', 'ordine' => $i]);
+        }
+        Luogo::forceCreate(['institution_id' => $vecchio->id, 'nome' => 'Piazza', 'tipo' => 'strada', 'attivo' => true]);
+
+        \App\Support\TipiDefault::aggiornaTipiLuogo($vecchio->id);
+
+        $tipi = \App\Models\TipoLuogo::where('institution_id', $vecchio->id)->get()->keyBy('chiave');
+        $this->assertCount(13, $tipi);                       // 12 nuovi + "strada" ancora usato
+        $this->assertFalse($tipi['strada']->attivo);          // usato: si disattiva ma resta
+        $this->assertFalse($tipi->has('informale'));          // non usati: spariscono
+        $this->assertTrue($tipi['abitazioni_private']->riservato_default);
     }
 }

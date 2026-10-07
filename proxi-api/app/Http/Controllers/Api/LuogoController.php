@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Luogo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,6 +15,7 @@ class LuogoController extends Controller
         $instId = $request->user()->institution_id;
 
         $luoghi = Luogo::forInstitution($instId)
+            ->with('servizio:id,nome')
             ->withStats()
             ->attivi()
             ->when($request->q, fn ($q, $search) =>
@@ -40,19 +42,33 @@ class LuogoController extends Controller
             'lat'       => 'nullable|numeric',
             'lng'       => 'nullable|numeric',
             'attivo'    => 'boolean',
+            'visibilita'   => 'in:pubblico,riservato',
+            'punto_esatto' => 'nullable|string|max:120',
+            'servizio_id'  => ['nullable', \Illuminate\Validation\Rule::exists('servizi', 'id')->where('institution_id', $request->user()->institution_id)->whereNull('deleted_at')],
         ]);
 
         $data['institution_id'] = $request->user()->institution_id;
         $luogo = Luogo::create($data);
 
-        return response()->json($luogo, 201);
+        return response()->json($luogo->fresh()->load('servizio:id,nome'), 201);
     }
 
     public function show(Request $request, int $id): JsonResponse
     {
         $luogo = Luogo::forInstitution($request->user()->institution_id)
+            ->with('servizio:id,nome')
             ->withStats()
             ->findOrFail($id);
+
+        // i luoghi riservati (case, ecc.): anche la lettura finisce nel log (una volta ogni 10 minuti)
+        if ($luogo->visibilita === 'riservato') {
+            $recente = AuditLog::where('user_id', $request->user()->id)->where('action', 'viewed')
+                ->where('auditable_type', 'Luogo')->where('auditable_id', $luogo->id)
+                ->where('created_at', '>=', now()->subMinutes(10))->exists();
+            if (! $recente) {
+                AuditLog::record('viewed', $luogo);
+            }
+        }
 
         return response()->json($luogo);
     }
@@ -75,11 +91,14 @@ class LuogoController extends Controller
             'lat'       => 'nullable|numeric',
             'lng'       => 'nullable|numeric',
             'attivo'    => 'boolean',
+            'visibilita'   => 'in:pubblico,riservato',
+            'punto_esatto' => 'nullable|string|max:120',
+            'servizio_id'  => ['nullable', \Illuminate\Validation\Rule::exists('servizi', 'id')->where('institution_id', $request->user()->institution_id)->whereNull('deleted_at')],
         ]);
 
         $luogo->update($data);
 
-        return response()->json($luogo);
+        return response()->json($luogo->load('servizio:id,nome'));
     }
 
     public function destroy(Request $request, int $id): JsonResponse

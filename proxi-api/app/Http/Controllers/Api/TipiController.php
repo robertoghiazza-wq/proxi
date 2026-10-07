@@ -120,7 +120,7 @@ class TipiController extends Controller
     {
         $this->gestori($request);
         $i = $request->user()->institution_id;
-        $d = $request->validate(['nome' => 'required|string|max:80', 'colore' => ['required', $this->colore()]]);
+        $d = $request->validate(['nome' => 'required|string|max:80', 'colore' => ['required', $this->colore()], 'riservato_default' => 'sometimes|boolean']);
         $tipo = TipoLuogo::create($d + [
             'institution_id' => $i,
             'chiave'         => $this->chiaveUnica('tipi_luogo', $i, $d['nome']),
@@ -137,6 +137,7 @@ class TipiController extends Controller
         $tipo->update($request->validate([
             'nome'   => 'sometimes|required|string|max:80',
             'colore' => ['sometimes', $this->colore()],
+            'riservato_default' => 'sometimes|boolean',
             'attivo' => 'sometimes|boolean',
             'ordine' => 'sometimes|integer|min:0|max:1000',
         ]));

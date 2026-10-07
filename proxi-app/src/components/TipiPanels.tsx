@@ -159,7 +159,7 @@ export function TipiLuogoPanel() {
   return (
     <>
       {!gestore && <Card padding="12px 16px"><p style={vuoto}>I tipi di luogo li modificano coordinatori e admin.</p></Card>}
-      <div style={etichetta}>Il colore compare nella barra a sinistra dei luoghi e sulla mappa. Un tipo già usato da luoghi si può disattivare ma non eliminare.</div>
+      <div style={etichetta}>Il colore compare nella barra a sinistra dei luoghi e sulla mappa. "Riservato di default" propone i nuovi luoghi di quel tipo come riservati (non entrano nella mappa generale, letture nel log). Un tipo già usato da luoghi si può disattivare ma non eliminare.</div>
       {errore && <div style={{ fontSize: 13, color: 'var(--prox-danger)' }}>{errore}</div>}
 
       <Card padding="12px 14px">
@@ -173,6 +173,10 @@ export function TipiLuogoPanel() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 6 }}>
               <ColoreCampo value={t.colore} disabled={!gestore} onChange={v => g.aggiorna.mutate({ risorsa: 'tipi-luogo', id: t.id, colore: v ?? coloreHex('grigio') }, { ...ko, ...ok })} />
               <Attivo valore={t.attivo} disabled={!gestore} onChange={attivo => g.aggiorna.mutate({ risorsa: 'tipi-luogo', id: t.id, attivo }, { ...ko, ...ok })} />
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--prox-ink2)', cursor: gestore ? 'pointer' : 'default' }}>
+                <input type="checkbox" checked={t.riservato_default} disabled={!gestore} onChange={e => g.aggiorna.mutate({ risorsa: 'tipi-luogo', id: t.id, riservato_default: e.target.checked }, { ...ko, ...ok })} style={{ accentColor: 'var(--prox-accent)', width: 16, height: 16 }} />
+                Riservato di default
+              </label>
               {t.usi > 0 && <span style={{ fontSize: 12, color: 'var(--prox-ink3)' }}>{t.usi} {t.usi === 1 ? 'luogo' : 'luoghi'}</span>}
             </div>
           </div>

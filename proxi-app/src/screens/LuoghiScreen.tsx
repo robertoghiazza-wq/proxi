@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useMatch, Outlet } from 'react-router-dom'
-import { Search, Plus, List, Map as MapIcon, MapPin } from 'lucide-react'
+import { Search, Plus, List, Map as MapIcon, MapPin, Lock } from 'lucide-react'
 import { MobileLayout } from '../components/MobileLayout'
 import { Drawer } from '../components/Drawer'
 import { Modal } from '../components/Modal'
@@ -21,6 +21,7 @@ export function LuoghiScreen() {
   const [query, setQuery] = useState('')
   const [vista, setVista] = useState<'lista' | 'mappa'>('lista')
   const isDesktop = useIsDesktop()
+  const [mostraRiservati, setMostraRiservati] = useState(false)
   const { tipi: tipiLuogo, label: tipoLuogoLabel, colore: coloreLuogo } = useTipiLuogo()
   const TIPO_COLOR: Record<string, string> = Object.fromEntries(tipiLuogo.map(t => [t.chiave, coloreLuogo(t.chiave)]))
 
@@ -132,6 +133,7 @@ export function LuoghiScreen() {
                   fontSize: 11, color: 'var(--prox-ink3)',
                   display: 'flex', gap: 6, alignItems: 'center', minWidth: 0,
                 }}>
+                  {l.visibilita === 'riservato' && <Lock size={11} strokeWidth={2.2} style={{ flexShrink: 0 }} aria-label="Riservato" />}
                   <span style={{ flexShrink: 0 }}>{tipoLuogoLabel(l.tipo)}</span>
                   {(l.indirizzo || l.localita) && <><span>·</span>
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[l.indirizzo, l.localita].filter(Boolean).join(', ')}</span></>}
@@ -153,8 +155,18 @@ export function LuoghiScreen() {
           position: 'fixed', left: 0, right: 0, top: sotto, zIndex: 5,
           bottom: isDesktop ? 0 : 'var(--tabbar)',
         }}>
-          <LuoghiMap luoghi={luoghi} colors={TIPO_COLOR} onOpen={id => navigate(`/luoghi/${id}`)} />
+          <LuoghiMap luoghi={luoghi.filter(l => mostraRiservati || l.visibilita !== 'riservato')} colors={TIPO_COLOR} onOpen={id => navigate(`/luoghi/${id}`)} />
         </div>
+      )}
+      {vista === 'mappa' && !isLoading && sotto > 0 && luoghi.some(l => l.visibilita === 'riservato') && (
+        <button
+          onClick={() => setMostraRiservati(m => !m)}
+          style={{
+            position: isDesktop ? 'fixed' : 'absolute', left: 10, top: sotto + 10, zIndex: 6, display: 'flex', alignItems: 'center', gap: 6,
+            padding: '6px 12px', borderRadius: 999, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'inherit',
+            background: 'var(--prox-surface)', color: mostraRiservati ? 'var(--prox-accent)' : 'var(--prox-ink2)', boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+          }}
+        ><Lock size={12} strokeWidth={2.2} /> {mostraRiservati ? 'Riservati visibili' : 'Mostra i riservati'}</button>
       )}
       {isNuovoOpen ? (
         <Modal open onClose={() => navigate('/luoghi')}>

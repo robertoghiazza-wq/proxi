@@ -5,7 +5,7 @@ import { TIPI_EVENTO as TIPI_EVENTO_BASE, TIPO_LUOGO_LABEL as LUOGO_BASE } from 
 
 export interface CategoriaEvento { id: number; nome: string; colore: string; ordine: number }
 export interface TipoEvento { id: number; categoria_id: number; chiave: string; nome: string; colore: string | null; ordine: number; attivo: boolean; usi: number }
-export interface TipoLuogo { id: number; chiave: string; nome: string; colore: string; ordine: number; attivo: boolean; usi: number }
+export interface TipoLuogo { id: number; chiave: string; nome: string; colore: string; riservato_default: boolean; ordine: number; attivo: boolean; usi: number }
 interface Tipi { colori: string[]; categorie: CategoriaEvento[]; tipi_evento: TipoEvento[]; tipi_luogo: TipoLuogo[] }
 
 export function useTipi() {

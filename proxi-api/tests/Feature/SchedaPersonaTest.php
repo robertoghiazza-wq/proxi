@@ -95,7 +95,7 @@ class SchedaPersonaTest extends TestCase
     public function test_comune_e_cantone_su_luoghi_e_servizi(): void
     {
         $l = $this->postJson('/api/luoghi', [
-            'nome' => 'Piazza', 'tipo' => 'strada', 'indirizzo' => 'Piazza Riforma 1', 'npa' => '6900',
+            'nome' => 'Piazza', 'tipo' => 'parchi_piazze_sport', 'indirizzo' => 'Piazza Riforma 1', 'npa' => '6900',
             'localita' => 'Lugano', 'comune_politico' => 'Lugano', 'bfs' => '5192', 'cantone' => 'TI',
         ])->assertCreated()->assertJsonPath('comune_politico', 'Lugano')->assertJsonPath('cantone', 'TI');
 

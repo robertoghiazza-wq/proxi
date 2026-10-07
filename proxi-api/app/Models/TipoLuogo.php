@@ -11,7 +11,7 @@ class TipoLuogo extends Model
 
     protected $table = 'tipi_luogo';
 
-    protected $fillable = ['institution_id', 'chiave', 'nome', 'colore', 'ordine', 'attivo'];
+    protected $fillable = ['institution_id', 'chiave', 'nome', 'colore', 'riservato_default', 'ordine', 'attivo'];
 
-    protected $casts = ['attivo' => 'boolean'];
+    protected $casts = ['attivo' => 'boolean', 'riservato_default' => 'boolean'];
 }
