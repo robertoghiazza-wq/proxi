@@ -1,6 +1,7 @@
 // Dialogo di conferma (azioni distruttive)
 
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
 interface Props {
   open: boolean
@@ -28,7 +29,8 @@ export function ConfirmDialog({
 
   if (!open) return null
 
-  return (
+  // nel body: dentro un drawer (o altro contenitore con trasformazioni) il fixed verrebbe tagliato
+  return createPortal(
     <div
       onClick={onCancel}
       style={{
@@ -72,6 +74,7 @@ export function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

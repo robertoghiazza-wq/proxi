@@ -32,20 +32,20 @@ export function Drawer({ open, onClose, children, width = 600 }: DrawerProps) {
       <div
         onClick={onClose}
         style={{
-          position: 'fixed', top: 'calc(var(--fascia) + var(--topbar))', left: 0, right: 0, bottom: 0,
+          position: 'fixed', top: 'var(--fascia)', left: 0, right: 0, bottom: 0,
           background: 'rgba(0,0,0,0.06)',
-          zIndex: 40,
+          zIndex: 89,
         }}
       />
       <div style={{
-        // a tutta altezza sotto la topbar, ferma anche se la lista sotto è scrollata
-        position: 'fixed', right: 0, top: 'calc(var(--fascia) + var(--topbar))', bottom: 0,
+        // a tutta altezza, anche sopra il menu (sotto resta solo la striscia rossa); ferma anche se la lista sotto è scrollata
+        position: 'fixed', right: 0, top: 'var(--fascia)', bottom: 0,
         width,
         background: 'var(--prox-surface)',
         borderLeft: '1px solid var(--prox-line)',
         overflowY: 'auto',
         display: 'flex', flexDirection: 'column',
-        zIndex: 50,
+        zIndex: 90,   // sopra il menu, sotto modal (100) e conferme (500)
         boxShadow: '-6px 0 32px rgba(0,0,0,0.10)',
         animation: 'drawerIn 0.18s ease',
       }} className="prox-drawer">

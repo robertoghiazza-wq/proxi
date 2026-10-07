@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useIsDesktop } from '../hooks/useIsDesktop'
 
 interface ModalProps {
@@ -8,7 +9,12 @@ interface ModalProps {
   width?: number
 }
 
-export function Modal({ open, onClose, children, width = 600 }: ModalProps) {
+export function Modal(props: ModalProps) {
+  // nel body: aperto da dentro un drawer non deve restarne tagliato
+  return props.open ? createPortal(<ModalInterno {...props} />, document.body) : null
+}
+
+function ModalInterno({ open, onClose, children, width = 600 }: ModalProps) {
   const isDesktop = useIsDesktop()
 
   useEffect(() => {

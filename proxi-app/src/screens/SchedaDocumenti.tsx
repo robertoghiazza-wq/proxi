@@ -1,6 +1,7 @@
 // Tab Documenti di una persona: allegati (PDF, foto, Word...) con tipo, titolo e note
 
 import { useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { FileText, Image as ImageIcon, FileSpreadsheet, File as FileIcon, Plus, Edit, Trash2, X, Paperclip } from 'lucide-react'
 import { Card } from '../components/Card'
 import { Modal } from '../components/Modal'
@@ -126,7 +127,7 @@ export function DocumentiPanel({ persona }: { persona: Persona }) {
         onConfirm={() => daEliminare && elimina.mutate(daEliminare.id, { onSuccess: () => setDaEliminare(null) })}
       />
 
-      {immagine && (
+      {immagine && createPortal(
         <div onClick={() => { URL.revokeObjectURL(immagine.url); setImmagine(null) }} style={{
           position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.88)', display: 'flex',
           alignItems: 'center', justifyContent: 'center', padding: 16, boxSizing: 'border-box',
@@ -135,7 +136,8 @@ export function DocumentiPanel({ persona }: { persona: Persona }) {
             <X size={26} />
           </button>
           <img src={immagine.url} alt={immagine.titolo} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: 6 }} />
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   )
