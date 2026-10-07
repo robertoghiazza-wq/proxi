@@ -36,7 +36,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
   // Su desktop il profilo è l'avatar a destra; le ore stanno nel menu per chi gestisce l'équipe
   const tabsDesktop  = [
     ...TABS.filter(t => t.path !== '/profilo'),
-    ...(gestore ? [{ path: '/ore', label: 'Ore' }, { path: '/impostazioni', label: 'Impostazioni' }] : []),
+    ...(gestore ? [{ path: '/ore', label: 'Ore' }, { path: '/report', label: 'Report' }, { path: '/impostazioni', label: 'Impostazioni' }] : []),
   ]
 
   if (isDesktop) {

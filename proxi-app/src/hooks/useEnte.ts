@@ -20,7 +20,7 @@ export function useGestioneEnte() {
   const qc = useQueryClient()
   const aggiorna = () => qc.invalidateQueries({ queryKey: ['me'] })
   return {
-    salva: useMutation({ mutationFn: (d: { name?: string; accent_color?: string }) => api.put<Ente>('/ente', d), onSuccess: aggiorna }),
+    salva: useMutation({ mutationFn: (d: { name?: string; accent_color?: string; motto?: string | null; sito?: string | null; email_mittente?: string | null }) => api.put<Ente>('/ente', d), onSuccess: aggiorna }),
     caricaLogo: useMutation({
       mutationFn: (file: Blob | File) => {
         const f = new FormData()

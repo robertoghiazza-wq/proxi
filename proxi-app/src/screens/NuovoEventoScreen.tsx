@@ -12,7 +12,7 @@ import { useTipiEvento } from '../hooks/useTipi'
 import { tenue, scuro } from '../lib/colori'
 import { useLuoghi } from '../hooks/useLuoghi'
 import { api } from '../lib/api-client'
-import type { Luogo } from '../types'
+import type { Luogo, Evento } from '../types'
 
 // ─── util ──────────────────────────────────────────────────────────────────
 
@@ -144,7 +144,8 @@ export function NuovoEventoScreen() {
         durata_min: form.durata,
         luogo_id:   primoLuogoId()!,
         stato:      'completato',
-      })
+        soste:      form.soste.filter(s => s.luogoId !== null).map(s => ({ luogo_id: s.luogoId, dalle: s.dalle || null, alle: s.alle || null })),
+      } as Partial<Evento>)
       setForm(f => ({ ...f, savedId: evento.id }))
       setStep(s => s + 1)
     } catch (e: unknown) {

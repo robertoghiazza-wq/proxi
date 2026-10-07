@@ -150,6 +150,14 @@ export function ProfiloScreen() {
               onClick={() => navigate('/impostazioni')}
             />
           )}
+          {gestore && (
+            <Voce
+              icon={<FileText size={18} strokeWidth={1.75} />}
+              label="Report"
+              sublabel="Resoconto settimanale, estratti per i partner, invii automatici"
+              onClick={() => navigate('/report')}
+            />
+          )}
           <Voce
             icon={<Clock size={18} strokeWidth={1.75} />}
             label="Conteggio ore"

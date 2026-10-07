@@ -6,6 +6,7 @@ use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Evento extends Model
 {
@@ -75,6 +76,12 @@ class Evento extends Model
     public function luogo(): BelongsTo
     {
         return $this->belongsTo(Luogo::class);
+    }
+
+    // Tappe (luoghi con orario) in ordine; se mancano vale il solo luogo dell'evento
+    public function soste(): HasMany
+    {
+        return $this->hasMany(EventoSosta::class)->orderBy('ordine')->orderBy('id');
     }
 
     public function persone(): BelongsToMany

@@ -18,6 +18,7 @@ import { ServizioDetail }    from './screens/ServizioDetail'
 import { ServizioFormScreen } from './screens/ServizioFormScreen'
 import { OreScreen }         from './screens/OreScreen'
 import { ImpostazioniScreen } from './screens/ImpostazioniScreen'
+import { ReportScreen }      from './screens/ReportScreen'
 import { ProfiloScreen }     from './screens/ProfiloScreen'
 import { ImpostaPasswordScreen } from './screens/ImpostaPasswordScreen'
 import { LoginScreen }       from './screens/LoginScreen'
@@ -79,6 +80,7 @@ export default function App() {
           <Route path="/profilo" element={<Auth><ProfiloScreen /></Auth>} />
           <Route path="/ore" element={<Auth><OreScreen /></Auth>} />
           <Route path="/impostazioni" element={<Auth><ImpostazioniScreen /></Auth>} />
+          <Route path="/report" element={<Auth><ReportScreen /></Auth>} />
 
           <Route path="/login" element={<LoginScreen />} />
           <Route path="/imposta-password" element={<ImpostaPasswordScreen />} />

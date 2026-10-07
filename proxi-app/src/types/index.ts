@@ -214,6 +214,7 @@ export interface Evento {
   persone?: Persona[]
   luogo?: Luogo
   educatore?: User
+  soste?: { id: number; luogo_id: number | null; dalle: string | null; alle: string | null; luogo?: { id: number; nome: string } | null }[]
 }
 
 export type CategoriaSpesa = 'pasti' | 'trasporto' | 'materiale' | 'farmacia' | 'altro'

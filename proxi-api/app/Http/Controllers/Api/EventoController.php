@@ -19,7 +19,7 @@ class EventoController extends Controller
         $instId = $request->user()->institution_id;
 
         $eventi = Evento::forInstitution($instId)
-            ->with(['luogo', 'persone', 'educatore:id,name'])
+            ->with($this->relazioni())
             ->when($request->data, fn ($q, $d) => $q->whereDate('data', $d))
             ->when($request->stato, fn ($q, $s) => $q->where('stato', $s))
             ->when($request->educatore_id, fn ($q, $id) => $q->where('educatore_id', $id))
@@ -48,29 +48,37 @@ class EventoController extends Controller
             'note'         => 'nullable|string',
             'persone_ids'   => 'sometimes|array',
             'persone_ids.*' => [$this->existsInInstitution('persone', $instId)],
+            'soste'              => 'sometimes|array|max:20',
+            'soste.*.luogo_id'   => ['nullable', $this->existsInInstitution('luoghi', $instId)],
+            'soste.*.dalle'      => 'nullable|date_format:H:i',
+            'soste.*.alle'       => 'nullable|date_format:H:i',
         ], $this->messages());
 
         $personeIds = Arr::pull($data, 'persone_ids');
+        $soste = Arr::pull($data, 'soste');
 
         $data['institution_id'] = $instId;
         $data['educatore_id']   = $request->user()->id;
 
-        $evento = DB::transaction(function () use ($data, $personeIds) {
+        $evento = DB::transaction(function () use ($data, $personeIds, $soste) {
             $evento = Evento::create($data);
             if ($personeIds !== null) {
                 $this->syncPersoneAudited($evento, $personeIds);
+            }
+            if ($soste !== null) {
+                $this->syncSoste($evento, $soste);
             }
 
             return $evento;
         });
 
-        return response()->json($evento->load(['luogo', 'persone']), 201);
+        return response()->json($evento->load($this->relazioni(false)), 201);
     }
 
     public function show(Request $request, int $id): JsonResponse
     {
         $evento = $this->scoped($request)
-            ->with(['luogo', 'persone', 'educatore:id,name'])
+            ->with($this->relazioni())
             ->findOrFail($id);
 
         return response()->json($evento);
@@ -91,18 +99,29 @@ class EventoController extends Controller
             'note'         => 'nullable|string',
             'persone_ids'   => 'sometimes|array',
             'persone_ids.*' => [$this->existsInInstitution('persone', $instId)],
+            'soste'              => 'sometimes|array|max:20',
+            'soste.*.luogo_id'   => ['nullable', $this->existsInInstitution('luoghi', $instId)],
+            'soste.*.dalle'      => 'nullable|date_format:H:i',
+            'soste.*.alle'       => 'nullable|date_format:H:i',
         ], $this->messages());
 
         $personeIds = Arr::pull($data, 'persone_ids');
+        $soste = Arr::pull($data, 'soste');
+        $luogoCambiato = isset($data['luogo_id']) && (int) $data['luogo_id'] !== (int) $evento->luogo_id;
 
-        DB::transaction(function () use ($evento, $data, $personeIds) {
+        DB::transaction(function () use ($evento, $data, $personeIds, $soste, $luogoCambiato) {
             $evento->update($data);
             if ($personeIds !== null) {
                 $this->syncPersoneAudited($evento, $personeIds);
             }
+            if ($soste !== null) {
+                $this->syncSoste($evento, $soste);
+            } elseif ($luogoCambiato && \Illuminate\Support\Facades\Schema::hasTable('evento_soste')) {
+                $evento->soste()->delete();   // le tappe di prima non valgono più per il nuovo luogo
+            }
         });
 
-        return response()->json($evento->load(['luogo', 'persone', 'educatore:id,name']));
+        return response()->json($evento->load($this->relazioni()));
     }
 
     public function destroy(Request $request, int $id): JsonResponse
@@ -125,6 +144,26 @@ class EventoController extends Controller
         $this->syncPersoneAudited($evento, $request->persone_ids);
 
         return response()->json($evento->load('persone'));
+    }
+
+    // Sostituisce le tappe dell'evento; l'ordine è quello ricevuto
+    private function syncSoste(Evento $evento, array $soste): void
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('evento_soste')) return;
+        $evento->soste()->delete();
+        foreach (array_values($soste) as $i => $s) {
+            $evento->soste()->create(['luogo_id' => $s['luogo_id'] ?? null, 'dalle' => $s['dalle'] ?? null, 'alle' => $s['alle'] ?? null, 'ordine' => $i]);
+        }
+    }
+
+    // Le tappe esistono dopo la migrazione: finché non è stata eseguita l'app funziona come prima
+    private function relazioni(bool $educatore = true): array
+    {
+        $r = ['luogo', 'persone'];
+        if ($educatore) $r[] = 'educatore:id,name';
+        if (\Illuminate\Support\Facades\Schema::hasTable('evento_soste')) $r[] = 'soste.luogo:id,nome';
+
+        return $r;
     }
 
     private function scoped(Request $request): Builder

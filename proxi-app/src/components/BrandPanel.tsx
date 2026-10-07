@@ -24,6 +24,7 @@ export function BrandPanel() {
 
   const colorePartenza = ente?.accent_color ?? '#dc1d27'
   const [nome, setNome] = useState<string | null>(null)
+  const [intest, setIntest] = useState<{ motto?: string; sito?: string; email_mittente?: string }>({})
   const [colore, setColore] = useState<string | null>(null)
   const [errore, setErrore] = useState('')
   const [errLogo, setErrLogo] = useState('')
@@ -33,21 +34,23 @@ export function BrandPanel() {
 
   const nomeAttuale = nome ?? ente.name
   const coloreAttuale = colore ?? colorePartenza
-  const modificato = (nome !== null && nome.trim() !== ente.name) || (colore !== null && colore.toLowerCase() !== colorePartenza.toLowerCase())
+  const valoreIntest = (k: 'motto' | 'sito' | 'email_mittente') => intest[k] ?? ente[k] ?? ''
+  const intestModificata = (['motto', 'sito', 'email_mittente'] as const).some(k => k in intest && (intest[k] ?? '').trim() !== (ente[k] ?? ''))
+  const modificato = intestModificata || (nome !== null && nome.trim() !== ente.name) || (colore !== null && colore.toLowerCase() !== colorePartenza.toLowerCase())
 
   const scegliColore = (hex: string) => {
     setColore(hex)
     if (/^#[0-9a-f]{6}$/i.test(hex)) applyTenantTheme(hex) // anteprima dal vivo
   }
-  const annulla = () => { setNome(null); setColore(null); setErrore(''); applyTenantTheme(colorePartenza) }
+  const annulla = () => { setNome(null); setColore(null); setIntest({}); setErrore(''); applyTenantTheme(colorePartenza) }
 
   function salva() {
     if (!nomeAttuale.trim()) { setErrore('Il nome è obbligatorio'); return }
     if (!/^#[0-9a-f]{6}$/i.test(coloreAttuale)) { setErrore('Il colore deve essere nel formato #rrggbb'); return }
     setErrore('')
     g.salva.mutate(
-      { name: nomeAttuale.trim(), accent_color: coloreAttuale.toLowerCase() },
-      { onSuccess: () => { setNome(null); setColore(null) }, onError: e => setErrore((e as Error).message) },
+      { name: nomeAttuale.trim(), accent_color: coloreAttuale.toLowerCase(), motto: valoreIntest('motto').trim() || null, sito: valoreIntest('sito').trim() || null, email_mittente: valoreIntest('email_mittente').trim() || null },
+      { onSuccess: () => { setNome(null); setColore(null); setIntest({}) }, onError: e => setErrore((e as Error).message) },
     )
   }
 
@@ -70,6 +73,16 @@ export function BrandPanel() {
       <Card padding="14px 16px">
         <Titolo titolo="Nome dell'ente" />
         <input value={nomeAttuale} onChange={e => setNome(e.target.value)} disabled={!puoModificare} style={campo} placeholder="Es. Associazione Prometheus" />
+      </Card>
+
+      <Card padding="14px 16px">
+        <Titolo titolo="Intestazione dei report" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <input value={valoreIntest('motto')} onChange={e => setIntest(i => ({ ...i, motto: e.target.value }))} disabled={!puoModificare} style={campo} placeholder="Motto (es. dà luce ai giovani!)" maxLength={120} />
+          <input value={valoreIntest('sito')} onChange={e => setIntest(i => ({ ...i, sito: e.target.value }))} disabled={!puoModificare} style={campo} placeholder="Sito web (es. www.associazioneprometheus.ch)" maxLength={120} />
+          <input type="email" value={valoreIntest('email_mittente')} onChange={e => setIntest(i => ({ ...i, email_mittente: e.target.value }))} disabled={!puoModificare} style={campo} placeholder="Indirizzo da cui partono le e-mail dei report" maxLength={120} />
+        </div>
+        <div style={{ ...etichetta, marginTop: 8 }}>Compaiono in cima al PDF insieme al logo. L'indirizzo mittente deve appartenere al vostro dominio, altrimenti le e-mail possono finire nello spam.</div>
       </Card>
 
       <Card padding="14px 16px">

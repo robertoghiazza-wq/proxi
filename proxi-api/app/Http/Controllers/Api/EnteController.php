@@ -19,6 +19,9 @@ class EnteController extends Controller
         $d = $request->validate([
             'name'         => 'sometimes|required|string|max:120',
             'accent_color' => ['sometimes', 'required', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'motto'          => 'sometimes|nullable|string|max:120',
+            'sito'           => 'sometimes|nullable|string|max:120',
+            'email_mittente' => 'sometimes|nullable|email|max:120',
         ], ['accent_color.regex' => 'Il colore deve essere nel formato #rrggbb']);
 
         if (isset($d['accent_color'])) {

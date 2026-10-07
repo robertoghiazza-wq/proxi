@@ -66,9 +66,13 @@ async function request<T>(
 }
 
 // File protetti (documenti, foto): servono il token, quindi non si possono mettere in un <img src>
-export async function scaricaBlob(path: string): Promise<Blob> {
+export async function scaricaBlob(path: string, corpo?: unknown): Promise<Blob> {
   const token = getToken()
-  const res = await fetch(`${API_BASE}${path}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: corpo === undefined ? 'GET' : 'POST',
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(corpo === undefined ? {} : { 'Content-Type': 'application/json', Accept: 'application/json' }) },
+    body: corpo === undefined ? undefined : JSON.stringify(corpo),
+  })
   if (res.status === 401) {
     clearToken()
     window.location.href = '/login'

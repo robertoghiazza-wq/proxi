@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/ping', fn () => response()->json(['ok' => true]));
 
 // Migrazioni da browser (hosting senza SSH): pagina con accesso, solo account admin
+// Attività pianificata per l'invio automatico dei report (Plesk la chiama ogni ora con la chiave segreta)
+Route::get('/cron/report', [\App\Http\Controllers\ReportCronController::class, 'esegui'])->middleware('throttle:30,1');
+
 Route::middleware('throttle:10,1')->prefix('deploy')->group(function () {
     Route::get('/migrate', [\App\Http\Controllers\DeployController::class, 'pagina']);
     Route::post('/migrate', [\App\Http\Controllers\DeployController::class, 'esegui']);
@@ -86,6 +89,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/tipi-luogo', [\App\Http\Controllers\Api\TipiController::class, 'storeTipoLuogo']);
     Route::patch('/tipi-luogo/{id}', [\App\Http\Controllers\Api\TipiController::class, 'updateTipoLuogo']);
     Route::delete('/tipi-luogo/{id}', [\App\Http\Controllers\Api\TipiController::class, 'destroyTipoLuogo']);
+
+    // Report: resoconto settimanale, estratti di eventi, invii (anche automatici) — solo coordinatori e admin
+    Route::get('/report/settimana', [\App\Http\Controllers\Api\ReportController::class, 'settimana']);
+    Route::get('/report/settimana/pdf', [\App\Http\Controllers\Api\ReportController::class, 'settimanaPdf']);
+    Route::post('/report/settimana/invia', [\App\Http\Controllers\Api\ReportController::class, 'settimanaInvia']);
+    Route::post('/report/estratto', [\App\Http\Controllers\Api\ReportController::class, 'estratto']);
+    Route::post('/report/estratto/pdf', [\App\Http\Controllers\Api\ReportController::class, 'estrattoPdf']);
+    Route::post('/report/estratto/invia', [\App\Http\Controllers\Api\ReportController::class, 'estrattoInvia']);
+    Route::get('/report/invii', [\App\Http\Controllers\Api\ReportController::class, 'invii']);
+    Route::get('/report/automatico', [\App\Http\Controllers\Api\ReportController::class, 'automatico']);
+    Route::put('/report/automatico', [\App\Http\Controllers\Api\ReportController::class, 'salvaAutomatico']);
+    Route::post('/report/automatico/chiave', [\App\Http\Controllers\Api\ReportController::class, 'nuovaChiave']);
 
     // Elenchi a tendina
     Route::apiResource('vocaboli', \App\Http\Controllers\Api\VocaboloController::class)->except('show');

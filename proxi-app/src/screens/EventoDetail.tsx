@@ -1,6 +1,7 @@
 // Evento detail — tipo, orario, durata, persone, luogo, note, educatore
 
 import { useTipiEvento } from '../hooks/useTipi'
+import { useGestore } from '../hooks/useAuth'
 import { RiferimentoSticky, useTitoloSticky } from '../components/RiferimentoSticky'
 import { nomeAvatar, nomePersona, etichettaRuolo } from '../lib/persona'
 import { useState } from 'react'
@@ -47,6 +48,7 @@ function StatoInfo({ stato }: { stato: StatoEvento }) {
 }
 
 export function EventoDetail() {
+  const gestore = useGestore()
   const { setTitolo, fuori } = useTitoloSticky()
   const { label: tipoLabel, colore: colorForTipo } = useTipiEvento()
   const { id } = useParams()
@@ -182,7 +184,30 @@ export function EventoDetail() {
               </Row>
             </>
           )}
+
+          {evento.soste && evento.soste.filter(s => s.luogo).length > 1 && (
+            <>
+              <Divider />
+              <Row icon={<MapPin size={16} strokeWidth={1.75} color={color} />} label="Tappe">
+                {evento.soste.filter(s => s.luogo).map(s => (
+                  <span key={s.id} style={{ fontSize: 13.5, color: 'var(--prox-ink)' }}>
+                    {s.luogo!.nome}{s.dalle && s.alle ? <span style={{ color: 'var(--prox-ink3)' }}> · {s.dalle}–{s.alle}</span> : null}
+                  </span>
+                ))}
+              </Row>
+            </>
+          )}
         </Card>
+
+        {gestore && evento.stato === 'completato' && (
+          <button
+            onClick={() => navigate(`/report?scheda=estratti&evento=${evento.id}`)}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '11px 0', borderRadius: 999, cursor: 'pointer',
+              border: '1.5px solid var(--prox-line)', background: 'transparent', color: 'var(--prox-ink2)', fontSize: 14, fontWeight: 600, fontFamily: 'inherit',
+            }}
+          ><FileText size={16} strokeWidth={1.75} /> Estratto per i partner</button>
+        )}
 
         {/* Persone coinvolte */}
         {evento.persone && evento.persone.length > 0 && (

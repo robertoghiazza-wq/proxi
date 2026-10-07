@@ -21,7 +21,7 @@ export interface Me {
   name: string
   email: string
   role: string
-  institution?: { id: number; name: string; accent_color?: string; ha_logo?: boolean; updated_at?: string } | null
+  institution?: { id: number; name: string; accent_color?: string; ha_logo?: boolean; updated_at?: string; motto?: string | null; sito?: string | null; email_mittente?: string | null } | null
 }
 
 // Utente collegato e suo ente; tiene allineata la copia locale (ruolo) usata per mostrare o nascondere le sezioni
