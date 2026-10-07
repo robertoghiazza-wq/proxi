@@ -42,7 +42,10 @@ export function LuoghiScreen() {
 
   const { data: tuttiLuoghi = [], isLoading, isError, error } = useLuoghi()
 
+  const [soloDaControllare, setSoloDaControllare] = useState(false)
+  const nDaControllare = tuttiLuoghi.filter(l => l.posizione_da_controllare).length
   const luoghi = tuttiLuoghi.filter(l => {
+    if (soloDaControllare && !l.posizione_da_controllare) return false
     if (!query) return true
     const q = query.toLowerCase()
     return l.nome.toLowerCase().includes(q) || l.indirizzo?.toLowerCase().includes(q)
@@ -102,6 +105,16 @@ export function LuoghiScreen() {
             ))}
           </div>
         </div>
+        {nDaControllare > 0 && (
+          <button
+            onClick={() => setSoloDaControllare(v => !v)}
+            style={{
+              marginTop: 10, padding: '4px 12px', borderRadius: 999, cursor: 'pointer', fontSize: 12.5, fontWeight: 600, fontFamily: 'inherit',
+              border: `1px solid ${soloDaControllare ? 'transparent' : 'var(--prox-line)'}`,
+              background: soloDaControllare ? 'var(--prox-accent)' : 'var(--prox-surface)', color: soloDaControllare ? '#fff' : 'var(--prox-ink2)',
+            }}
+          >Posizione da controllare · {nDaControllare}</button>
+        )}
       </div>
 
       {/* Lista */}

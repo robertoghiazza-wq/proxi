@@ -94,6 +94,7 @@ class LuogoController extends Controller
             'attivo'    => 'boolean',
             'visibilita'   => 'in:pubblico,riservato',
             'punto_esatto' => 'nullable|string|max:120',
+            'posizione_da_controllare' => 'sometimes|boolean',
             'servizio_id'  => ['nullable', \Illuminate\Validation\Rule::exists('servizi', 'id')->where('institution_id', $request->user()->institution_id)->whereNull('deleted_at')],
         ]);
 

@@ -138,4 +138,17 @@ class ImportazioneLuoghiTest extends TestCase
         $this->patchJson("/api/luoghi/{$lusc->id}", ['lat' => 45.9901, 'lng' => 8.8301])->assertOk();
         $this->assertFalse($lusc->fresh()->posizione_da_controllare);
     }
+
+    public function test_il_segnale_si_toglie_a_mano_e_le_zone_non_lo_hanno(): void
+    {
+        $righe = $this->righe();
+        $righe[] = 'ZZZ-9,Bedano,zone_comuni,pubblico,,,6930,Bedano,Svizzera,46.02,8.91,approssimata (centro del CAP),Bedano,5000,TI,,,,';
+        $this->postJson('/api/importazioni/luoghi', ['file' => $this->csv($righe), 'conferma' => 1])->assertOk();
+        $this->assertFalse(Luogo::where('nome', 'Bedano')->first()->posizione_da_controllare);
+
+        $lusc = Luogo::where('nome', 'Centro Lüsc')->first();
+        $this->assertTrue($lusc->posizione_da_controllare);
+        $this->patchJson("/api/luoghi/{$lusc->id}", ['posizione_da_controllare' => false])->assertOk()->assertJsonPath('posizione_da_controllare', false);
+        $this->assertFalse($lusc->fresh()->posizione_da_controllare);
+    }
 }

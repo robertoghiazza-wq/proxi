@@ -105,6 +105,7 @@ class ImportaLuoghi
 
     public static function daControllare(array $r): bool
     {
+        if (($r['tipo'] ?? '') === 'zone_comuni') return false;   // una zona non ha una posizione precisa da verificare
         $q = (string) ($r['geo_qualita'] ?? '');
 
         return str_starts_with($q, 'approssimata') || str_starts_with($q, 'ricostruita') || str_starts_with($q, 'assente') || str_starts_with($q, 'estero');

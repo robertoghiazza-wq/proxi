@@ -13,7 +13,7 @@ import { ConfirmDialog } from '../components/ConfirmDialog'
 import { RiferimentoSticky, useTitoloSticky } from '../components/RiferimentoSticky'
 import { useTipiLuogo, useTipiEvento } from '../hooks/useTipi'
 import { tenue, scuro } from '../lib/colori'
-import { useLuogo, useDeleteLuogo } from '../hooks/useLuoghi'
+import { useLuogo, useDeleteLuogo, useUpdateLuogo } from '../hooks/useLuoghi'
 import { useEventi } from '../hooks/useEventi'
 
 
@@ -38,6 +38,7 @@ export function LuogoDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { data: luogo, isLoading } = useLuogo(Number(id))
+  const verifica = useUpdateLuogo(Number(id))
   const { data: eventiTutti = [] } = useEventi({ luogo_id: Number(id) })
   const eventiRecenti = eventiTutti.slice(0, 5)
   const [creaServizio, setCreaServizio] = useState(false)
@@ -134,6 +135,15 @@ export function LuogoDetail() {
                 <span style={{ fontSize: 12, color: 'var(--prox-ink3)' }}>{[luogo.indirizzo, [luogo.npa, luogo.localita].filter(Boolean).join(' ')].filter(Boolean).join(', ')}</span>
               )}
             </div>
+            {luogo.posizione_da_controllare && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 6, fontSize: 12, color: 'oklch(0.45 0.12 70)' }}>
+                <span>Posizione ricostruita automaticamente.</span>
+                <button
+                  onClick={() => verifica.mutate({ posizione_da_controllare: false })} disabled={verifica.isPending}
+                  style={{ border: '1px solid oklch(0.80 0.08 80)', background: 'oklch(0.97 0.04 85)', color: 'oklch(0.40 0.11 70)', borderRadius: 999, padding: '3px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+                >{verifica.isPending ? '…' : 'Segna come verificata'}</button>
+              </div>
+            )}
             {luogo.comune_politico && (
               <div style={{ fontSize: 11.5, color: 'var(--prox-ink3)', marginTop: 3 }}>
                 Comune politico: {luogo.comune_politico}{luogo.cantone ? ` (${luogo.cantone})` : ''}
