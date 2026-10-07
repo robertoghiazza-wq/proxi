@@ -57,7 +57,7 @@ class TipiDefault
             'abitazioni_private'       => ['Abitazioni private', 'rosa', true],
             'sedi_associazione'        => ['Sedi dell\'associazione', 'viola', false],
             'zone_comuni'              => ['Zone e comuni', 'azzurro', false],
-            'strade_senza_riferimento' => ['Strade e aree senza altro riferimento', 'grigio', false],
+            'strade_senza_riferimento' => ['Strade, parcheggi e aree senza altro riferimento', 'grigio', false],
         ];
     }
 
