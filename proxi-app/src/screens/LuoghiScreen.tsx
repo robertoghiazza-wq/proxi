@@ -139,8 +139,15 @@ export function LuoghiScreen() {
               <LuogoThumb lat={l.lat} lng={l.lng} color={color} size={42} radius={8} />
 
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13.5, fontWeight: 600, marginBottom: 2, color: 'var(--prox-ink)' }}>
-                  {l.nome}
+                <div style={{ fontSize: 13.5, fontWeight: 600, marginBottom: 2, color: 'var(--prox-ink)', display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.nome}</span>
+                  {/* provvisorio: fino a quando le posizioni importate non sono verificate */}
+                  {l.posizione_da_controllare && (
+                    <span style={{
+                      flexShrink: 0, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.2, padding: '2px 7px', borderRadius: 999,
+                      background: 'oklch(0.93 0.07 80)', color: 'oklch(0.42 0.1 65)',
+                    }}>Da controllare</span>
+                  )}
                 </div>
                 <div style={{
                   fontSize: 11, color: 'var(--prox-ink3)',
