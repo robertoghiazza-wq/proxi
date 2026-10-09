@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\AuditLog;
 use App\Models\Evento;
 use App\Models\Institution;
 use App\Models\Luogo;
@@ -48,6 +49,23 @@ class RicercaTest extends TestCase
         $this->assertSame('Segreto granchio', $r->json('0.trovato.0.estratto'));
         $this->cerca('persone', 'rossi anna')->assertJsonCount(1);                 // più parole: tutte presenti
         $this->cerca('persone', 'rossi fuffi')->assertJsonCount(0);
+    }
+
+    public function test_la_ricerca_che_mostra_testo_riservato_va_nel_registro_una_volta_ogni_dieci_minuti(): void
+    {
+        $luca = Persona::create(['institution_id' => $this->inst, 'ruolo' => 'utente', 'nome' => 'Luca', 'cognome' => 'Neri']);
+        PersonaDiario::create(['institution_id' => $this->inst, 'persona_id' => $luca->id, 'data' => '2026-01-10', 'nota' => 'Ha parlato del suo cane Fuffi', 'autore_id' => $this->user->id]);
+
+        $this->cerca('persone', 'neri');                                           // solo il nome: non è una lettura riservata
+        $this->assertSame(0, AuditLog::where('action', 'viewed')->count());
+
+        $this->cerca('persone', 'fuffi');
+        $riga = AuditLog::where('action', 'viewed')->where('auditable_id', $luca->id)->sole();
+        $this->assertSame('ricerca: diario', $riga->meta['sezione']);
+        $this->assertSame($this->user->id, $riga->user_id);
+
+        $this->cerca('persone', 'cane');                                           // di nuovo entro 10 minuti: nessuna riga in più
+        $this->assertSame(1, AuditLog::where('action', 'viewed')->count());
     }
 
     public function test_ogni_sezione_cerca_nei_propri_contenuti_e_gli_eventi_anche_in_luoghi_e_persone(): void
