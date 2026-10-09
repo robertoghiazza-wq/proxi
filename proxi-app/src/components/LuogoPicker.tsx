@@ -1,10 +1,11 @@
 // Selezione di un singolo luogo con creazione al volo
 
 import { useState } from 'react'
-import { MapPin, Plus, Search } from 'lucide-react'
+import { MapPin, Plus } from 'lucide-react'
 import { NuovoLuogoModal } from './NuovoLuogoModal'
 import { useLuoghi } from '../hooks/useLuoghi'
 import type { Luogo } from '../types'
+import { CampoRicerca, ConteggioRisultati } from './CampoRicerca'
 
 export function LuogoPicker({ value, onChange }: {
   value: number | null
@@ -21,19 +22,8 @@ export function LuogoPicker({ value, onChange }: {
   return (
     <div>
       <div style={{ padding: '12px 16px', background: 'var(--prox-surface)', borderBottom: '1px solid var(--prox-line2)' }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          background: 'var(--prox-surface2)', borderRadius: 12,
-          padding: '9px 12px', border: '1px solid var(--prox-line)',
-        }}>
-          <Search size={15} color="var(--prox-ink3)" strokeWidth={1.75} />
-          <input
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Cerca un luogo…"
-            style={{ flex: 1, minWidth: 0, border: 'none', background: 'none', fontSize: 14, color: 'var(--prox-ink)', outline: 'none' }}
-          />
-        </div>
+        <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca un luogo…" fondo="surface2" compatto />
+        <ConteggioRisultati mostrati={filtrati.length} totali={luoghi.length} singolare="luogo" plurale="luoghi" />
       </div>
 
       <button onClick={() => setCreating(true)} style={row}>

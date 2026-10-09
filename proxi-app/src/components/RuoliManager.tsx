@@ -7,6 +7,7 @@ import { ConfirmDialog } from './ConfirmDialog'
 import { useRuoli, useCreateRuolo, useUpdateRuolo, useDeleteRuolo } from '../hooks/useRuoli'
 import { useGestore } from '../hooks/useAuth'
 import type { Ruolo } from '../types'
+import { CampoRicerca, ConteggioRisultati } from './CampoRicerca'
 
 export function RuoliManager({ onClose }: { onClose: () => void }) {
   const { data: ruoli = [], isLoading } = useRuoli()
@@ -32,7 +33,8 @@ export function RuoliManager({ onClose }: { onClose: () => void }) {
         </div>
 
         <div style={{ padding: '12px 16px', background: 'var(--prox-surface)', borderBottom: '1px solid var(--prox-line2)' }}>
-          <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Cerca un ruolo…" style={input} />
+          <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca un ruolo…" fondo="surface2" compatto />
+          <ConteggioRisultati mostrati={visibili.length} totali={ruoli.length} singolare="ruolo" plurale="ruoli" />
           <p style={{ fontSize: 12, color: 'var(--prox-ink3)', margin: '8px 0 0' }}>
             Il ruolo di una persona e quello predefinito negli eventi. La forma segue il sesso della persona;
             se non è indicato si usa la forma mista (es. Educatore/trice).

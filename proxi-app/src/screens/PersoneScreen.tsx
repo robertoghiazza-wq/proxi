@@ -3,7 +3,7 @@
 import { nomePersona, etichettaRuolo } from '../lib/persona'
 import { useState } from 'react'
 import { useNavigate, useMatch, Outlet } from 'react-router-dom'
-import { Search, AlertTriangle, Plus } from 'lucide-react'
+import { AlertTriangle, Plus } from 'lucide-react'
 import { MobileLayout } from '../components/MobileLayout'
 import { Drawer } from '../components/Drawer'
 import { Modal } from '../components/Modal'
@@ -12,6 +12,7 @@ import { PersoneServiziSwitch } from '../components/PersoneServiziSwitch'
 import { usePersone } from '../hooks/usePersone'
 import { useRuoli } from '../hooks/useRuoli'
 import type { Persona, RuoloPersona } from '../types'
+import { CampoRicerca, ConteggioRisultati } from '../components/CampoRicerca'
 
 const TAG_VULNERABILI = ['senza fissa dimora', 'minore', 'dipendenza']
 
@@ -128,23 +129,8 @@ export function PersoneScreen() {
         </div>
 
         {/* Search */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          background: 'var(--prox-surface)',
-          borderRadius: 12, padding: '8px 12px',
-          border: '1px solid var(--prox-line)',
-        }}>
-          <Search size={16} color="var(--prox-ink3)" strokeWidth={1.75} />
-          <input
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Cerca nome, soprannome, tag…"
-            style={{
-              flex: 1, border: 'none', background: 'none',
-              fontSize: 14, color: 'var(--prox-ink)', outline: 'none',
-            }}
-          />
-        </div>
+        <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca nome, soprannome, tag…" />
+        <ConteggioRisultati mostrati={persone.length} totali={tuttePersone.length} singolare="persona" plurale="persone" />
 
         {/* Filtri ruolo */}
         <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>

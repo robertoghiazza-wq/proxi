@@ -2,13 +2,14 @@
 
 import { nomeAvatar, nomePersona } from '../lib/persona'
 import { useState } from 'react'
-import { Search, Plus, X } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import { Modal } from './Modal'
 import { Avatar } from './Avatar'
 import { PersonaForm } from '../screens/PersonaFormScreen'
 import { usePersone } from '../hooks/usePersone'
 import { useSyncContatti, type ContattoServizio } from '../hooks/useServizi'
 import type { Persona, Servizio } from '../types'
+import { CampoRicerca, ConteggioRisultati } from './CampoRicerca'
 
 type Contatto = NonNullable<Servizio['persone']>[number]
 
@@ -58,8 +59,8 @@ export function ContattoServizioModal({ servizio, modifica, onClose }: Props) {
   }
 
   const q = query.trim().toLowerCase()
-  const candidate = tutte
-    .filter(p => !esistenti.some(e => e.id === p.id))
+  const disponibili = tutte.filter(p => !esistenti.some(e => e.id === p.id))
+  const candidate = disponibili
     .filter(p => !q || p.nome?.toLowerCase().includes(q) || p.cognome?.toLowerCase().includes(q) || p.soprannome?.toLowerCase().includes(q))
     .sort((a, b) => Number(b.ruolo === 'rete') - Number(a.ruolo === 'rete'))
 
@@ -84,14 +85,8 @@ export function ContattoServizioModal({ servizio, modifica, onClose }: Props) {
         {!scelta ? (
           <div style={{ flex: 1, overflowY: 'auto' }}>
             <div style={{ padding: '12px 16px', background: 'var(--prox-surface)', borderBottom: '1px solid var(--prox-line2)' }}>
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 8, background: 'var(--prox-surface2)',
-                borderRadius: 12, padding: '9px 12px', border: '1px solid var(--prox-line)',
-              }}>
-                <Search size={15} color="var(--prox-ink3)" strokeWidth={1.75} />
-                <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Cerca una persona…" autoFocus
-                  style={{ flex: 1, minWidth: 0, border: 'none', background: 'none', fontSize: 14, color: 'var(--prox-ink)', outline: 'none' }} />
-              </div>
+              <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca una persona…" fondo="surface2" compatto autoFocus />
+              <ConteggioRisultati mostrati={candidate.length} totali={disponibili.length} singolare="persona" plurale="persone" />
             </div>
 
             <button onClick={() => setCreando(true)} style={row}>

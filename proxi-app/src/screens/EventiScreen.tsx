@@ -13,7 +13,8 @@ import { ConfirmDialog } from '../components/ConfirmDialog'
 import { daCompletare, mancantiTesto } from '../lib/completezza'
 import { useEventi, useDeleteEvento } from '../hooks/useEventi'
 import type { Evento, StatoEvento } from '../types'
-import { Plus, Check, CircleDashed, Calendar, Search } from 'lucide-react'
+import { Plus, Check, CircleDashed, Calendar } from 'lucide-react'
+import { CampoRicerca, ConteggioRisultati } from '../components/CampoRicerca'
 
 type Filtro = 'tutti' | StatoEvento | 'incompleti'
 
@@ -83,18 +84,8 @@ export function EventiScreen() {
             <Plus size={18} strokeWidth={2.5} />
           </button>
         </div>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10,
-          background: 'var(--prox-surface)', borderRadius: 12, padding: '8px 12px', border: '1px solid var(--prox-line)',
-        }}>
-          <Search size={16} color="var(--prox-ink3)" strokeWidth={1.75} />
-          <input
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Cerca persona, luogo, tipo, nota…"
-            style={{ flex: 1, minWidth: 0, border: 'none', background: 'none', fontSize: 14, color: 'var(--prox-ink)', outline: 'none' }}
-          />
-        </div>
+        <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca persona, luogo, tipo, nota…" />
+        <ConteggioRisultati mostrati={filtrati.length} totali={tuttiEventi.length} singolare="evento" plurale="eventi" style={{ marginBottom: 10 }} />
         <div style={{ display: 'flex', gap: 6, overflowX: 'auto', margin: '0 -16px', padding: '0 16px', scrollbarWidth: 'none' }}>
           {FILTRI.map(({ key, label }) => {
             const active = filtro === key

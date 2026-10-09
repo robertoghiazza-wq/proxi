@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { X, ChevronLeft, Search, Navigation, MapPin, Plus } from 'lucide-react'
+import { X, ChevronLeft, Navigation, MapPin, Plus } from 'lucide-react'
 import { NuovoLuogoModal } from '../components/NuovoLuogoModal'
 import { DateField, TimeField } from '../components/DateFields'
 import { PersonePicker } from '../components/PersonePicker'
@@ -13,6 +13,7 @@ import { tenue, scuro } from '../lib/colori'
 import { useLuoghi } from '../hooks/useLuoghi'
 import { api } from '../lib/api-client'
 import type { Luogo, Evento } from '../types'
+import { CampoRicerca } from '../components/CampoRicerca'
 
 // ─── util ──────────────────────────────────────────────────────────────────
 
@@ -788,30 +789,7 @@ function ProgressBar({ current, total, created }: { current: number; total: numb
 function SearchBar({ value, onChange, placeholder }: {
   value: string; onChange: (v: string) => void; placeholder: string
 }) {
-  return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: 8,
-      background: 'var(--prox-surface2)', borderRadius: 12,
-      padding: '9px 12px', border: '1px solid var(--prox-line)',
-    }}>
-      <Search size={15} color="var(--prox-ink3)" strokeWidth={1.75} />
-      <input
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        style={{
-          flex: 1, border: 'none', background: 'none',
-          fontSize: 14, color: 'var(--prox-ink)', outline: 'none',
-        }}
-      />
-      {value && (
-        <button onClick={() => onChange('')} style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          color: 'var(--prox-ink3)', lineHeight: 1, padding: 0,
-        }}>×</button>
-      )}
-    </div>
-  )
+  return <CampoRicerca value={value} onChange={onChange} placeholder={placeholder} fondo="surface2" compatto />
 }
 
 function GpsBanner({ icon, color, children }: {

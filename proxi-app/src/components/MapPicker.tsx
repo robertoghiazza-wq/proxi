@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from 'react'
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet'
 import type L from 'leaflet'
 import { BASEMAPS, BaseMapSwitch, type BaseKey } from './MapBase'
-import { Search, Loader2, LocateFixed } from 'lucide-react'
+import { Loader2, LocateFixed } from 'lucide-react'
 import { comuneDaCoordinate } from '../lib/geo'
+import { CampoRicerca } from './CampoRicerca'
 
 
 export interface LatLng { lat: number; lng: number }
@@ -158,21 +159,10 @@ export function MapPicker({ value, onChange }: Props) {
   return (
     <div>
       <div style={{ position: 'relative', marginBottom: 8 }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          background: 'var(--prox-surface)', borderRadius: 12,
-          padding: '9px 12px', border: '1px solid var(--prox-line)',
-        }}>
-          {loading
-            ? <Loader2 size={16} color="var(--prox-ink3)" className="spin" />
-            : <Search size={16} color="var(--prox-ink3)" strokeWidth={1.75} />}
-          <input
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Cerca indirizzo, luogo, CAP…"
-            style={{ flex: 1, border: 'none', background: 'none', fontSize: 14, color: 'var(--prox-ink)', outline: 'none' }}
-          />
-        </div>
+        <CampoRicerca
+          value={query} onChange={setQuery} placeholder="Cerca indirizzo, luogo, CAP…" compatto
+          icona={loading ? <Loader2 size={16} color="var(--prox-ink3)" className="spin" style={{ flexShrink: 0 }} /> : undefined}
+        />
         {risultati.length > 0 && (
           <div style={{
             position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, zIndex: 1000,

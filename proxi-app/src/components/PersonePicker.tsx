@@ -2,11 +2,12 @@
 
 import { nomeAvatar, nomePersona } from '../lib/persona'
 import { useState } from 'react'
-import { Plus, Search, X } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import { Avatar } from './Avatar'
 import { Modal } from './Modal'
 import { usePersone, useCreatePersona } from '../hooks/usePersone'
 import type { Persona } from '../types'
+import { CampoRicerca, ConteggioRisultati } from './CampoRicerca'
 
 interface Props {
   selectedIds: number[]
@@ -36,26 +37,8 @@ export function PersonePicker({ selectedIds, onToggle, sticky }: Props) {
         borderBottom: '1px solid var(--prox-line2)',
         ...(sticky ? { position: 'sticky', top: 0, zIndex: 5 } : {}),
       }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          background: 'var(--prox-surface2)', borderRadius: 12,
-          padding: '9px 12px', border: '1px solid var(--prox-line)',
-        }}>
-          <Search size={15} color="var(--prox-ink3)" strokeWidth={1.75} />
-          <input
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Cerca nome, soprannome, tag…"
-            style={{ flex: 1, minWidth: 0, border: 'none', background: 'none', fontSize: 14, color: 'var(--prox-ink)', outline: 'none' }}
-          />
-          {query && (
-            <button onClick={() => setQuery('')} aria-label="Cancella ricerca" style={{
-              background: 'none', border: 'none', cursor: 'pointer', color: 'var(--prox-ink3)', padding: 0, display: 'flex',
-            }}>
-              <X size={15} />
-            </button>
-          )}
-        </div>
+        <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca nome, soprannome, tag…" fondo="surface2" compatto />
+        <ConteggioRisultati mostrati={filtrate.length} totali={persone.filter(p => p.ruolo === 'utente').length} singolare="persona" plurale="persone" style={{ marginTop: 8, marginBottom: 0 }} />
         <p style={{ fontSize: 12, color: 'var(--prox-ink3)', margin: '8px 0 0' }}>
           {nSel === 0
             ? 'Opzionale — puoi saltare questo step'

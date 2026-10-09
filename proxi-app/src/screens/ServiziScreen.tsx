@@ -2,13 +2,14 @@
 
 import { useState } from 'react'
 import { useNavigate, useMatch, Outlet } from 'react-router-dom'
-import { Search, Plus, Building2 } from 'lucide-react'
+import { Plus, Building2 } from 'lucide-react'
 import { MobileLayout } from '../components/MobileLayout'
 import { Drawer } from '../components/Drawer'
 import { Modal } from '../components/Modal'
 import { Card } from '../components/Card'
 import { PersoneServiziSwitch } from '../components/PersoneServiziSwitch'
 import { useServizi } from '../hooks/useServizi'
+import { CampoRicerca, ConteggioRisultati } from '../components/CampoRicerca'
 
 const TINTA = 'oklch(0.58 0.12 245)'
 
@@ -39,18 +40,8 @@ export function ServiziScreen() {
           </button>
         </div>
 
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 8, background: 'var(--prox-surface)',
-          borderRadius: 12, padding: '8px 12px', border: '1px solid var(--prox-line)',
-        }}>
-          <Search size={16} color="var(--prox-ink3)" strokeWidth={1.75} />
-          <input
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Cerca servizio, località…"
-            style={{ flex: 1, minWidth: 0, border: 'none', background: 'none', fontSize: 14, color: 'var(--prox-ink)', outline: 'none' }}
-          />
-        </div>
+        <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca servizio, località…" />
+        <ConteggioRisultati mostrati={servizi.length} totali={tutti.length} singolare="servizio" plurale="servizi" />
       </div>
 
       <div style={{ padding: '8px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>

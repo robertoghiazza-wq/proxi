@@ -18,6 +18,7 @@ import { useTipiEvento } from '../hooks/useTipi'
 import { useRuolo } from '../hooks/useAuth'
 import { eAdmin } from '../lib/ruoli'
 import { etichettaSettimana, settimanaIso, spostaSettimana } from '../lib/settimana'
+import { CampoRicerca, ConteggioRisultati } from './CampoRicerca'
 
 const OPZ_PREDEFINITE: Opz = { nomi: 'completi', racconto: true }
 
@@ -134,8 +135,9 @@ export function PannelloEstratti({ eventoIniziale }: { eventoIniziale?: number }
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={etichetta}>Dal</span><DateField value={dal} onChange={e => setDal(e.target.value || dal)} /></div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={etichetta}>al</span><DateField value={al} onChange={e => setAl(e.target.value || al)} /></div>
-          <input value={cerca} onChange={e => setCerca(e.target.value)} placeholder="Cerca tipo, luogo, nota…" style={{ ...campo, padding: '8px 12px', flex: 1, minWidth: 160 }} />
+          <CampoRicerca value={cerca} onChange={setCerca} placeholder="Cerca tipo, luogo, nota…" fondo="surface2" style={{ flex: 1, minWidth: 160 }} />
         </div>
+        {!isLoading && <ConteggioRisultati mostrati={visibili.length} totali={eventi.length} singolare="evento" plurale="eventi" style={{ marginTop: -2, marginBottom: 4 }} />}
         {isLoading && <p style={vuoto}>Caricamento…</p>}
         {!isLoading && visibili.length === 0 && <p style={vuoto}>Nessun evento svolto nel periodo.</p>}
         {visibili.length > 0 && (

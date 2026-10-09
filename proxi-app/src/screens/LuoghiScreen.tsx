@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useMatch, Outlet } from 'react-router-dom'
-import { Search, Plus, List, Map as MapIcon, MapPin, Lock } from 'lucide-react'
+import { Plus, List, Map as MapIcon, MapPin, Lock } from 'lucide-react'
 import { MobileLayout } from '../components/MobileLayout'
 import { Drawer } from '../components/Drawer'
 import { Modal } from '../components/Modal'
@@ -12,6 +12,7 @@ import { LuoghiMap } from '../components/LuoghiMap'
 import { useTipiLuogo } from '../hooks/useTipi'
 import { useIsDesktop } from '../hooks/useIsDesktop'
 import { useLuoghi } from '../hooks/useLuoghi'
+import { CampoRicerca, ConteggioRisultati } from '../components/CampoRicerca'
 
 
 export function LuoghiScreen() {
@@ -70,22 +71,7 @@ export function LuoghiScreen() {
           </button>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 8, flex: 1,
-            background: 'var(--prox-surface)', borderRadius: 12,
-            padding: '8px 12px', border: '1px solid var(--prox-line)',
-          }}>
-            <Search size={16} color="var(--prox-ink3)" strokeWidth={1.75} />
-            <input
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder="Cerca luogo o indirizzo…"
-              style={{
-                flex: 1, minWidth: 0, border: 'none', background: 'none',
-                fontSize: 14, color: 'var(--prox-ink)', outline: 'none',
-              }}
-            />
-          </div>
+          <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca luogo o indirizzo…" style={{ flex: 1 }} />
           <div style={{ display: 'flex', background: 'var(--prox-surface)', borderRadius: 10, padding: 2, border: '1px solid var(--prox-line)' }}>
             {(['lista', 'mappa'] as const).map(v => (
               <button
@@ -105,6 +91,7 @@ export function LuoghiScreen() {
             ))}
           </div>
         </div>
+        <ConteggioRisultati mostrati={luoghi.length} totali={tuttiLuoghi.length} singolare="luogo" plurale="luoghi" />
         {nDaControllare > 0 && (
           <button
             onClick={() => setSoloDaControllare(v => !v)}
