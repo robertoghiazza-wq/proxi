@@ -7,6 +7,8 @@ import { MapPicker, type LatLng, type ParteIndirizzo } from '../components/MapPi
 import { IndirizzoField } from '../components/IndirizzoField'
 import { INDIRIZZO_VUOTO, validaIndirizzo, type Indirizzo } from '../lib/geo'
 import { useServizio, useCreateServizio, useUpdateServizio } from '../hooks/useServizi'
+import { TelefonoCampo } from '../components/TelefonoCampo'
+import { normalizza } from '../lib/telefono'
 import type { Servizio } from '../types'
 
 export function ServizioFormScreen() {
@@ -91,7 +93,7 @@ export function ServizioForm({ servizio, initial, onClose, onSaved }: {
         bfs: a.bfs.trim() || null,
         cantone: a.cantone.trim() || null,
         paese: a.paese.trim() || null,
-        telefono: telefono.trim() || null,
+        telefono: normalizza(telefono) || null,
         email: email.trim() || null,
         sito: sito.trim() || null,
         note: note.trim() || null,
@@ -144,7 +146,7 @@ export function ServizioForm({ servizio, initial, onClose, onSaved }: {
         </Field>
 
         <Field label="Telefono">
-          <input value={telefono} onChange={e => setTelefono(e.target.value)} inputMode="tel" placeholder="091 000 00 00" style={input} />
+          <TelefonoCampo value={telefono} onChange={setTelefono} />
         </Field>
         <Field label="Email">
           <input value={email} onChange={e => setEmail(e.target.value)} inputMode="email" autoCapitalize="none" placeholder="info@servizio.ch" style={input} />

@@ -3,11 +3,10 @@
 import { useTipiEvento } from '../hooks/useTipi'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Edit, Plus, AlertTriangle, Trash2, Mail, MapPin, Phone, MessageSquare } from 'lucide-react'
+import { Edit, Plus, AlertTriangle, Trash2, Mail, MapPin, Phone } from 'lucide-react'
 import { useTitoloSticky } from '../components/RiferimentoSticky'
 import { BarraScheda } from '../components/BarraScheda'
-import { RigaContatti, IconaWhatsApp } from '../components/RigaContatti'
-import { linkSms, linkTel, linkWhatsApp } from '../lib/contatti'
+import { RigaContatti, AzioniNumero } from '../components/RigaContatti'
 import { AvatarPersona } from '../components/AvatarPersona'
 import { FotoPersona } from '../components/FotoPersona'
 import { Tag } from '../components/Tag'
@@ -323,12 +322,11 @@ function PannelloContatti({ persona }: { persona: Persona }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 14 }}>
             {telefoni.map((t, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <a href={linkTel(t.numero) ?? undefined} style={{ ...riga, flex: 1, minWidth: 0 }}>
+                <span style={{ ...riga, flex: 1, minWidth: 0 }}>
                   <Phone size={15} strokeWidth={1.75} />
                   <span>{t.numero}{t.etichetta ? <span style={{ color: 'var(--prox-ink3)' }}> · {t.etichetta}</span> : null}</span>
-                </a>
-                {linkSms(t.numero) && <a href={linkSms(t.numero)!} aria-label={`Messaggio a ${t.numero}`} title="Messaggio" style={{ ...riga, padding: 6 }}><MessageSquare size={16} strokeWidth={1.75} /></a>}
-                {linkWhatsApp(t.numero) && <a href={linkWhatsApp(t.numero)!} target="_blank" rel="noreferrer" aria-label={`WhatsApp a ${t.numero}`} title="WhatsApp" style={{ ...riga, padding: 6, color: '#1f9d55' }}><IconaWhatsApp size={17} /></a>}
+                </span>
+                <AzioniNumero numero={t.numero} />
               </div>
             ))}
             {persona.email && <a href={`mailto:${persona.email}`} style={riga}><Mail size={15} strokeWidth={1.75} /> {persona.email}</a>}

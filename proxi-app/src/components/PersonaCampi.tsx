@@ -9,6 +9,8 @@ import { etichettaRuolo, etichettaTipo } from '../lib/persona'
 import { useRuoli } from '../hooks/useRuoli'
 import { usePersone } from '../hooks/usePersone'
 import { campo, ghost } from './SchedaUi'
+import { TelefonoCampo } from './TelefonoCampo'
+import { normalizza } from '../lib/telefono'
 import type { Persona, RuoloPersona, Telefono } from '../types'
 
 const TIPI: { key: RuoloPersona; hint: string }[] = [
@@ -21,7 +23,8 @@ const SESSI: { key: 'M' | 'F' | 'altro'; label: string }[] = [
 ]
 const LINGUE = ['IT', 'DE', 'FR', 'EN', 'ES', 'PT', 'AR', 'PL', 'SQ', 'SR', 'TR', 'RO']
 const TAG_BASE = ['senza fissa dimora', 'minore', 'dipendenza', 'migrante', 'prostituzione', 'anziano', 'salute']
-const ETICHETTE_TEL = ['Natel', 'Casa', 'Lavoro', 'Genitore', 'Altro']
+// «Cellulare» e non «Natel»: lo capiscono tutti, anche i partner d'oltre confine. I valori già salvati (es. Natel) restano e si vedono.
+const ETICHETTE_TEL = ['Cellulare', 'Diretto', 'Ufficio', 'Centralino', 'Casa', 'Privato', 'Genitore', 'Altro']
 
 // ─── bozze (stato dei moduli) ─────────────────────────────────────────────
 
@@ -102,7 +105,7 @@ export async function datiContatti(b: ContattiBozza): Promise<{ errore: string }
     indirizzo: a,
     dati: {
       email: b.email.trim() || null,
-      telefoni: b.telefoni.filter(t => t.numero.trim()).map(t => ({ etichetta: t.etichetta?.trim() || null, numero: t.numero.trim() })),
+      telefoni: b.telefoni.filter(t => t.numero.trim()).map(t => ({ etichetta: t.etichetta?.trim() || null, numero: normalizza(t.numero) })),
       indirizzo: a.indirizzo.trim() || null, npa: a.npa.trim() || null, localita: a.localita.trim() || null,
       comune_politico: a.comune_politico.trim() || null, bfs: a.bfs.trim() || null, cantone: a.cantone.trim() || null,
       paese: a.paese.trim() || null, note_contatti: b.noteContatti.trim() || null,
@@ -224,22 +227,30 @@ export function ContattiCampi({ value: v, onChange }: { value: ContattiBozza; on
 
       <Field label="Telefoni">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {v.telefoni.map((t, i) => (
-            <div key={i} style={{ display: 'flex', gap: 8 }}>
-              <input list="etichette-tel" value={t.etichetta ?? ''} placeholder="Natel" style={{ ...campo, width: 108, flexShrink: 0 }}
-                onChange={e => onChange({ telefoni: v.telefoni.map((x, j) => (j === i ? { ...x, etichetta: e.target.value } : x)) })} />
-              <input value={t.numero} inputMode="tel" placeholder="079 000 00 00" style={{ ...campo, flex: 1, minWidth: 0 }}
-                onChange={e => onChange({ telefoni: v.telefoni.map((x, j) => (j === i ? { ...x, numero: e.target.value } : x)) })} />
-              <button type="button" onClick={() => onChange({ telefoni: v.telefoni.filter((_, j) => j !== i) })} aria-label="Rimuovi telefono" style={ghost}>
-                <X size={18} strokeWidth={1.75} />
-              </button>
-            </div>
-          ))}
-          <button type="button" onClick={() => onChange({ telefoni: [...v.telefoni, { etichetta: v.telefoni.length ? null : 'Natel', numero: '' }] })} style={{
+          {v.telefoni.map((t, i) => {
+            const tipi = t.etichetta && !ETICHETTE_TEL.includes(t.etichetta) ? [...ETICHETTE_TEL, t.etichetta] : ETICHETTE_TEL
+            const cambia = (patch: Partial<Telefono>) => onChange({ telefoni: v.telefoni.map((x, j) => (j === i ? { ...x, ...patch } : x)) })
+            return (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: 10, borderRadius: 14, border: '1px solid var(--prox-line2)', background: 'var(--prox-surface2)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <select value={t.etichetta ?? ''} onChange={e => cambia({ etichetta: e.target.value || null })} aria-label="Tipo di numero"
+                    style={{ ...campo, width: 'auto', padding: '6px 10px', fontSize: 13, fontWeight: 600 }}>
+                    <option value="">Tipo non indicato</option>
+                    {tipi.map(e => <option key={e} value={e}>{e}</option>)}
+                  </select>
+                  <span style={{ flex: 1 }} />
+                  <button type="button" onClick={() => onChange({ telefoni: v.telefoni.filter((_, j) => j !== i) })} aria-label="Rimuovi telefono" style={ghost}>
+                    <X size={18} strokeWidth={1.75} />
+                  </button>
+                </div>
+                <TelefonoCampo value={t.numero} onChange={numero => cambia({ numero })} />
+              </div>
+            )
+          })}
+          <button type="button" onClick={() => onChange({ telefoni: [...v.telefoni, { etichetta: v.telefoni.length ? 'Casa' : 'Cellulare', numero: '' }] })} style={{
             alignSelf: 'flex-start', border: '1px dashed var(--prox-line)', background: 'transparent', cursor: 'pointer',
             borderRadius: 999, padding: '6px 14px', fontSize: 13, color: 'var(--prox-ink2)',
           }}>+ Aggiungi telefono</button>
-          <datalist id="etichette-tel">{ETICHETTE_TEL.map(e => <option key={e} value={e} />)}</datalist>
         </div>
       </Field>
 

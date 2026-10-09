@@ -3,7 +3,7 @@
 import { tenue } from '../lib/colori'
 import { useTitoloSticky } from '../components/RiferimentoSticky'
 import { BarraScheda } from '../components/BarraScheda'
-import { RigaContatti } from '../components/RigaContatti'
+import { RigaContatti, AzioniNumero } from '../components/RigaContatti'
 import { nomeAvatar, nomePersona } from '../lib/persona'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -155,7 +155,12 @@ export function ServizioDetail() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 14 }}>
             {indirizzoCompleto && <Dato icon={<MapPin size={15} strokeWidth={1.75} />}>{indirizzoCompleto}{servizio.paese ? `, ${servizio.paese}` : ''}</Dato>}
             {servizio.comune_politico && <Dato icon={<MapPin size={15} strokeWidth={1.75} />}>Comune politico: {servizio.comune_politico}{servizio.cantone ? ` (${servizio.cantone})` : ''}</Dato>}
-            {servizio.telefono && <Dato icon={<Phone size={15} strokeWidth={1.75} />}>{servizio.telefono}</Dato>}
+            {servizio.telefono && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <Dato icon={<Phone size={15} strokeWidth={1.75} />}>{servizio.telefono}</Dato>
+                <AzioniNumero numero={servizio.telefono} />
+              </div>
+            )}
             {servizio.email && <Dato icon={<Mail size={15} strokeWidth={1.75} />}><a href={`mailto:${servizio.email}`} style={link}>{servizio.email}</a></Dato>}
             {servizio.sito && (
               <Dato icon={<Globe size={15} strokeWidth={1.75} />}>

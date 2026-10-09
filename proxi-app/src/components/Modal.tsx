@@ -33,7 +33,7 @@ function ModalInterno({ open, onClose, children, width = 600 }: ModalProps) {
   if (!isDesktop) {
     return (
       <div style={{
-        position: 'fixed', inset: 0, zIndex: 100,
+        position: 'fixed', inset: 0, zIndex: 120,
         background: 'var(--prox-bg)',
         display: 'flex', flexDirection: 'column',
         paddingTop: 'var(--sat)', paddingBottom: 'var(--sab)',
@@ -51,7 +51,7 @@ function ModalInterno({ open, onClose, children, width = 600 }: ModalProps) {
       ref={rif}
       onClick={tenta}
       style={{
-        position: 'fixed', inset: 0, zIndex: 100,
+        position: 'fixed', inset: 0, zIndex: 120,
         background: 'rgba(0,0,0,0.45)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}

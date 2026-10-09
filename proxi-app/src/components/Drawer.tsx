@@ -1,5 +1,6 @@
 import { useIsDesktop } from '../hooks/useIsDesktop'
 import { useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useEsc } from '../lib/esc'
 import { useChiusuraProtetta } from '../hooks/useChiusuraProtetta'
 
@@ -10,7 +11,12 @@ interface DrawerProps {
   width?: number
 }
 
-export function Drawer({ open, onClose, children, width = 600 }: DrawerProps) {
+export function Drawer(props: DrawerProps) {
+  // nel body: in mobile il drawer sta sopra a tutto (barra coi loghi compresa), senza dipendere dall'area che scorre in cui è dichiarato
+  return props.open ? createPortal(<DrawerInterno {...props} />, document.body) : null
+}
+
+function DrawerInterno({ open, onClose, children, width = 600 }: DrawerProps) {
   const isDesktop = useIsDesktop()
   const rif = useRef<HTMLDivElement>(null)
   const { tenta, dialogo } = useChiusuraProtetta(rif, open, onClose)
@@ -23,7 +29,7 @@ export function Drawer({ open, onClose, children, width = 600 }: DrawerProps) {
       <div style={{
         position: 'fixed', inset: 0,
         background: 'var(--prox-bg)',
-        zIndex: 200, overflowY: 'auto',
+        zIndex: 110, overflowY: 'auto',
         display: 'flex', flexDirection: 'column',
         paddingTop: 'var(--sat)', paddingBottom: 'var(--sab)',
         boxSizing: 'border-box',
