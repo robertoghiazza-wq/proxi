@@ -55,6 +55,54 @@ export function GestiTrackpad() {
   return null
 }
 
+const ICONA_POSIZIONE = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" x2="5" y1="12" y2="12"/><line x1="19" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="5"/><line x1="12" x2="12" y1="19" y2="22"/><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>'
+
+// Tastino «dove sono» in basso a destra (sopra l'attribuzione): centra la mappa sulla posizione e la segna con un punto azzurro
+export function ComandoPosizione() {
+  const map = useMap()
+  useEffect(() => {
+    let punto: L.CircleMarker | null = null
+    let precisione: L.Circle | null = null
+    const pulisci = () => { punto?.remove(); precisione?.remove(); punto = precisione = null }
+
+    const Comando = L.Control.extend({
+      onAdd() {
+        const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control')
+        div.style.marginBottom = 'calc(var(--sab) + 2px)'
+        const a = L.DomUtil.create('a', '', div) as HTMLAnchorElement
+        a.href = '#'
+        a.setAttribute('role', 'button')
+        a.title = 'Vai alla mia posizione'
+        a.setAttribute('aria-label', 'Vai alla mia posizione')
+        a.style.cssText = 'display:flex;align-items:center;justify-content:center;width:34px;height:34px;color:#444'
+        a.innerHTML = ICONA_POSIZIONE
+        L.DomEvent.disableClickPropagation(div)
+        L.DomEvent.on(a, 'click', (e: Event) => {
+          L.DomEvent.stop(e)
+          a.style.color = 'var(--prox-accent)'
+          map.locate({ setView: true, maxZoom: 17, enableHighAccuracy: true, timeout: 15000 })
+        })
+        return div
+      },
+    })
+    const controllo = new Comando({ position: 'bottomright' })
+    map.addControl(controllo)
+
+    const trovata = (e: L.LocationEvent) => {
+      pulisci()
+      precisione = L.circle(e.latlng, { radius: e.accuracy, weight: 1, color: '#2b7de9', fillColor: '#2b7de9', fillOpacity: 0.12, interactive: false }).addTo(map)
+      punto = L.circleMarker(e.latlng, { radius: 8, weight: 3, color: '#fff', fillColor: '#2b7de9', fillOpacity: 1, interactive: false }).addTo(map)
+    }
+    const errore = () => {
+      L.popup({ closeButton: false }).setLatLng(map.getCenter()).setContent('Posizione non disponibile: controlla che la localizzazione sia permessa.').openOn(map)
+    }
+    map.on('locationfound', trovata)
+    map.on('locationerror', errore)
+    return () => { map.off('locationfound', trovata); map.off('locationerror', errore); map.removeControl(controllo); map.stopLocate(); pulisci() }
+  }, [map])
+  return null
+}
+
 function pinIcon(color: string, label: string) {
   return L.divIcon({
     className: '',
@@ -71,10 +119,11 @@ interface Props {
   colors: Record<string, string>
   onOpen: (id: number) => void
   extra?: ReactNode   // comandi sovrapposti alla mappa (es. occhio dei luoghi riservati)
+  conPosizione?: boolean   // tastino «dove sono» (mappa a schermo intero)
 }
 
 // Riempie il contenitore che la ospita (nessun box, bordo o raggio)
-export function LuoghiMap({ luoghi, colors, onOpen, extra }: Props) {
+export function LuoghiMap({ luoghi, colors, onOpen, extra, conPosizione }: Props) {
   const [base, setBase] = useState<BaseKey>('swisstopo')
   const conCoord = luoghi.filter(l => l.lat != null && l.lng != null)
   const bm = BASEMAPS[base]
@@ -86,6 +135,7 @@ export function LuoghiMap({ luoghi, colors, onOpen, extra }: Props) {
         {...opzioniRotazione()}
       >
         <GestiTrackpad />
+        {conPosizione && <ComandoPosizione />}
         <TileLayer key={base} url={bm.url} attribution={bm.attribution} maxZoom={bm.maxZoom} />
         <FitBounds luoghi={conCoord} />
         {conCoord.map(l => (

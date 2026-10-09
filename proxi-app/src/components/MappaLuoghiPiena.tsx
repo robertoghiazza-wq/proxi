@@ -18,7 +18,7 @@ interface Props {
 }
 
 // La mappa vera e propria: riempie il contenitore che la ospita
-export function MappaConOcchio({ luoghi, colors, onOpen, onSchermoIntero }: Props & { onSchermoIntero?: () => void }) {
+export function MappaConOcchio({ luoghi, colors, onOpen, onSchermoIntero, conPosizione }: Props & { onSchermoIntero?: () => void; conPosizione?: boolean }) {
   const [mostraRiservati, setMostraRiservati] = useState(false)
   const visibili = luoghi.filter(l => mostraRiservati || l.visibilita !== 'riservato')
   const nRiservati = luoghi.filter(l => l.visibilita === 'riservato').length
@@ -49,7 +49,7 @@ export function MappaConOcchio({ luoghi, colors, onOpen, onSchermoIntero }: Prop
     ><Maximize2 size={17} strokeWidth={1.9} /></button>
   )
 
-  return <LuoghiMap luoghi={visibili} colors={colors} onOpen={onOpen} extra={<>{occhio}{schermoIntero}</>} />
+  return <LuoghiMap luoghi={visibili} colors={colors} onOpen={onOpen} extra={<>{occhio}{schermoIntero}</>} conPosizione={conPosizione} />
 }
 
 // Mappa a schermo intero (come il dettaglio di un luogo) con la freccia per chiuderla e la ricerca nella barra in alto: su telefono è la vista mappa, su desktop si apre dal tasto sulla mappa
@@ -78,7 +78,7 @@ export function MappaLuoghiPiena({ luoghi, colors, onOpen, onChiudi, etichettaCh
         centro={<CampoRicerca value={query} onChange={onQuery} placeholder={`Cerca in ${luoghi.length} luoghi…`} compatto fondo="surface2" candidati={candidati} filtri={filtri} onFiltri={onFiltri} pillDentro />}
       />
       <div style={{ flex: 1, minHeight: 0, position: 'relative', zIndex: 0, isolation: 'isolate' }}>
-        <MappaConOcchio luoghi={luoghi} colors={colors} onOpen={onOpen} />
+        <MappaConOcchio luoghi={luoghi} colors={colors} onOpen={onOpen} conPosizione />
       </div>
     </div>,
     document.body,
