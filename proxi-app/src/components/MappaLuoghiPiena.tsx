@@ -49,7 +49,9 @@ export function MappaConOcchio({ luoghi, colors, onOpen, onSchermoIntero, conPos
     ><Maximize2 size={17} strokeWidth={1.9} /></button>
   )
 
-  return <LuoghiMap luoghi={visibili} colors={colors} onOpen={onOpen} extra={<>{occhio}{schermoIntero}</>} conPosizione={conPosizione} />
+  // si reinquadra solo se cambia la ricerca/i filtri (l'insieme `luoghi`), non con l'occhio dei riservati
+  const chiave = luoghi.map(l => l.id).join(',')
+  return <LuoghiMap luoghi={visibili} colors={colors} onOpen={onOpen} extra={<>{occhio}{schermoIntero}</>} conPosizione={conPosizione} adattaChiave={chiave} />
 }
 
 // Mappa a schermo intero (come il dettaglio di un luogo) con la freccia per chiuderla e la ricerca nella barra in alto: su telefono è la vista mappa, su desktop si apre dal tasto sulla mappa

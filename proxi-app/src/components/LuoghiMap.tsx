@@ -1,6 +1,6 @@
 // Vista mappa di tutti i luoghi con coordinate
 
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { MapContainer, TileLayer, Marker, Tooltip, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet-rotate'   // rotazione: due dita, Maiusc+trascinamento, gesto del trackpad (Safari)
@@ -8,13 +8,17 @@ import { SOGLIA_ROTAZIONE_TRACKPAD, agganciaAlNord } from '../lib/gestiMappa'
 import { BASEMAPS, BaseMapSwitch, type BaseKey } from './MapBase'
 import type { Luogo } from '../types'
 
-function FitBounds({ luoghi }: { luoghi: Luogo[] }) {
+// Inquadra i luoghi all'inizio e quando cambia l'insieme da mostrare (ricerca, filtri); non quando la pagina si ridisegna
+// per altri motivi (cambio di tipo di mappa, occhio dei riservati), altrimenti si perderebbe la posizione scelta.
+function FitBounds({ luoghi, chiave }: { luoghi: Luogo[]; chiave: string }) {
   const map = useMap()
+  const ultimi = useRef(luoghi)
+  ultimi.current = luoghi
   useEffect(() => {
-    if (luoghi.length === 0) return
-    const b = L.latLngBounds(luoghi.map(l => [l.lat as number, l.lng as number]))
+    if (ultimi.current.length === 0) return
+    const b = L.latLngBounds(ultimi.current.map(l => [l.lat as number, l.lng as number]))
     map.fitBounds(b, { padding: [40, 40], maxZoom: 16 })
-  }, [luoghi, map])
+  }, [chiave, map])
   return null
 }
 
@@ -120,10 +124,11 @@ interface Props {
   onOpen: (id: number) => void
   extra?: ReactNode   // comandi sovrapposti alla mappa (es. occhio dei luoghi riservati)
   conPosizione?: boolean   // tastino «dove sono» (mappa a schermo intero)
+  adattaChiave?: string    // cambia quando va reinquadrata la mappa (default: l'elenco dei luoghi con posizione)
 }
 
 // Riempie il contenitore che la ospita (nessun box, bordo o raggio)
-export function LuoghiMap({ luoghi, colors, onOpen, extra, conPosizione }: Props) {
+export function LuoghiMap({ luoghi, colors, onOpen, extra, conPosizione, adattaChiave }: Props) {
   const [base, setBase] = useState<BaseKey>('swisstopo')
   const conCoord = luoghi.filter(l => l.lat != null && l.lng != null)
   const bm = BASEMAPS[base]
@@ -137,7 +142,7 @@ export function LuoghiMap({ luoghi, colors, onOpen, extra, conPosizione }: Props
         <GestiTrackpad />
         {conPosizione && <ComandoPosizione />}
         <TileLayer key={base} url={bm.url} attribution={bm.attribution} maxZoom={bm.maxZoom} />
-        <FitBounds luoghi={conCoord} />
+        <FitBounds luoghi={conCoord} chiave={adattaChiave ?? conCoord.map(l => l.id).join(',')} />
         {conCoord.map(l => (
           <Marker
             key={l.id}
