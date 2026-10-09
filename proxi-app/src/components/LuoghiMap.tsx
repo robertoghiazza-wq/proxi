@@ -17,7 +17,54 @@ function FitBounds({ luoghi }: { luoghi: Luogo[] }) {
   return null
 }
 
-type MappaRuotabile = L.Map & { getBearing?: () => number; setBearing?: (g: number) => void }
+type MappaRuotabile = L.Map & {
+  getBearing?: () => number
+  setBearing?: (g: number) => void
+  touchRotate?: { enable(): void; disable(): void; enabled(): boolean }
+}
+
+const sulTocco = () => window.matchMedia('(pointer: coarse)').matches
+
+// Su telefono la rotazione con due dita si attiva con il tasto dedicato (altrimenti si confonde con lo zoom); sul computer c'è sempre
+export const opzioniRotazione = () => ({ rotate: true, touchRotate: !sulTocco(), shiftKeyRotate: true, rotateControl: { closeOnZeroBearing: true } }) as object
+
+const ICONA_RUOTA = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>'
+
+export function ComandoRotazione() {
+  const map = useMap() as MappaRuotabile
+  useEffect(() => {
+    if (!sulTocco()) return
+    map.touchRotate?.disable()
+    const Comando = L.Control.extend({
+      onAdd() {
+        const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control')
+        const a = L.DomUtil.create('a', '', div) as HTMLAnchorElement
+        a.href = '#'
+        a.setAttribute('role', 'button')
+        a.title = 'Ruota la mappa con due dita'
+        a.setAttribute('aria-label', 'Attiva la rotazione con due dita')
+        a.style.cssText = 'display:flex;align-items:center;justify-content:center;color:#444'
+        a.innerHTML = ICONA_RUOTA
+        L.DomEvent.disableClickPropagation(div)
+        L.DomEvent.on(a, 'click', (e: Event) => {
+          L.DomEvent.stop(e)
+          const attiva = !map.touchRotate?.enabled()
+          if (attiva) map.touchRotate?.enable(); else map.touchRotate?.disable()
+          a.style.background = attiva ? 'var(--prox-accent)' : ''
+          a.style.color = attiva ? '#fff' : '#444'
+          a.setAttribute('aria-pressed', String(attiva))
+        })
+        return div
+      },
+    })
+    const controllo = new Comando({ position: 'topleft' })
+    map.addControl(controllo)
+    return () => { map.removeControl(controllo) }
+  }, [map])
+  return null
+}
+
+
 
 // Safari su Mac e iPad: rotazione (e pizzico) del trackpad = eventi «gesture», che Leaflet non conosce
 export function GestiTrackpad() {
@@ -29,7 +76,7 @@ export function GestiTrackpad() {
     const cambia = (e: Event) => {
       e.preventDefault()
       const g = e as unknown as { rotation: number; scale: number }
-      map.setBearing?.(rot0 - g.rotation)
+      map.setBearing?.(rot0 + g.rotation)   // come in Mappe di macOS: le dita girano in senso orario, la mappa gira con loro
       map.setZoom(zoom0 + Math.log2(g.scale), { animate: false })
     }
     el.addEventListener('gesturestart', inizio)
@@ -67,9 +114,10 @@ export function LuoghiMap({ luoghi, colors, onOpen, extra }: Props) {
     <div style={{ position: 'relative', height: '100%', width: '100%' }}>
       <MapContainer
         center={[46.0, 8.95]} zoom={10} style={{ height: '100%', width: '100%', zIndex: 0 }}
-        {...({ rotate: true, touchRotate: true, shiftKeyRotate: true, rotateControl: { closeOnZeroBearing: true } } as object)}
+        {...opzioniRotazione()}
       >
         <GestiTrackpad />
+        <ComandoRotazione />
         <TileLayer key={base} url={bm.url} attribution={bm.attribution} maxZoom={bm.maxZoom} />
         <FitBounds luoghi={conCoord} />
         {conCoord.map(l => (
