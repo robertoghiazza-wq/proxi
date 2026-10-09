@@ -74,7 +74,7 @@ export function ServizioDetail() {
       />
       <div style={{ position: 'relative', zIndex: 0, isolation: 'isolate' }}>
         {servizio.lat != null && servizio.lng != null
-          ? <LuogoMap lat={servizio.lat} lng={servizio.lng} />
+          ? <LuogoMap lat={servizio.lat} lng={servizio.lng} titolo={servizio.nome} />
           : (
             <div style={{
               height: 120, background: 'var(--prox-surface2)', color: 'var(--prox-ink3)',

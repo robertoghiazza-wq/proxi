@@ -192,6 +192,7 @@ export function MapPicker({ value, onChange }: Props) {
           center={value ? [value.lat, value.lng] : CENTRO_TICINO}
           zoom={value ? 17 : 11}
           style={{ height: 280, width: '100%', zIndex: 0 }}
+          {...({ rotateControl: false } as object)}
           scrollWheelZoom
         >
           <TileLayer key={base} url={bm.url} attribution={bm.attribution} maxZoom={bm.maxZoom} />

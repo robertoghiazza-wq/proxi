@@ -80,7 +80,7 @@ export function LuogoDetail() {
       {/* MAPPA HEADER */}
       <div style={{ position: 'relative', zIndex: 0, isolation: 'isolate' }}>
         {luogo.lat != null && luogo.lng != null
-          ? <LuogoMap lat={luogo.lat} lng={luogo.lng} />
+          ? <LuogoMap lat={luogo.lat} lng={luogo.lng} titolo={luogo.nome} />
           : (
             <div style={{
               height: 120, background: 'var(--prox-surface2)', color: 'var(--prox-ink3)',

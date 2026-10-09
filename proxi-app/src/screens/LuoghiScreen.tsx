@@ -8,10 +8,10 @@ import { Drawer } from '../components/Drawer'
 import { Modal } from '../components/Modal'
 import { Card } from '../components/Card'
 import { LuogoThumb } from '../components/LuogoThumb'
-import { LuoghiMap } from '../components/LuoghiMap'
+import { MappaConOcchio, MappaLuoghiPiena } from '../components/MappaLuoghiPiena'
+import { useIsDesktop } from '../hooks/useIsDesktop'
 import { useTipiLuogo } from '../hooks/useTipi'
 import type { Luogo } from '../types'
-import { useIsDesktop } from '../hooks/useIsDesktop'
 import { useLuoghi } from '../hooks/useLuoghi'
 import { CampoRicerca, ConteggioRisultati } from '../components/CampoRicerca'
 import { useRicercaEstesa } from '../hooks/useRicerca'
@@ -36,11 +36,7 @@ export function LuoghiScreen() {
   const [query, setQuery] = useState('')
   const [vista, setVista] = useState<'lista' | 'mappa'>('lista')
   const isDesktop = useIsDesktop()
-  const [mostraRiservati, setMostraRiservati] = useState(false)
-  const { tipi: tipiLuogo, label: tipoLuogoLabel, colore: coloreLuogo } = useTipiLuogo()
-  const TIPO_COLOR: Record<string, string> = Object.fromEntries(tipiLuogo.map(t => [t.chiave, coloreLuogo(t.chiave)]))
-
-  // La mappa occupa tutto il corpo: parte dove finisce l'intestazione fissa (misurata) e arriva in fondo
+  // Desktop: la mappa occupa tutto il corpo, sotto l'intestazione con ricerca e filtri (che si misura)
   const headerRef = useRef<HTMLDivElement>(null)
   const [sotto, setSotto] = useState(0)
   useEffect(() => {
@@ -54,6 +50,8 @@ export function LuoghiScreen() {
     return () => { ro.disconnect(); window.removeEventListener('resize', misura) }
   }, [])
   useEffect(() => { if (vista === 'mappa') document.getElementById('area-scorrevole')?.scrollTo(0, 0) }, [vista])
+  const { tipi: tipiLuogo, label: tipoLuogoLabel, colore: coloreLuogo } = useTipiLuogo()
+  const TIPO_COLOR: Record<string, string> = Object.fromEntries(tipiLuogo.map(t => [t.chiave, coloreLuogo(t.chiave)]))
 
   const { data: tuttiLuoghi = [], isLoading, isError, error } = useLuoghi()
   const [filtriCat, setFiltriCat] = useState<FiltroCat[]>([])
@@ -178,23 +176,13 @@ export function LuoghiScreen() {
           )
         })}
       </div>
-      {vista === 'mappa' && !isLoading && sotto > 0 && (
-        <div style={{
-          position: 'fixed', left: 0, right: 0, top: sotto, zIndex: 5,
-          bottom: isDesktop ? 0 : 'var(--tabbar)',
-        }}>
-          <LuoghiMap luoghi={luoghi.filter(l => mostraRiservati || l.visibilita !== 'riservato')} colors={TIPO_COLOR} onOpen={id => navigate(`/luoghi/${id}`)} />
-        </div>
-      )}
-      {vista === 'mappa' && !isLoading && sotto > 0 && luoghi.some(l => l.visibilita === 'riservato') && (
-        <button
-          onClick={() => setMostraRiservati(m => !m)}
-          style={{
-            position: isDesktop ? 'fixed' : 'absolute', left: 10, top: sotto + 10, zIndex: 6, display: 'flex', alignItems: 'center', gap: 6,
-            padding: '6px 12px', borderRadius: 999, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'inherit',
-            background: 'var(--prox-surface)', color: mostraRiservati ? 'var(--prox-accent)' : 'var(--prox-ink2)', boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
-          }}
-        ><Lock size={12} strokeWidth={2.2} /> {mostraRiservati ? 'Riservati visibili' : 'Mostra i riservati'}</button>
+      {vista === 'mappa' && !isLoading && (isDesktop
+        ? sotto > 0 && (
+          <div style={{ position: 'fixed', left: 0, right: 0, top: sotto, bottom: 0, zIndex: 5 }}>
+            <MappaConOcchio luoghi={luoghi} colors={TIPO_COLOR} onOpen={id => navigate(`/luoghi/${id}`)} />
+          </div>
+        )
+        : <MappaLuoghiPiena luoghi={luoghi} colors={TIPO_COLOR} onOpen={id => navigate(`/luoghi/${id}`)} onChiudi={() => setVista('lista')} query={query} onQuery={setQuery} />
       )}
       {isNuovoOpen ? (
         <Modal open onClose={() => navigate('/luoghi')}>
