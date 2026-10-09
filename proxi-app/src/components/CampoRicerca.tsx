@@ -40,6 +40,7 @@ export function CampoRicerca({ value, onChange, placeholder, fondo = 'surface', 
         onKeyDown={e => { if (e.key === 'Backspace' && !value && filtri.length) onFiltri?.(filtri.slice(0, -1)) }}
         placeholder={placeholder}
         autoFocus={autoFocus}
+        data-senza-avviso
         style={{ flex: 1, minWidth: 0, border: 'none', background: 'none', fontSize: 14, color: 'var(--prox-ink)', outline: 'none' }}
       />
       {value && (

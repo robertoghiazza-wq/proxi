@@ -1,5 +1,7 @@
 import { useIsDesktop } from '../hooks/useIsDesktop'
+import { useRef } from 'react'
 import { useEsc } from '../lib/esc'
+import { useChiusuraProtetta } from '../hooks/useChiusuraProtetta'
 
 interface DrawerProps {
   open: boolean
@@ -10,7 +12,9 @@ interface DrawerProps {
 
 export function Drawer({ open, onClose, children, width = 600 }: DrawerProps) {
   const isDesktop = useIsDesktop()
-  useEsc(open && !!onClose, onClose)
+  const rif = useRef<HTMLDivElement>(null)
+  const { tenta, dialogo } = useChiusuraProtetta(rif, open, onClose)
+  useEsc(open && !!onClose, tenta)
 
   if (!open) return null
 
@@ -23,8 +27,9 @@ export function Drawer({ open, onClose, children, width = 600 }: DrawerProps) {
         display: 'flex', flexDirection: 'column',
         paddingTop: 'var(--sat)', paddingBottom: 'var(--sab)',
         boxSizing: 'border-box',
-      }} className="prox-drawer">
+      }} className="prox-drawer" ref={rif}>
         {children}
+        {dialogo}
       </div>
     )
   }
@@ -32,7 +37,7 @@ export function Drawer({ open, onClose, children, width = 600 }: DrawerProps) {
   return (
     <>
       <div
-        onClick={onClose}
+        onClick={tenta}
         style={{
           position: 'fixed', top: 'var(--fascia)', left: 0, right: 0, bottom: 0,
           background: 'rgba(0,0,0,0.06)',
@@ -50,9 +55,10 @@ export function Drawer({ open, onClose, children, width = 600 }: DrawerProps) {
         zIndex: 90,   // sopra il menu, sotto modal (100) e conferme (500)
         boxShadow: '-6px 0 32px rgba(0,0,0,0.10)',
         animation: 'drawerIn 0.18s ease',
-      }} className="prox-drawer">
+      }} className="prox-drawer" ref={rif}>
         {children}
       </div>
+      {dialogo}
     </>
   )
 }

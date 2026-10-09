@@ -1,7 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useIsDesktop } from '../hooks/useIsDesktop'
 import { useEsc } from '../lib/esc'
+import { useChiusuraProtetta } from '../hooks/useChiusuraProtetta'
 
 interface ModalProps {
   open: boolean
@@ -17,7 +18,9 @@ export function Modal(props: ModalProps) {
 
 function ModalInterno({ open, onClose, children, width = 600 }: ModalProps) {
   const isDesktop = useIsDesktop()
-  useEsc(open, onClose)
+  const rif = useRef<HTMLDivElement>(null)
+  const { tenta, dialogo } = useChiusuraProtetta(rif, open, onClose)
+  useEsc(open, tenta)
 
   useEffect(() => {
     if (!open) return
@@ -35,15 +38,18 @@ function ModalInterno({ open, onClose, children, width = 600 }: ModalProps) {
         display: 'flex', flexDirection: 'column',
         paddingTop: 'var(--sat)', paddingBottom: 'var(--sab)',
         boxSizing: 'border-box',
-      }}>
+      }} ref={rif}>
         {children}
+        {dialogo}
       </div>
     )
   }
 
   return (
+    <>
     <div
-      onClick={onClose}
+      ref={rif}
+      onClick={tenta}
       style={{
         position: 'fixed', inset: 0, zIndex: 100,
         background: 'rgba(0,0,0,0.45)',
@@ -66,5 +72,7 @@ function ModalInterno({ open, onClose, children, width = 600 }: ModalProps) {
         {children}
       </div>
     </div>
+    {dialogo}
+    </>
   )
 }
