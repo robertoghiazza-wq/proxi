@@ -8,7 +8,7 @@ export function TrovatoIn({ trovato, nascondi = ['Nome'] }: { trovato?: Trovato[
   return (
     <div style={{
       fontSize: 11, color: 'var(--prox-accent)', marginTop: 3, fontWeight: 500,
-      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+      overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: 1.35,
     }}>
       Trovato in: {voci.map(t => t.estratto ? `${t.campo} “${t.estratto}”` : t.campo).join(' · ')}
     </div>

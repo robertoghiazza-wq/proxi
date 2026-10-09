@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Schema;
 
 // Ricerca estesa, una per sezione: cerca ogni parola in tutti i campi di quella sezione e dei suoi dettagli (persone: diario, profilo,
 // documenti, servizi; servizi: persone collegate). Solo gli eventi allargano ai luoghi e alle persone dell'evento. Restituisce, per ogni id, DOVE ha trovato la parola; più parole = devono esserci tutte (anche in campi diversi).
-// I campi riservati (diario, profilo, note, documenti…) segnalano solo la sezione, mai il testo: aprendo la scheda si finisce nel log come sempre.
+// Ogni utente dell'ente vede già tutto ciò che la ricerca mostra (diario, profilo, note…): per questo nell'elenco c'è anche un pezzetto di testo.
 class Ricerca
 {
     private const MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
@@ -68,17 +68,26 @@ class Ricerca
             self::campo($out, $p->id, 'Tag', (array) $p->tag, $n);
             self::campo($out, $p->id, 'Lingue', (array) $p->lingue, $n);
             self::campo($out, $p->id, 'Ruolo', self::da($ruoli, $p->ruolo_id) ?? [], $n);
-            self::campo($out, $p->id, 'Note e bisogni', [$p->note, ...(array) $p->bisogni], $n, riservato: true);
+            self::campo($out, $p->id, 'Note e bisogni', [$p->note, ...(array) $p->bisogni], $n);
         }
         $ids = $righe->pluck('id')->all();
 
         foreach (PersonaTelefono::whereIn('persona_id', $ids)->get(['persona_id', 'etichetta', 'numero']) as $r) {
             self::campo($out, $r->persona_id, 'Contatti', [$r->etichetta, $r->numero], $n);
         }
-        foreach (self::sql(PersonaProfilo::where('institution_id', $inst), PersonaProfilo::CAMPI, $t)->pluck('persona_id') as $id) self::aggiungi($out, $id, 'Profilo');
-        foreach (self::sql(PersonaSostanza::whereIn('persona_id', $ids), ['sostanza', 'con_chi', 'frequenza', 'note'], $t)->pluck('persona_id') as $id) self::aggiungi($out, $id, 'Profilo');
-        foreach (self::sql(PersonaDiario::where('institution_id', $inst), ['nota'], $t)->pluck('persona_id') as $id) self::aggiungi($out, $id, 'Diario');
-        foreach (self::sql(PersonaDocumento::where('institution_id', $inst), ['titolo', 'note', 'nome_originale', 'tipo'], $t)->pluck('persona_id') as $id) self::aggiungi($out, $id, 'Documenti');
+        // testi lunghi: il filtro lo fa il database, il pezzetto di testo si ritaglia qui
+        foreach (self::sql(PersonaProfilo::where('institution_id', $inst), PersonaProfilo::CAMPI, $t)->get() as $r) {
+            self::campo($out, $r->persona_id, 'Profilo', array_map(fn ($c) => $r->$c, PersonaProfilo::CAMPI), $n);
+        }
+        foreach (self::sql(PersonaSostanza::whereIn('persona_id', $ids), ['sostanza', 'con_chi', 'frequenza', 'note'], $t)->get() as $r) {
+            self::campo($out, $r->persona_id, 'Profilo', [$r->sostanza, $r->con_chi, $r->frequenza, $r->note], $n);
+        }
+        foreach (self::sql(PersonaDiario::where('institution_id', $inst), ['nota'], $t)->orderByDesc('data')->get() as $r) {
+            self::campo($out, $r->persona_id, 'Diario', [$r->nota], $n, $r->data?->format('d.m.Y'));
+        }
+        foreach (self::sql(PersonaDocumento::where('institution_id', $inst), ['titolo', 'note', 'nome_originale', 'tipo'], $t)->get() as $r) {
+            self::campo($out, $r->persona_id, 'Documenti', [$r->titolo, $r->note, $r->nome_originale, $r->tipo], $n);
+        }
 
         // servizi a cui la persona è collegata (nome del servizio o ruolo che ha lì)
         $servizi = Servizio::where('institution_id', $inst)->pluck('nome', 'id');
@@ -182,14 +191,14 @@ class Ricerca
         return $trovati;
     }
 
-    // Aggiunge un risultato se uno dei valori contiene la parola (senza maiuscole né accenti). Se riservato: niente testo, solo la sezione.
-    private static function campo(array &$out, $id, string $campo, array $valori, string $n, bool $riservato = false): void
+    // Aggiunge un risultato se uno dei valori contiene la parola (senza maiuscole né accenti), con un pezzetto del testo attorno
+    private static function campo(array &$out, $id, string $campo, array $valori, string $n, ?string $prefisso = null): void
     {
         foreach ($valori as $v) {
             if (is_array($v)) $v = implode(' ', $v);
             $v = (string) $v;
             if ($v !== '' && str_contains(self::norm($v), $n)) {
-                self::aggiungi($out, $id, $campo, $riservato ? null : self::estratto($v, $n));
+                self::aggiungi($out, $id, $campo, ($prefisso ? $prefisso.': ' : '').self::estratto($v, $n));
 
                 return;
             }

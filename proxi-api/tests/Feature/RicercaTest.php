@@ -34,18 +34,18 @@ class RicercaTest extends TestCase
         return $this->getJson('/api/ricerca?'.http_build_query(['ambito' => $ambito, 'q' => $q]))->assertOk();
     }
 
-    public function test_persone_trova_nel_diario_senza_mostrare_il_testo_e_ignora_accenti(): void
+    public function test_persone_trova_nel_diario_con_un_pezzetto_di_testo_e_ignora_accenti(): void
     {
         $anna = Persona::create(['institution_id' => $this->inst, 'ruolo' => 'utente', 'nome' => 'Anna', 'cognome' => 'Rossi', 'tag' => ['città'], 'note' => 'Segreto granchio']);
         $luca = Persona::create(['institution_id' => $this->inst, 'ruolo' => 'utente', 'nome' => 'Luca']);
         PersonaDiario::create(['institution_id' => $this->inst, 'persona_id' => $luca->id, 'data' => '2026-01-10', 'nota' => 'Ha parlato del suo cane Fuffi', 'autore_id' => $this->user->id]);
 
         $r = $this->cerca('persone', 'fuffi')->assertJsonCount(1)->assertJsonPath('0.id', $luca->id)->assertJsonPath('0.trovato.0.campo', 'Diario');
-        $this->assertNull($r->json('0.trovato.0.estratto'));                       // il testo del diario non esce nell'elenco
+        $this->assertSame('10.01.2026: Ha parlato del suo cane Fuffi', $r->json('0.trovato.0.estratto'));   // data e pezzetto del diario
 
         $this->cerca('persone', 'citta')->assertJsonCount(1)->assertJsonPath('0.id', $anna->id)->assertJsonPath('0.trovato.0.campo', 'Tag');
         $r = $this->cerca('persone', 'granchio')->assertJsonCount(1);
-        $this->assertNull($r->json('0.trovato.0.estratto'));                       // nemmeno le note
+        $this->assertSame('Segreto granchio', $r->json('0.trovato.0.estratto'));
         $this->cerca('persone', 'rossi anna')->assertJsonCount(1);                 // più parole: tutte presenti
         $this->cerca('persone', 'rossi fuffi')->assertJsonCount(0);
     }
