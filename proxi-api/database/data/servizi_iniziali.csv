@@ -1,0 +1,36 @@
+id_filemaker,id_unificati,nome,alias,indirizzo,cap,localita,paese,telefono,email,sito,note,lat,lng,comune_politico,bfs,cantone
+0748C981-F1AF-41BE-9677-D872E5773D7C,,Associazione Ticinese Famiglie Affidatarie (ATFA),,Vicolo Antico 2,6943,Vezia,Svizzera,091 966 00 91,affido@atfa.info,www.atfa.info,,46.023563,8.936278,Vezia,5231,TI
+DB260CAE-E37D-47A3-AD12-5AD8244748FD,,ATGABBES,,via Canevascini 4,6900,Lugano-Besso,Svizzera,,,,,46.009262,8.938111,Lugano,5192,TI
+521ED25A-D142-4237-AFD1-5BE16659A12A,,Autorità Regionale di Protezione (ARP6),,,,Agno,Svizzera,,,,,,,Agno,5141,TI
+37B9CEEF-1180-4002-8DBC-4D3E3580D439,,Cellula Socio-educativa d'Urgenza per Minorenni (CSUM),CSUM - Cellula Socio-educativa d'Urgenza per Minorenni,,,,Svizzera,,,,,,,,,
+DB2D5006-C7A3-4890-BE35-6993DA72DEE7,,Centro Diurno Ricreativo (CDR) per Anziani di Agno,,Piazza Vicari 17,6982,Agno,Svizzera,,,,,45.997314,8.898875,Agno,5141,TI
+DF3937FF-F271-4C77-ACA3-49BE6D2222E2,,Centro Giovani Bioggio,,,,Bioggio,Svizzera,,,,,,,Bioggio,5151,TI
+3C4CA1A9-7B63-4280-968D-B35677E5665B,,Comune di Magliaso,,,,,Svizzera,,,,,,,,,
+35FA6EE8-136A-4B07-B7A9-C4CBBEBB93E7,,Comune di Pura,,,,,Svizzera,,,,,,,,,
+23499610-5DF9-4123-8DF2-EA603C65E621,,Comune di Tresa,,,,,Svizzera,,,,,,,,,
+A7CD9430-674F-41A4-9751-CD7A5BD1565E,,Consultorio di Salute Sessuale (COSS) Lugano,Consultorio di Salute Sessuale (CSS),Via Tesserete 46,6900,Lugano,Svizzera,,coss@eoc.ch,www.eoc.ch/coss,Orari apertura Lu.-Ve: 9:00-12:00 13:00-17:00,46.018116,8.952422,Lugano,5192,TI
+F04D668F-BF98-4848-AD11-A85A9EBF6DAD,,Danno.ch,,Via Trevano 6,6900,Lugano,Svizzera,,,,,46.013737,8.955391,Lugano,5192,TI
+BEC54154-56D8-40FF-BCD3-683174BF1F35,,Forum degli Operatori di Prossimità della Svizzera Italiana (FOPSI),,,,,Svizzera,,,,,,,,,
+4A6C42BF-6E5B-4D54-9AC1-04A42D27FDC1,,Gruppo Visione Giovani (GVG),,,,,Svizzera,,,,,,,,,
+4B8896F3-101A-4F4A-81F4-2AE4565C2071,,Guardie di Confine,,,,,Svizzera,,,,,,,,,
+C5ED16EB-9B3A-49B5-9DDD-13C53FEC1D71,,Polizia Cantonale,,,,Caslano,Svizzera,,,,,,,Caslano,5171,TI
+034B7494-F660-40A1-95DB-9110DA7D8F2C,8827F0B4-EE56-447A-9C26-DBCCC3B5AE99,Polizia di prossimità Malcantone Est,,via stazione 1,6934,Bioggio,Svizzera,,,,,46.013947,8.908566,Bioggio,5151,TI
+D7D711C7-D4DE-4468-851E-BAC823115F58,,Polizia Malcantone Ovest,,,,Caslano,Svizzera,,,,,,,Caslano,5171,TI
+0D121838-28B1-486B-8237-CDFFA94AEC4C,,Pretirocinio d'orientamento,,,,Bioggio,Svizzera,,,,,,,Bioggio,5151,TI
+76477D67-D88F-4359-9820-B861D4E361B5,,Radiotelevisione svizzera (RSI),,Via Cureglia 38,6949,Comano,Svizzera,,,,,46.033752,8.950955,Comano,5176,TI
+573966B5-9125-40C5-B4DA-156D1E921ADB,,Scuola media Agno,,Via Ginnasio 22,6982,Agno,Svizzera,,,,,46.007576,8.906085,Agno,5141,TI
+E26C59B0-9162-4F32-880C-CEA14C5A69AE,,Scuola media Bedigliora,,,,,Svizzera,,,,,,,,,
+B7402B6E-8828-4AE9-8673-E195D8C56F53,,Scuola media Caslano,,,,,Svizzera,,,,,,,,,
+E1AFD064-0F6A-48EC-9B58-9BB8EE50CFFA,,Semestre motivazionale (SEMO),,,,Lugano,Svizzera,,,,,,,Lugano,5192,TI
+508BE44E-BBD9-4F04-A3FE-B3623F43BC2B,,Servizio Accompagnamento Educativo (SAE),Servizio di assistenza e di educazione (SAE),Via Ferri 1,6900,Lugano,Svizzera,,,,,46.014641,8.955450,Lugano,5192,TI
+F49900F9-956A-4E63-9357-8595A605B17F,,Servizio Medico Psicologico (SMP),,Via Luganetto 5,6962,Viganello,Svizzera,,,,,46.010441,8.960850,Lugano,5192,TI
+022BDF65-69EE-405F-A31E-E18244DFB68E,,Servizio Prossimità Ingrado,,Via Trevano 6,6900,Lugano,Svizzera,,,www.ingrado.ch,Ingrado - Servizi per le dipendenze,46.013737,8.955391,Lugano,5192,TI
+5E404F67-42FD-4838-B8A8-80D9FBF48703,,Servizio Psico-Sociale (SPS),Servizio Psico Sociale (SPS),,,Lugano,Svizzera,,,,,,,Lugano,5192,TI
+2A68FB64-38C2-45D2-862B-E6A55247B64F,,Servizio Sociale Agno,,Piazza Colonnello Vicari 1,6982,Agno,Svizzera,,,,,45.997486,8.899251,Agno,5141,TI
+ACA0AC01-503B-4071-8869-3F1DA9543F3A,,SOS-debiti associazione contro l'indebitamento,SOS-debiti,Via G. Motta 47,6850,Mendrisio,Svizzera,+41 91 630 27 51,info@sosdebiti.ch,https://www.sosdebiti.ch/,,45.869003,8.984370,Mendrisio,5254,TI
+27235BA9-192B-47CF-84A0-B9C05D9FA3BF,,SPALD Società per la protezione degli animali di Lugano e Dintorni,,Via alla Fraccia 5,6807,Taverne,Svizzera,,,,,46.067680,8.926798,Torricella-Taverne,5227,TI
+53BD02CA-A305-4C63-A3C2-3DC1B70D31B8,,Spazio Esplorativo - Associazione L'Ora,,Via Giuseppe Bagutti 14,6900,Lugano,Svizzera,,,,,46.014553,8.956543,Lugano,5192,TI
+0EBC0CF9-13C0-4060-936F-BAB882F05D07,,Ufficio dell'Aiuto e della Protezione (UAP),Ufficio dell'aiuto e della protezione (UAP),,,Paradiso,Svizzera,,,,,,,Paradiso,5210,TI
+D0751E0D-B8B5-4CDB-9951-953FBE4F76B7,,Ufficio Famiglie e Giovani (UFaG),Ufficio del sostegno a enti e attività per le famiglie e i giovani (UFaG),Viale Officine 6,6500,Bellinzona,Svizzera,,,,,,,Bellinzona,5002,TI
+C1B332B5-219F-45E1-A0D9-4AA06D2FFB96,,Young4help,,,6900,Lugano,Svizzera,,,www.young4helpchat.com,La chat di aiuto anonima gratuita senza login per adolescenti,,,Lugano,5192,TI
+95BB3E2C-DF51-4F44-B719-F469049070A3,,Zonaprotetta,,Via Bagutti 2,6900,Lugano,Svizzera,091 923 80 40,info@zonaprotetta.ch,https://zonaprotetta.ch,,46.011562,8.955741,Lugano,5192,TI
