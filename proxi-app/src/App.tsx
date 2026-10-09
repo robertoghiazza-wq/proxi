@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { TracciaPercorsi } from './lib/percorsi'
 import './index.css'
 
 import { HomeScreen }        from './screens/HomeScreen'
@@ -46,6 +47,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <TracciaPercorsi />
         <Routes>
           <Route path="/" element={<Auth><HomeScreen /></Auth>} />
 

@@ -1,11 +1,13 @@
 // Servizio — dettaglio con mappa, contatti collegati e dettagli
 
 import { tenue } from '../lib/colori'
-import { RiferimentoSticky, useTitoloSticky } from '../components/RiferimentoSticky'
+import { useTitoloSticky } from '../components/RiferimentoSticky'
+import { BarraScheda } from '../components/BarraScheda'
+import { RigaContatti } from '../components/RigaContatti'
 import { nomeAvatar, nomePersona } from '../lib/persona'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ChevronLeft, Building2, Phone, Edit, Plus, Star, Trash2, Mail, Globe, MapPin } from 'lucide-react'
+import { Building2, Phone, Edit, Plus, Star, Trash2, Mail, Globe, MapPin } from 'lucide-react'
 import { Card } from '../components/Card'
 import { Avatar } from '../components/Avatar'
 import { LuogoMap } from '../components/LuogoMap'
@@ -33,14 +35,13 @@ export function ServizioDetail() {
   const [creaLuogo, setCreaLuogo] = useState(false)
   const [luogoCreatoId, setLuogoCreatoId] = useState<number | null>(null)
 
-  if (isLoading) return <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Caricamento…</div>
+  if (isLoading) return <><BarraScheda lista="/servizi" etichettaLista="Servizi" /><div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Caricamento…</div></>
   if (!servizio) {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>
-        Servizio non trovato
-        <br />
-        <button onClick={() => navigate('/servizi')} style={{ marginTop: 12, cursor: 'pointer' }}>← Torna alla lista</button>
-      </div>
+      <>
+        <BarraScheda lista="/servizi" etichettaLista="Servizi" />
+        <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Servizio non trovato</div>
+      </>
     )
   }
 
@@ -58,8 +59,20 @@ export function ServizioDetail() {
 
   return (
     <div style={{ background: 'var(--prox-bg)', minHeight: '100%' }}>
-      <RiferimentoSticky visibile={fuori} titolo={servizio.nome} sottotitolo={servizio.localita ?? undefined} onIndietro={() => navigate('/servizi')} etichettaIndietro="Servizi" />
-      <div style={{ position: 'relative' }}>
+      <BarraScheda
+        lista="/servizi" etichettaLista="Servizi" titolo={servizio.nome} sottotitolo={servizio.localita ?? undefined} titoloVisibile={fuori}
+        azioni={[
+          { etichetta: 'Collega persona', icona: <Plus size={17} strokeWidth={2.5} />, primaria: true, onClick: () => setCollega(true) },
+          { etichetta: 'Modifica servizio', icona: <Edit size={18} strokeWidth={1.75} />, onClick: () => navigate(`/servizi/${servizio.id}/modifica`) },
+        ]}
+        menu={[
+          luogoCreatoId !== null
+            ? { etichetta: 'Apri il luogo creato', icona: <MapPin size={16} />, onClick: () => navigate(`/luoghi/${luogoCreatoId}`) }
+            : { etichetta: 'Crea un luogo da questo servizio', icona: <MapPin size={16} />, onClick: () => setCreaLuogo(true) },
+          { etichetta: 'Elimina servizio', icona: <Trash2 size={16} />, pericolo: true, onClick: () => setConfermaElimina(true) },
+        ]}
+      />
+      <div style={{ position: 'relative', zIndex: 0, isolation: 'isolate' }}>
         {servizio.lat != null && servizio.lng != null
           ? <LuogoMap lat={servizio.lat} lng={servizio.lng} />
           : (
@@ -68,15 +81,6 @@ export function ServizioDetail() {
               display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, paddingTop: 36,
             }}>Posizione non impostata</div>
           )}
-        <button onClick={() => navigate(-1)} style={{
-          position: 'absolute', top: 12, left: 12, zIndex: 600,
-          display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,0.9)', border: 'none',
-          borderRadius: 999, padding: '6px 12px 6px 8px', cursor: 'pointer', color: 'var(--prox-ink2)',
-          fontSize: 13, fontWeight: 500, backdropFilter: 'blur(8px)', boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
-        }}>
-          <ChevronLeft size={18} strokeWidth={1.75} />
-          Servizi
-        </button>
       </div>
 
       <div style={{ padding: '16px 16px 0' }}>
@@ -97,20 +101,7 @@ export function ServizioDetail() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-          {servizio.telefono ? (
-            <a href={`tel:${servizio.telefono.replace(/\s+/g, '')}`} style={{
-              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-              background: 'var(--prox-accent)', color: '#fff', borderRadius: 999, padding: '11px 0',
-              fontSize: 14, fontWeight: 600, textDecoration: 'none',
-            }}>
-              <Phone size={16} strokeWidth={2} /> {servizio.telefono}
-            </a>
-          ) : <div style={{ flex: 1 }} />}
-          <button onClick={() => navigate(`/servizi/${servizio.id}/modifica`)} style={iconBtn} aria-label="Modifica servizio">
-            <Edit size={18} strokeWidth={1.75} color="var(--prox-ink2)" />
-          </button>
-        </div>
+        <RigaContatti telefono={servizio.telefono} email={servizio.email} style={{ marginBottom: 16, justifyContent: 'flex-start' }} />
       </div>
 
       <div style={{ padding: '0 16px 120px', display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -177,20 +168,6 @@ export function ServizioDetail() {
             )}
           </div>
         </Card>
-
-        {luogoCreatoId !== null ? (
-          <button onClick={() => navigate(`/luoghi/${luogoCreatoId}`)} style={{ ...azione, color: 'var(--prox-ok)' }}>
-            Luogo creato — aprilo
-          </button>
-        ) : (
-          <button onClick={() => setCreaLuogo(true)} style={azione}>
-            <MapPin size={16} strokeWidth={1.75} /> Crea un luogo da questo servizio
-          </button>
-        )}
-
-        <button onClick={() => setConfermaElimina(true)} style={{ ...azione, color: 'var(--prox-danger)' }}>
-          <Trash2 size={16} strokeWidth={1.75} /> Elimina servizio
-        </button>
       </div>
 
       {collega && <ContattoServizioModal servizio={servizio} onClose={() => setCollega(false)} />}
@@ -200,7 +177,7 @@ export function ServizioDetail() {
         <NuovoLuogoModal
           initial={{
             nome: servizio.nome,
-            tipo: 'ufficio',
+            tipo: 'servizi_sociosanitari',
             indirizzo: servizio.indirizzo,
             npa: servizio.cap,
             localita: servizio.localita,
@@ -241,14 +218,3 @@ function Dato({ icon, children }: { icon: React.ReactNode; children: React.React
 
 const link: React.CSSProperties = { color: 'var(--prox-accent)', textDecoration: 'none' }
 
-const iconBtn: React.CSSProperties = {
-  width: 44, height: 44, borderRadius: 999, background: 'var(--prox-surface)',
-  border: '1px solid var(--prox-line)', display: 'flex', alignItems: 'center',
-  justifyContent: 'center', cursor: 'pointer', flexShrink: 0,
-}
-
-const azione: React.CSSProperties = {
-  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-  border: '1.5px solid var(--prox-line)', borderRadius: 999, background: 'transparent',
-  color: 'var(--prox-ink2)', padding: '11px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer', width: '100%',
-}

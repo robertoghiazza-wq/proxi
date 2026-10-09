@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ChevronLeft, MapPin, Users, Calendar, Clock, Plus, Edit, Lock, Building2, Trash2 } from 'lucide-react'
+import { MapPin, Users, Calendar, Clock, Plus, Edit, Lock, Building2, Trash2 } from 'lucide-react'
 import { Card } from '../components/Card'
 import { Modal } from '../components/Modal'
 import { ServizioForm } from './ServizioFormScreen'
@@ -10,7 +10,8 @@ import { LuogoMap } from '../components/LuogoMap'
 import { Tag } from '../components/Tag'
 import { EventTypeDot } from '../components/EventTypeDot'
 import { ConfirmDialog } from '../components/ConfirmDialog'
-import { RiferimentoSticky, useTitoloSticky } from '../components/RiferimentoSticky'
+import { useTitoloSticky } from '../components/RiferimentoSticky'
+import { BarraScheda } from '../components/BarraScheda'
 import { useTipiLuogo, useTipiEvento } from '../hooks/useTipi'
 import { tenue, scuro } from '../lib/colori'
 import { useLuogo, useDeleteLuogo, useUpdateLuogo } from '../hooks/useLuoghi'
@@ -45,18 +46,15 @@ export function LuogoDetail() {
   const [servizioCreatoId, setServizioCreatoId] = useState<number | null>(null)
 
   if (isLoading) {
-    return <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Caricamento…</div>
+    return <><BarraScheda lista="/luoghi" etichettaLista="Luoghi" /><div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Caricamento…</div></>
   }
 
   if (!luogo) {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>
-        Luogo non trovato
-        <br />
-        <button onClick={() => navigate('/luoghi')} style={{ marginTop: 12, cursor: 'pointer' }}>
-          ← Torna alla lista
-        </button>
-      </div>
+      <>
+        <BarraScheda lista="/luoghi" etichettaLista="Luoghi" />
+        <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Luogo non trovato</div>
+      </>
     )
   }
 
@@ -64,13 +62,23 @@ export function LuogoDetail() {
 
   return (
     <div style={{ background: 'var(--prox-bg)', minHeight: '100%' }}>
-      <RiferimentoSticky
-        visibile={fuori} titolo={luogo.nome} sottotitolo={tipoLuogoLabel(luogo.tipo)} onIndietro={() => navigate('/luoghi')} etichettaIndietro="Luoghi"
+      <BarraScheda
+        lista="/luoghi" etichettaLista="Luoghi" titolo={luogo.nome} sottotitolo={tipoLuogoLabel(luogo.tipo)} titoloVisibile={fuori}
         icona={<span style={{ width: 10, height: 10, borderRadius: '50%', background: color, flexShrink: 0 }} />}
+        azioni={[
+          { etichetta: 'Nuovo evento qui', icona: <Plus size={17} strokeWidth={2.5} />, primaria: true, onClick: () => navigate('/eventi/nuovo', { state: { luogoId: luogo.id } }) },
+          { etichetta: 'Modifica luogo', icona: <Edit size={18} strokeWidth={1.75} />, onClick: () => navigate(`/luoghi/${luogo.id}/modifica`) },
+        ]}
+        menu={[
+          servizioCreatoId !== null
+            ? { etichetta: 'Apri il servizio creato', icona: <Building2 size={16} />, onClick: () => navigate(`/servizi/${servizioCreatoId}`) }
+            : { etichetta: 'Crea un servizio da questo luogo', icona: <Building2 size={16} />, onClick: () => setCreaServizio(true) },
+          { etichetta: 'Elimina luogo', icona: <Trash2 size={16} />, pericolo: true, onClick: () => setConfermaElimina(true) },
+        ]}
       />
 
       {/* MAPPA HEADER */}
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: 'relative', zIndex: 0, isolation: 'isolate' }}>
         {luogo.lat != null && luogo.lng != null
           ? <LuogoMap lat={luogo.lat} lng={luogo.lng} />
           : (
@@ -82,24 +90,6 @@ export function LuogoDetail() {
               Posizione non impostata
             </div>
           )}
-
-        {/* Back button sovrapposto alla mappa */}
-        <button
-          onClick={() => navigate(-1)}
-          style={{
-            position: 'absolute', top: 12, left: 12,
-            display: 'flex', alignItems: 'center', gap: 4,
-            background: 'rgba(255,255,255,0.9)', border: 'none',
-            borderRadius: 999, padding: '6px 12px 6px 8px',
-            cursor: 'pointer', color: 'var(--prox-ink2)',
-            fontSize: 13, fontWeight: 500,
-            backdropFilter: 'blur(8px)',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
-          }}
-        >
-          <ChevronLeft size={18} strokeWidth={1.75} />
-          Luoghi
-        </button>
       </div>
 
       {/* INTESTAZIONE */}
@@ -169,21 +159,6 @@ export function LuogoDetail() {
           </div>
         </div>
 
-        {/* Action row */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-          <button onClick={() => navigate('/eventi/nuovo', { state: { luogoId: luogo.id } })} style={{
-            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-            background: 'var(--prox-accent)', color: '#fff',
-            border: 'none', borderRadius: 999, padding: '11px 0',
-            fontSize: 14, fontWeight: 600, cursor: 'pointer',
-          }}>
-            <Plus size={16} strokeWidth={2.5} />
-            Nuovo evento qui
-          </button>
-          <button onClick={() => navigate(`/luoghi/${luogo.id}/modifica`)} style={iconBtnStyle} aria-label="Modifica luogo">
-            <Edit size={18} strokeWidth={1.75} color="var(--prox-ink2)" />
-          </button>
-        </div>
       </div>
 
       {/* CORPO */}
@@ -211,16 +186,6 @@ export function LuogoDetail() {
               {luogo.note}
             </p>
           </Card>
-        )}
-
-        {servizioCreatoId !== null ? (
-          <button onClick={() => navigate(`/servizi/${servizioCreatoId}`)} style={{ ...azioneLuogo, color: 'var(--prox-ok)' }}>
-            Servizio creato — aprilo
-          </button>
-        ) : (
-          <button onClick={() => setCreaServizio(true)} style={azioneLuogo}>
-            Crea un servizio da questo luogo
-          </button>
         )}
 
         {/* Eventi recenti */}
@@ -267,10 +232,6 @@ export function LuogoDetail() {
             )
           }
         </Card>
-
-        <button onClick={() => setConfermaElimina(true)} style={{ ...azioneLuogo, color: 'var(--prox-danger)' }}>
-          <Trash2 size={16} strokeWidth={1.75} /> Elimina luogo
-        </button>
       </div>
 
       <ConfirmDialog
@@ -303,20 +264,6 @@ export function LuogoDetail() {
 }
 
 // ---- helpers ----
-
-const azioneLuogo: React.CSSProperties = {
-  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-  border: '1.5px solid var(--prox-line)', borderRadius: 999, background: 'transparent',
-  color: 'var(--prox-ink2)', padding: '11px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer', width: '100%',
-}
-
-const iconBtnStyle: React.CSSProperties = {
-  width: 44, height: 44, borderRadius: 999,
-  background: 'var(--prox-surface)',
-  border: '1px solid var(--prox-line)',
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
-  cursor: 'pointer', flexShrink: 0,
-}
 
 function StatBox({ icon, value, label }: { icon: React.ReactNode; value: number; label: string }) {
   return (

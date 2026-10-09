@@ -2,7 +2,8 @@
 
 import { useTipiEvento } from '../hooks/useTipi'
 import { useGestore } from '../hooks/useAuth'
-import { RiferimentoSticky, useTitoloSticky } from '../components/RiferimentoSticky'
+import { useTitoloSticky } from '../components/RiferimentoSticky'
+import { BarraScheda } from '../components/BarraScheda'
 import { nomeAvatar, nomePersona, etichettaRuolo } from '../lib/persona'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -60,18 +61,15 @@ export function EventoDetail() {
   const [confermaElimina, setConfermaElimina] = useState(false)
 
   if (isLoading) {
-    return <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Caricamento…</div>
+    return <><BarraScheda lista="/eventi" etichettaLista="Eventi" /><div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Caricamento…</div></>
   }
 
   if (error || !evento) {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>
-        {error ? (error as Error).message : 'Evento non trovato'}
-        <br />
-        <button onClick={() => navigate('/eventi')} style={{ marginTop: 12, cursor: 'pointer' }}>
-          ← Torna agli eventi
-        </button>
-      </div>
+      <>
+        <BarraScheda lista="/eventi" etichettaLista="Eventi" />
+        <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>{error ? (error as Error).message : 'Evento non trovato'}</div>
+      </>
     )
   }
 
@@ -81,32 +79,23 @@ export function EventoDetail() {
 
   return (
     <div style={{ background: 'var(--prox-bg)', minHeight: '100%' }}>
-      <RiferimentoSticky
-        visibile={fuori} titolo={tipoLabel(evento.tipo)} onIndietro={() => navigate('/eventi')} etichettaIndietro="Eventi"
+      <BarraScheda
+        lista="/eventi" etichettaLista="Eventi" titolo={tipoLabel(evento.tipo)} titoloVisibile={fuori}
         sottotitolo={new Date(evento.data.slice(0, 10) + 'T00:00:00').toLocaleDateString('it-CH', { weekday: 'short', day: 'numeric', month: 'short' })}
         icona={<span style={{ width: 10, height: 10, borderRadius: '50%', background: color, flexShrink: 0 }} />}
+        azioni={[{ etichetta: 'Modifica evento', icona: <Edit size={18} strokeWidth={1.75} />, onClick: () => navigate(`/eventi/${evento.id}/modifica`) }]}
+        menu={[
+          { etichetta: 'Estratto per i partner', icona: <FileText size={16} />, nascosta: !(gestore && evento.stato === 'completato'), onClick: () => navigate(`/report?scheda=estratti&evento=${evento.id}`) },
+          { etichetta: 'Elimina evento', icona: <Trash2 size={16} />, pericolo: true, onClick: () => setConfermaElimina(true) },
+        ]}
       />
 
       {/* HEADER con barra colore */}
       <div style={{
         background: 'var(--prox-surface)',
         borderBottom: `3px solid ${color}`,
-        padding: '14px 16px 16px',
+        padding: '16px 16px 16px',
       }}>
-        {/* Back */}
-        <button
-          onClick={() => navigate(-1)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 4,
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: 'var(--prox-ink2)', fontSize: 13, fontWeight: 500,
-            padding: '0 0 12px',
-          }}
-        >
-          <ChevronLeft size={18} strokeWidth={1.75} />
-          Indietro
-        </button>
-
         {/* Tipo + stato */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           <h1 ref={setTitolo} className="prox-display" style={{
@@ -199,16 +188,6 @@ export function EventoDetail() {
           )}
         </Card>
 
-        {gestore && evento.stato === 'completato' && (
-          <button
-            onClick={() => navigate(`/report?scheda=estratti&evento=${evento.id}`)}
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '11px 0', borderRadius: 999, cursor: 'pointer',
-              border: '1.5px solid var(--prox-line)', background: 'transparent', color: 'var(--prox-ink2)', fontSize: 14, fontWeight: 600, fontFamily: 'inherit',
-            }}
-          ><FileText size={16} strokeWidth={1.75} /> Estratto per i partner</button>
-        )}
-
         {/* Persone coinvolte */}
         {evento.persone && evento.persone.length > 0 && (
           <Card padding="14px 16px">
@@ -296,34 +275,6 @@ export function EventoDetail() {
         {aggiorna.isError && (
           <div style={{ fontSize: 13, color: 'var(--prox-danger)' }}>{(aggiorna.error as Error).message}</div>
         )}
-
-        <button
-          onClick={() => navigate(`/eventi/${evento.id}/modifica`)}
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-            border: '1.5px solid var(--prox-line)', borderRadius: 999,
-            background: 'var(--prox-surface)', color: 'var(--prox-ink2)',
-            padding: '11px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-            width: '100%',
-          }}
-        >
-          <Edit size={16} strokeWidth={1.75} />
-          Modifica evento
-        </button>
-
-        <button
-          onClick={() => setConfermaElimina(true)}
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-            border: '1.5px solid var(--prox-line)', borderRadius: 999,
-            background: 'transparent', color: 'var(--prox-danger)',
-            padding: '11px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-            width: '100%',
-          }}
-        >
-          <Trash2 size={16} strokeWidth={1.75} />
-          Elimina evento
-        </button>
       </div>
 
       <ConfirmDialog

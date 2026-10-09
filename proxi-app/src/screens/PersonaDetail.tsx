@@ -3,8 +3,11 @@
 import { useTipiEvento } from '../hooks/useTipi'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ChevronLeft, Phone, Edit, Plus, AlertTriangle, Trash2, Mail, MapPin } from 'lucide-react'
-import { RiferimentoSticky, useTitoloSticky } from '../components/RiferimentoSticky'
+import { Edit, Plus, AlertTriangle, Trash2, Mail, MapPin, Phone, MessageSquare } from 'lucide-react'
+import { useTitoloSticky } from '../components/RiferimentoSticky'
+import { BarraScheda } from '../components/BarraScheda'
+import { RigaContatti, IconaWhatsApp } from '../components/RigaContatti'
+import { linkSms, linkTel, linkWhatsApp } from '../lib/contatti'
 import { AvatarPersona } from '../components/AvatarPersona'
 import { FotoPersona } from '../components/FotoPersona'
 import { Tag } from '../components/Tag'
@@ -77,18 +80,15 @@ export function PersonaDetail({ apriInModifica }: { apriInModifica?: boolean }) 
   const gestore = useGestore()
 
   if (isLoading) {
-    return <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Caricamento…</div>
+    return <><BarraScheda lista="/persone" etichettaLista="Persone" /><div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Caricamento…</div></>
   }
 
   if (!persona) {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>
-        Persona non trovata
-        <br />
-        <button onClick={() => navigate('/persone')} style={{ marginTop: 12, cursor: 'pointer' }}>
-          ← Torna alla lista
-        </button>
-      </div>
+      <>
+        <BarraScheda lista="/persone" etichettaLista="Persone" />
+        <div style={{ padding: 32, textAlign: 'center', color: 'var(--prox-ink3)' }}>Persona non trovata</div>
+      </>
     )
   }
 
@@ -100,27 +100,21 @@ export function PersonaDetail({ apriInModifica }: { apriInModifica?: boolean }) 
 
   return (
     <div style={{ background: 'var(--prox-bg)', minHeight: '100%' }}>
-      <RiferimentoSticky
-        visibile={fuori} titolo={name} onIndietro={() => navigate('/persone')} etichettaIndietro="Persone"
+      <BarraScheda
+        lista="/persone" etichettaLista="Persone" titolo={name} titoloVisibile={fuori}
         sottotitolo={[etichettaTipo(persona.ruolo), ruolo].filter(Boolean).join(' · ')}
         icona={<AvatarPersona persona={persona} size={28} />}
+        azioni={[
+          { etichetta: 'Nuovo evento', icona: <Plus size={17} strokeWidth={2.5} />, primaria: true, onClick: () => navigate('/eventi/nuovo', { state: { personaId: persona.id } }) },
+          { etichetta: 'Modifica anagrafica', icona: <Edit size={18} strokeWidth={1.75} />, onClick: () => { setTab('anagrafica'); setModificaAnag(true) } },
+        ]}
+        menu={[{ etichetta: 'Elimina persona', icona: <Trash2 size={16} />, pericolo: true, onClick: () => setConfermaElimina(true) }]}
       />
       <div style={{
         background: 'linear-gradient(180deg, var(--prox-accent-soft) 0%, var(--prox-bg) 100%)',
         padding: '0 16px 14px',
       }}>
-        <button
-          onClick={() => navigate('/persone')}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer',
-            color: 'var(--prox-ink2)', fontSize: 14, fontWeight: 500, padding: '16px 0 0',
-          }}
-        >
-          <ChevronLeft size={20} strokeWidth={1.75} />
-          Persone
-        </button>
-
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginTop: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginTop: 18 }}>
           <FotoPersona persona={persona} size={72} />
 
           <div style={{ textAlign: 'center' }}>
@@ -149,27 +143,7 @@ export function PersonaDetail({ apriInModifica }: { apriInModifica?: boolean }) 
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
-          <button
-            onClick={() => navigate('/eventi/nuovo', { state: { personaId: persona.id } })}
-            style={{
-              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-              background: 'var(--prox-accent)', color: '#fff', border: 'none', borderRadius: 999,
-              padding: '11px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-            }}
-          >
-            <Plus size={16} strokeWidth={2.5} />
-            Nuovo evento
-          </button>
-          {persona.telefono && (
-            <a href={`tel:${persona.telefono.replace(/\s+/g, '')}`} style={iconBtnStyle} aria-label="Chiama">
-              <Phone size={18} strokeWidth={1.75} color="var(--prox-ink2)" />
-            </a>
-          )}
-          <button onClick={() => { setTab('anagrafica'); setModificaAnag(true) }} style={iconBtnStyle} aria-label="Modifica anagrafica">
-            <Edit size={18} strokeWidth={1.75} color="var(--prox-ink2)" />
-          </button>
-        </div>
+        <RigaContatti telefono={persona.telefono ?? persona.telefoni?.[0]?.numero} email={persona.email} style={{ marginTop: 16 }} />
       </div>
 
       <BarraTab tabs={tabs} attiva={tabAttiva} onScegli={setTab} />
@@ -202,18 +176,6 @@ export function PersonaDetail({ apriInModifica }: { apriInModifica?: boolean }) 
         {tabAttiva === 'ore' && persona.ruolo === 'dipendente' && gestore && <OreView persona={persona.id} gestore />}
         {tabAttiva === 'contratto' && persona.ruolo === 'dipendente' && gestore && <ContrattoPanel persona={persona} />}
         {tabAttiva === 'user' && persona.ruolo === 'dipendente' && gestore && <AccountPanel persona={persona} />}
-
-        <button
-          onClick={() => setConfermaElimina(true)}
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-            border: '1.5px solid var(--prox-line)', borderRadius: 999, background: 'transparent',
-            color: 'var(--prox-danger)', padding: '11px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer', width: '100%',
-          }}
-        >
-          <Trash2 size={16} strokeWidth={1.75} />
-          Elimina persona
-        </button>
       </div>
 
       <ConfirmDialog
@@ -360,10 +322,14 @@ function PannelloContatti({ persona }: { persona: Persona }) {
         <Section title="Recapiti" azione={<BtnModifica onClick={avvia} />}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 14 }}>
             {telefoni.map((t, i) => (
-              <a key={i} href={`tel:${t.numero.replace(/\s+/g, '')}`} style={riga}>
-                <Phone size={15} strokeWidth={1.75} />
-                <span>{t.numero}{t.etichetta ? <span style={{ color: 'var(--prox-ink3)' }}> · {t.etichetta}</span> : null}</span>
-              </a>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <a href={linkTel(t.numero) ?? undefined} style={{ ...riga, flex: 1, minWidth: 0 }}>
+                  <Phone size={15} strokeWidth={1.75} />
+                  <span>{t.numero}{t.etichetta ? <span style={{ color: 'var(--prox-ink3)' }}> · {t.etichetta}</span> : null}</span>
+                </a>
+                {linkSms(t.numero) && <a href={linkSms(t.numero)!} aria-label={`Messaggio a ${t.numero}`} title="Messaggio" style={{ ...riga, padding: 6 }}><MessageSquare size={16} strokeWidth={1.75} /></a>}
+                {linkWhatsApp(t.numero) && <a href={linkWhatsApp(t.numero)!} target="_blank" rel="noreferrer" aria-label={`WhatsApp a ${t.numero}`} title="WhatsApp" style={{ ...riga, padding: 6, color: '#1f9d55' }}><IconaWhatsApp size={17} /></a>}
+              </div>
             ))}
             {persona.email && <a href={`mailto:${persona.email}`} style={riga}><Mail size={15} strokeWidth={1.75} /> {persona.email}</a>}
           </div>
@@ -453,12 +419,6 @@ function PannelloEventi({ eventi, onApri }: { eventi: Evento[]; onApri: (id: num
 
 const riga: React.CSSProperties = {
   display: 'flex', alignItems: 'center', gap: 10, color: 'var(--prox-ink2)', textDecoration: 'none',
-}
-
-const iconBtnStyle: React.CSSProperties = {
-  width: 44, height: 44, borderRadius: 999, background: 'var(--prox-surface)',
-  border: '1px solid var(--prox-line)', display: 'flex', alignItems: 'center',
-  justifyContent: 'center', cursor: 'pointer', flexShrink: 0,
 }
 
 function Vuoto({ children }: { children: React.ReactNode }) {
