@@ -100,7 +100,7 @@ export function LuoghiScreen() {
             ))}
           </div>
         </div>
-        <ConteggioRisultati mostrati={luoghi.length} totali={tuttiLuoghi.length} singolare="luogo" plurale="luoghi" />
+        <ConteggioRisultati mostrati={luoghi.length} totali={tuttiLuoghi.length} singolare="luogo" plurale="luoghi" filtri={filtriCat} onFiltri={setFiltriCat} />
         {nDaControllare > 0 && (
           <button
             onClick={() => setSoloDaControllare(v => !v)}

@@ -96,7 +96,7 @@ export function EventiScreen() {
           </button>
         </div>
         <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca persona, luogo, tipo, note, data…" candidati={candidati} filtri={filtriCat} onFiltri={setFiltriCat} />
-        <ConteggioRisultati mostrati={filtrati.length} totali={tuttiEventi.length} singolare="evento" plurale="eventi" style={{ marginBottom: 10 }} />
+        <ConteggioRisultati mostrati={filtrati.length} totali={tuttiEventi.length} singolare="evento" plurale="eventi" style={{ marginBottom: 10 }} filtri={filtriCat} onFiltri={setFiltriCat} />
         <div style={{ display: 'flex', gap: 6, overflowX: 'auto', margin: '0 -16px', padding: '0 16px', scrollbarWidth: 'none' }}>
           {FILTRI.map(({ key, label }) => {
             const active = filtro === key

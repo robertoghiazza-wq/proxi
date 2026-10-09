@@ -5,7 +5,7 @@ import { Search, X } from 'lucide-react'
 import { suggerisci, ultimaParola, type FiltroCat } from '../lib/filtriCategoria'
 
 // Con `candidati` il campo suggerisce, dopo 4 lettere, le categorie che coincidono (come pill sotto la barra);
-// scelta una, il pill va dentro la barra e diventa un filtro (`filtri` / `onFiltri`).
+// scelta una, diventa un filtro attivo (`filtri` / `onFiltri`) che si mostra sotto la barra, accanto al conteggio (ConteggioRisultati).
 export function CampoRicerca({ value, onChange, placeholder, fondo = 'surface', compatto, autoFocus, icona, style, candidati, filtri = [], onFiltri }: {
   value: string
   onChange: (v: string) => void
@@ -32,27 +32,13 @@ export function CampoRicerca({ value, onChange, placeholder, fondo = 'surface', 
       padding: compatto ? '9px 12px' : '8px 12px', border: '1px solid var(--prox-line)',
     }}>
       {icona ?? <Search size={compatto ? 15 : 16} color="var(--prox-ink3)" strokeWidth={1.75} style={{ flexShrink: 0 }} />}
-      {filtri.map(f => (
-        <span key={`${f.gruppo}:${f.id}`} style={{
-          display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, padding: '2px 4px 2px 9px', borderRadius: 999,
-          fontSize: 12, fontWeight: 600, background: 'var(--prox-accent-soft)', color: 'var(--prox-accent)',
-        }}>
-          <span style={{ opacity: 0.7, fontWeight: 500 }}>{f.gruppo}:</span> {f.label}
-          <button
-            type="button" aria-label={`Togli il filtro ${f.label}`}
-            onMouseDown={e => e.preventDefault()}
-            onClick={() => onFiltri?.(filtri.filter(x => x !== f))}
-            style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 2, display: 'flex', color: 'inherit' }}
-          ><X size={12} strokeWidth={2.5} /></button>
-        </span>
-      ))}
       <input
         value={value}
         onChange={e => onChange(e.target.value)}
         onKeyDown={e => { if (e.key === 'Backspace' && !value && filtri.length) onFiltri?.(filtri.slice(0, -1)) }}
         placeholder={placeholder}
         autoFocus={autoFocus}
-        style={{ flex: 1, minWidth: filtri.length ? 90 : 0, border: 'none', background: 'none', fontSize: 14, color: 'var(--prox-ink)', outline: 'none' }}
+        style={{ flex: 1, minWidth: 0, border: 'none', background: 'none', fontSize: 14, color: 'var(--prox-ink)', outline: 'none' }}
       />
       {value && (
         <button
@@ -88,14 +74,28 @@ export function CampoRicerca({ value, onChange, placeholder, fondo = 'surface', 
   )
 }
 
-// «12 persone» oppure, se la ricerca o i filtri ne nascondono qualcuna, «3 di 12 persone»
-export function ConteggioRisultati({ mostrati, totali, singolare, plurale, style }: {
+// «12 persone» oppure, se la ricerca o i filtri ne nascondono qualcuna, «3 di 12 persone»; accanto, i filtri a pill attivi
+export function ConteggioRisultati({ mostrati, totali, singolare, plurale, style, filtri = [], onFiltri }: {
   mostrati: number; totali: number; singolare: string; plurale: string; style?: CSSProperties
+  filtri?: FiltroCat[]; onFiltri?: (f: FiltroCat[]) => void
 }) {
   const unita = totali === 1 ? singolare : plurale
   return (
-    <div aria-live="polite" style={{ fontSize: 11.5, color: 'var(--prox-ink3)', marginTop: 6, ...style }}>
-      {mostrati === totali ? `${totali} ${unita}` : `${mostrati} di ${totali} ${unita}`}
+    <div aria-live="polite" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6, fontSize: 11.5, color: 'var(--prox-ink3)', marginTop: 6, ...style }}>
+      <span>{mostrati === totali ? `${totali} ${unita}` : `${mostrati} di ${totali} ${unita}`}</span>
+      {filtri.map(f => (
+        <span key={`${f.gruppo}:${f.id}`} style={{
+          display: 'inline-flex', alignItems: 'center', gap: 3, padding: '1px 3px 1px 8px', borderRadius: 999,
+          fontSize: 11.5, fontWeight: 600, background: 'var(--prox-accent-soft)', color: 'var(--prox-accent)',
+        }}>
+          <span style={{ opacity: 0.7, fontWeight: 500 }}>{f.gruppo}:</span> {f.label}
+          <button
+            type="button" aria-label={`Togli il filtro ${f.label}`}
+            onClick={() => onFiltri?.(filtri.filter(x => x !== f))}
+            style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 2, display: 'flex', color: 'inherit' }}
+          ><X size={11} strokeWidth={2.5} /></button>
+        </span>
+      ))}
     </div>
   )
 }

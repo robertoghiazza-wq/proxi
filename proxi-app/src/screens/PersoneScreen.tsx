@@ -146,7 +146,7 @@ export function PersoneScreen() {
 
         {/* Search */}
         <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca nome, tag, diario, note, servizi…" candidati={candidati} filtri={filtriCat} onFiltri={setFiltriCat} />
-        <ConteggioRisultati mostrati={persone.length} totali={tuttePersone.length} singolare="persona" plurale="persone" />
+        <ConteggioRisultati mostrati={persone.length} totali={tuttePersone.length} singolare="persona" plurale="persone" filtri={filtriCat} onFiltri={setFiltriCat} />
 
         {/* Filtri ruolo */}
         <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
