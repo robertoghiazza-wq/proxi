@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react'
 import { Phone, Mail, MessageSquare } from 'lucide-react'
-import { linkEmail, linkSms, linkTel, linkWhatsApp } from '../lib/contatti'
+import { apriWhatsApp, linkEmail, linkSms, linkTel, linkWhatsApp } from '../lib/contatti'
 
 export function IconaWhatsApp({ size = 18 }: { size?: number }) {
   return (
@@ -21,7 +21,7 @@ export function AzioniNumero({ numero }: { numero?: string | null }) {
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
       <a href={tel} aria-label={`Chiama ${numero}`} title="Chiama" style={stile}><Phone size={17} strokeWidth={1.75} /></a>
       {sms && <a href={sms} aria-label={`Messaggio a ${numero}`} title="Messaggio" style={stile}><MessageSquare size={17} strokeWidth={1.75} /></a>}
-      {wa && <a href={wa} aria-label={`WhatsApp a ${numero}`} title="WhatsApp" style={{ ...stile, color: '#1f9d55' }}><IconaWhatsApp size={18} /></a>}
+      {wa && <a href={wa} onClick={e => apriWhatsApp(e, numero)} aria-label={`WhatsApp a ${numero}`} title="WhatsApp" style={{ ...stile, color: '#1f9d55' }}><IconaWhatsApp size={18} /></a>}
     </span>
   )
 }
@@ -39,7 +39,7 @@ export function RigaContatti({ telefono, email, style }: { telefono?: string | n
   return (
     <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', ...style }}>
       {voci.map(v => (
-        <a key={v.chiave} href={v.href!} style={{
+        <a key={v.chiave} href={v.href!} onClick={v.chiave === 'whatsapp' ? e => apriWhatsApp(e, telefono) : undefined} style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, textDecoration: 'none', minWidth: 64,
           color: v.chiave === 'whatsapp' ? '#1f9d55' : 'var(--prox-ink2)', fontSize: 11.5, fontWeight: 600,
         }}>

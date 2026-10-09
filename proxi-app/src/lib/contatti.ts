@@ -31,3 +31,41 @@ export function linkWhatsApp(numero?: string | null): string | null {
 }
 
 export const linkEmail = (email?: string | null) => email && /^\S+@\S+\.\S+$/.test(email.trim()) ? `mailto:${email.trim()}` : null
+
+// Pagina web di scorta: serve solo se l'app non risponde
+export function linkWhatsAppWeb(numero?: string | null): string | null {
+  const n = numeroInternazionale(numero)
+  return n ? `https://wa.me/${n}` : null
+}
+
+// Click su «WhatsApp»: prova ad aprire l'app; se entro 2 secondi la pagina non ha perso il focus (l'app non è partita) apre la pagina web di scorta.
+export function apriWhatsApp(e: { preventDefault(): void }, numero?: string | null) {
+  const app = linkWhatsApp(numero), web = linkWhatsAppWeb(numero)
+  if (!app || !web) return
+  e.preventDefault()
+
+  let partita = false
+  const segna = () => { partita = true }
+  window.addEventListener('blur', segna)
+  document.addEventListener('visibilitychange', segna)
+  window.addEventListener('pagehide', segna)
+
+  if (window.matchMedia('(pointer: coarse)').matches) {
+    window.location.href = app
+  } else {
+    // sul computer, in un iframe nascosto: se non c'è l'app il browser non mostra errori
+    const f = document.createElement('iframe')
+    f.style.display = 'none'
+    f.src = app
+    document.body.appendChild(f)
+    setTimeout(() => f.remove(), 3000)
+  }
+
+  setTimeout(() => {
+    window.removeEventListener('blur', segna)
+    document.removeEventListener('visibilitychange', segna)
+    window.removeEventListener('pagehide', segna)
+    if (partita) return
+    if (!window.open(web, '_blank', 'noopener')) window.location.assign(web)   // popup bloccato: si apre qui
+  }, 2000)
+}
