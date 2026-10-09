@@ -21,17 +21,17 @@ export function AzioniNumero({ numero }: { numero?: string | null }) {
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
       <a href={tel} aria-label={`Chiama ${numero}`} title="Chiama" style={stile}><Phone size={17} strokeWidth={1.75} /></a>
       {sms && <a href={sms} aria-label={`Messaggio a ${numero}`} title="Messaggio" style={stile}><MessageSquare size={17} strokeWidth={1.75} /></a>}
-      {wa && <a href={wa} target="_blank" rel="noreferrer" aria-label={`WhatsApp a ${numero}`} title="WhatsApp" style={{ ...stile, color: '#1f9d55' }}><IconaWhatsApp size={18} /></a>}
+      {wa && <a href={wa} aria-label={`WhatsApp a ${numero}`} title="WhatsApp" style={{ ...stile, color: '#1f9d55' }}><IconaWhatsApp size={18} /></a>}
     </span>
   )
 }
 
-interface Voce { chiave: string; etichetta: string; href: string | null; icona: ReactNode; esterno?: boolean }
+interface Voce { chiave: string; etichetta: string; href: string | null; icona: ReactNode }
 
 export function RigaContatti({ telefono, email, style }: { telefono?: string | null; email?: string | null; style?: React.CSSProperties }) {
   const voci: Voce[] = [
     { chiave: 'chiama', etichetta: 'Chiama', href: linkTel(telefono), icona: <Phone size={18} strokeWidth={1.8} /> },
-    { chiave: 'whatsapp', etichetta: 'WhatsApp', href: linkWhatsApp(telefono), icona: <IconaWhatsApp />, esterno: true },
+    { chiave: 'whatsapp', etichetta: 'WhatsApp', href: linkWhatsApp(telefono), icona: <IconaWhatsApp /> },
     { chiave: 'email', etichetta: 'Email', href: linkEmail(email), icona: <Mail size={18} strokeWidth={1.8} /> },
   ].filter(v => v.href) as Voce[]
   if (voci.length === 0) return null
@@ -39,7 +39,7 @@ export function RigaContatti({ telefono, email, style }: { telefono?: string | n
   return (
     <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', ...style }}>
       {voci.map(v => (
-        <a key={v.chiave} href={v.href!} {...(v.esterno ? { target: '_blank', rel: 'noreferrer' } : {})} style={{
+        <a key={v.chiave} href={v.href!} style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, textDecoration: 'none', minWidth: 64,
           color: v.chiave === 'whatsapp' ? '#1f9d55' : 'var(--prox-ink2)', fontSize: 11.5, fontWeight: 600,
         }}>

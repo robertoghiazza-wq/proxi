@@ -24,9 +24,10 @@ export function linkSms(numero?: string | null): string | null {
   return n ? `sms:+${n}` : null
 }
 
+// Protocollo dell'app (apre direttamente WhatsApp, su telefono e sul Mac); wa.me passerebbe da una pagina web intermedia
 export function linkWhatsApp(numero?: string | null): string | null {
   const n = numeroInternazionale(numero)
-  return n ? `https://wa.me/${n}` : null
+  return n ? `whatsapp://send?phone=${n}` : null
 }
 
 export const linkEmail = (email?: string | null) => email && /^\S+@\S+\.\S+$/.test(email.trim()) ? `mailto:${email.trim()}` : null

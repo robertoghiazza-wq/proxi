@@ -1,5 +1,6 @@
 // Campi della scheda persona divisi per sezione: servono sia al modal di creazione sia alla modifica nelle tab del drawer
 
+import { useRef } from 'react'
 import { X } from 'lucide-react'
 import { ChipsInput } from './ChipsInput'
 import { DateField } from './DateFields'
@@ -219,6 +220,10 @@ export function AnagraficaCampi({ value: v, onChange }: { value: AnagraficaBozza
 }
 
 export function ContattiCampi({ value: v, onChange }: { value: ContattiBozza; onChange: (patch: Partial<ContattiBozza>) => void }) {
+  // l'indirizzo si completa in due tempi (via → NPA e località, poi comune politico): il secondo aggiornamento deve partire dal primo, non dal valore di prima
+  const addr = useRef(v.addr)
+  addr.current = v.addr
+  const cambiaIndirizzo = (patch: Partial<Indirizzo>) => { addr.current = { ...addr.current, ...patch }; onChange({ addr: addr.current }) }
   return (
     <div style={colonna}>
       <Field label="Email">
@@ -254,7 +259,7 @@ export function ContattiCampi({ value: v, onChange }: { value: ContattiBozza; on
         </div>
       </Field>
 
-      <Field label="Indirizzo"><IndirizzoField value={v.addr} onChange={patch => onChange({ addr: { ...v.addr, ...patch } })} /></Field>
+      <Field label="Indirizzo"><IndirizzoField value={v.addr} onChange={cambiaIndirizzo} /></Field>
 
       <Field label="Note sui contatti">
         <textarea value={v.noteContatti} onChange={e => onChange({ noteContatti: e.target.value })} rows={2}
