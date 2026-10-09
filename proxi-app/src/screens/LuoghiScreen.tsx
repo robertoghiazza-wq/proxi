@@ -13,6 +13,8 @@ import { useTipiLuogo } from '../hooks/useTipi'
 import { useIsDesktop } from '../hooks/useIsDesktop'
 import { useLuoghi } from '../hooks/useLuoghi'
 import { CampoRicerca, ConteggioRisultati } from '../components/CampoRicerca'
+import { useRicercaEstesa } from '../hooks/useRicerca'
+import { TrovatoIn } from '../components/TrovatoIn'
 
 
 export function LuoghiScreen() {
@@ -45,9 +47,12 @@ export function LuoghiScreen() {
 
   const [soloDaControllare, setSoloDaControllare] = useState(false)
   const nDaControllare = tuttiLuoghi.filter(l => l.posizione_da_controllare).length
+  // ricerca estesa (indirizzo, orari, note, ente di riferimento…): finché non risponde il server si filtra su nome e indirizzo
+  const trovati = useRicercaEstesa('luoghi', query)
   const luoghi = tuttiLuoghi.filter(l => {
     if (soloDaControllare && !l.posizione_da_controllare) return false
     if (!query) return true
+    if (trovati) return trovati.has(l.id)
     const q = query.toLowerCase()
     return l.nome.toLowerCase().includes(q) || l.indirizzo?.toLowerCase().includes(q)
   })
@@ -71,7 +76,7 @@ export function LuoghiScreen() {
           </button>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca luogo o indirizzo…" style={{ flex: 1 }} />
+          <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca nome, indirizzo, note, orari…" style={{ flex: 1 }} />
           <div style={{ display: 'flex', background: 'var(--prox-surface)', borderRadius: 10, padding: 2, border: '1px solid var(--prox-line)' }}>
             {(['lista', 'mappa'] as const).map(v => (
               <button
@@ -145,6 +150,7 @@ export function LuoghiScreen() {
                   {(l.indirizzo || l.localita) && <><span>·</span>
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[l.indirizzo, l.localita].filter(Boolean).join(', ')}</span></>}
                 </div>
+                <TrovatoIn trovato={query ? trovati?.get(l.id) : undefined} nascondi={['Nome', 'Indirizzo', 'Tipo']} />
               </div>
 
               <div style={{ textAlign: 'right', flexShrink: 0 }}>

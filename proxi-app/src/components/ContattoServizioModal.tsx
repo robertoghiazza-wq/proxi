@@ -10,6 +10,7 @@ import { usePersone } from '../hooks/usePersone'
 import { useSyncContatti, type ContattoServizio } from '../hooks/useServizi'
 import type { Persona, Servizio } from '../types'
 import { CampoRicerca, ConteggioRisultati } from './CampoRicerca'
+import { useRicercaEstesa } from '../hooks/useRicerca'
 
 type Contatto = NonNullable<Servizio['persone']>[number]
 
@@ -60,8 +61,11 @@ export function ContattoServizioModal({ servizio, modifica, onClose }: Props) {
 
   const q = query.trim().toLowerCase()
   const disponibili = tutte.filter(p => !esistenti.some(e => e.id === p.id))
+  const trovati = useRicercaEstesa('persone', query)
   const candidate = disponibili
-    .filter(p => !q || p.nome?.toLowerCase().includes(q) || p.cognome?.toLowerCase().includes(q) || p.soprannome?.toLowerCase().includes(q))
+    .filter(p => !q || (trovati
+      ? trovati.has(p.id)
+      : p.nome?.toLowerCase().includes(q) || p.cognome?.toLowerCase().includes(q) || p.soprannome?.toLowerCase().includes(q)))
     .sort((a, b) => Number(b.ruolo === 'rete') - Number(a.ruolo === 'rete'))
 
   return (

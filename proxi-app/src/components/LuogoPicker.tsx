@@ -6,6 +6,7 @@ import { NuovoLuogoModal } from './NuovoLuogoModal'
 import { useLuoghi } from '../hooks/useLuoghi'
 import type { Luogo } from '../types'
 import { CampoRicerca, ConteggioRisultati } from './CampoRicerca'
+import { useRicercaEstesa } from '../hooks/useRicerca'
 
 export function LuogoPicker({ value, onChange }: {
   value: number | null
@@ -16,8 +17,10 @@ export function LuogoPicker({ value, onChange }: {
   const { data: luoghi = [], isLoading } = useLuoghi()
 
   const q = query.trim().toLowerCase()
-  const filtrati = luoghi.filter(l => !q
-    || l.nome.toLowerCase().includes(q) || l.indirizzo?.toLowerCase().includes(q))
+  const trovati = useRicercaEstesa('luoghi', query)
+  const filtrati = luoghi.filter(l => !q || (trovati
+    ? trovati.has(l.id)
+    : l.nome.toLowerCase().includes(q) || l.indirizzo?.toLowerCase().includes(q)))
 
   return (
     <div>

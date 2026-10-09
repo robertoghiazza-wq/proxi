@@ -10,6 +10,8 @@ import { Card } from '../components/Card'
 import { PersoneServiziSwitch } from '../components/PersoneServiziSwitch'
 import { useServizi } from '../hooks/useServizi'
 import { CampoRicerca, ConteggioRisultati } from '../components/CampoRicerca'
+import { useRicercaEstesa } from '../hooks/useRicerca'
+import { TrovatoIn } from '../components/TrovatoIn'
 
 const TINTA = 'oklch(0.58 0.12 245)'
 
@@ -21,10 +23,11 @@ export function ServiziScreen() {
 
   const { data: tutti = [], isLoading, isError, error } = useServizi()
   const q = query.trim().toLowerCase()
-  const servizi = tutti.filter(s => !q
-    || s.nome.toLowerCase().includes(q)
-    || s.localita?.toLowerCase().includes(q)
-    || s.indirizzo?.toLowerCase().includes(q))
+  // ricerca estesa (contatti, note, persone collegate…): finché non risponde il server si filtra sui campi dell'elenco
+  const trovati = useRicercaEstesa('servizi', query)
+  const servizi = tutti.filter(s => !q || (trovati
+    ? trovati.has(s.id)
+    : s.nome.toLowerCase().includes(q) || s.localita?.toLowerCase().includes(q) || s.indirizzo?.toLowerCase().includes(q)))
 
   return (
     <MobileLayout>
@@ -40,7 +43,7 @@ export function ServiziScreen() {
           </button>
         </div>
 
-        <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca servizio, località…" />
+        <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca servizio, località, persone, note…" />
         <ConteggioRisultati mostrati={servizi.length} totali={tutti.length} singolare="servizio" plurale="servizi" />
       </div>
 
@@ -66,6 +69,7 @@ export function ServiziScreen() {
                   {[s.indirizzo, s.localita].filter(Boolean).join(' · ')}
                 </div>
               )}
+              <TrovatoIn trovato={q ? trovati?.get(s.id) : undefined} nascondi={['Nome', 'Indirizzo']} />
             </div>
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
               <div style={{ fontSize: 13, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>

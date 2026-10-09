@@ -15,6 +15,8 @@ import { useEventi, useDeleteEvento } from '../hooks/useEventi'
 import type { Evento, StatoEvento } from '../types'
 import { Plus, Check, CircleDashed, Calendar } from 'lucide-react'
 import { CampoRicerca, ConteggioRisultati } from '../components/CampoRicerca'
+import { useRicercaEstesa } from '../hooks/useRicerca'
+import { TrovatoIn } from '../components/TrovatoIn'
 
 type Filtro = 'tutti' | StatoEvento | 'incompleti'
 
@@ -52,10 +54,12 @@ export function EventiScreen() {
   // Ricerca su tipo, luogo, persone, note e data (senza distinguere maiuscole e accenti)
   const norm = (t: string) => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   const q = norm(query.trim())
-  const corrisponde = (e: Evento) => !q || norm([
+  // ricerca estesa (note, tappe, luoghi, persone, educatore, date…): finché non risponde il server si filtra sui campi dell'elenco
+  const trovati = useRicercaEstesa('eventi', query)
+  const corrisponde = (e: Evento) => !q || (trovati ? trovati.has(e.id) : norm([
     tipoLabel(e.tipo), e.luogo?.nome, e.note, fmtData(e.data), e.data,
     ...(e.persone ?? []).flatMap(p => [p.nome, p.cognome, p.soprannome]),
-  ].filter(Boolean).join(' ')).includes(q)
+  ].filter(Boolean).join(' ')).includes(q))
 
   const filtrati = tuttiEventi
     .filter(e => filtro === 'tutti'
@@ -84,7 +88,7 @@ export function EventiScreen() {
             <Plus size={18} strokeWidth={2.5} />
           </button>
         </div>
-        <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca persona, luogo, tipo, nota…" />
+        <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca persona, luogo, tipo, note, data…" />
         <ConteggioRisultati mostrati={filtrati.length} totali={tuttiEventi.length} singolare="evento" plurale="eventi" style={{ marginBottom: 10 }} />
         <div style={{ display: 'flex', gap: 6, overflowX: 'auto', margin: '0 -16px', padding: '0 16px', scrollbarWidth: 'none' }}>
           {FILTRI.map(({ key, label }) => {
@@ -177,6 +181,7 @@ export function EventiScreen() {
                           {luogo && <><span>·</span>
                             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{luogo.nome}</span></>}
                         </div>
+                        <TrovatoIn trovato={q ? trovati?.get(e.id) : undefined} nascondi={['Tipo', 'Luogo', 'Persone', 'Data']} />
                       </div>
 
                       {e.stato === 'in_corso' && (

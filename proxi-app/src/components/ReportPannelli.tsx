@@ -19,6 +19,7 @@ import { useRuolo } from '../hooks/useAuth'
 import { eAdmin } from '../lib/ruoli'
 import { etichettaSettimana, settimanaIso, spostaSettimana } from '../lib/settimana'
 import { CampoRicerca, ConteggioRisultati } from './CampoRicerca'
+import { useRicercaEstesa } from '../hooks/useRicerca'
 
 const OPZ_PREDEFINITE: Opz = { nomi: 'completi', racconto: true }
 
@@ -111,12 +112,14 @@ export function PannelloEstratti({ eventoIniziale }: { eventoIniziale?: number }
   }, [eventoIniziale, eventi.length])
 
   const norm = (t: string) => t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+  const trovati = useRicercaEstesa('eventi', cerca)
   const visibili = useMemo(() => eventi.filter(e => {
     const d = e.data.slice(0, 10)
     if (d < dal || d > al) return false
     if (!cerca.trim()) return true
+    if (trovati) return trovati.has(e.id)
     return norm([label(e.tipo), e.luogo?.nome, e.note].filter(Boolean).join(' ')).includes(norm(cerca.trim()))
-  }), [eventi, dal, al, cerca])
+  }), [eventi, dal, al, cerca, trovati])
 
   const idsScelti = scelti.filter(id => eventi.some(e => e.id === id))
   const { data: doc } = useReportEstratto(idsScelti, opz)

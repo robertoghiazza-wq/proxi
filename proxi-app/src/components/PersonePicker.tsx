@@ -8,6 +8,7 @@ import { Modal } from './Modal'
 import { usePersone, useCreatePersona } from '../hooks/usePersone'
 import type { Persona } from '../types'
 import { CampoRicerca, ConteggioRisultati } from './CampoRicerca'
+import { useRicercaEstesa } from '../hooks/useRicerca'
 
 interface Props {
   selectedIds: number[]
@@ -21,12 +22,14 @@ export function PersonePicker({ selectedIds, onToggle, sticky }: Props) {
   const { data: persone = [], isLoading, isError } = usePersone()
 
   const q = query.trim().toLowerCase()
+  const trovati = useRicercaEstesa('persone', query)
   const filtrate = persone
     .filter(p => p.ruolo === 'utente')
-    .filter(p => !q
-      || p.nome?.toLowerCase().includes(q) || p.cognome?.toLowerCase().includes(q)
-      || p.soprannome?.toLowerCase().includes(q)
-      || p.tag?.some(t => t.toLowerCase().includes(q)))
+    .filter(p => !q || (trovati
+      ? trovati.has(p.id)
+      : p.nome?.toLowerCase().includes(q) || p.cognome?.toLowerCase().includes(q)
+        || p.soprannome?.toLowerCase().includes(q)
+        || p.tag?.some(t => t.toLowerCase().includes(q))))
 
   const nSel = selectedIds.length
 

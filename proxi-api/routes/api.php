@@ -33,6 +33,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', fn (Request $request) => $request->user()->load('institution'));
 
     // Persone
+    Route::get('/ricerca', \App\Http\Controllers\Api\RicercaController::class)->middleware('throttle:90,1');
+
     Route::apiResource('persone', \App\Http\Controllers\Api\PersonaController::class);
 
     // Elenco ruoli (maschile/femminile) usati per le persone e come default negli eventi

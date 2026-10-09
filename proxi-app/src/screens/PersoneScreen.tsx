@@ -13,6 +13,8 @@ import { usePersone } from '../hooks/usePersone'
 import { useRuoli } from '../hooks/useRuoli'
 import type { Persona, RuoloPersona } from '../types'
 import { CampoRicerca, ConteggioRisultati } from '../components/CampoRicerca'
+import { useRicercaEstesa, type Trovato } from '../hooks/useRicerca'
+import { TrovatoIn } from '../components/TrovatoIn'
 
 const TAG_VULNERABILI = ['senza fissa dimora', 'minore', 'dipendenza']
 
@@ -22,7 +24,7 @@ function isVulnerabile(p: Persona) {
 
 const displayName = nomePersona
 
-function PersonaRow({ persona }: { persona: Persona }) {
+function PersonaRow({ persona, trovato }: { persona: Persona; trovato?: Trovato[] }) {
   const navigate = useNavigate()
   const { data: ruoli = [] } = useRuoli()
   const ruolo = etichettaRuolo(ruoli.find(r => r.id === persona.ruolo_id), persona.sesso)
@@ -51,6 +53,7 @@ function PersonaRow({ persona }: { persona: Persona }) {
         <div style={{ fontSize: 12, color: 'var(--prox-ink3)', marginTop: 1 }}>
           {[ruolo, persona.eta ? `${persona.eta} anni` : null, persona.lingue?.join(' · ')].filter(Boolean).join(' · ')}
         </div>
+        <TrovatoIn trovato={trovato} />
         {persona.tag && persona.tag.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 4 }}>
             {persona.tag.slice(0, 3).map(t => (
@@ -92,10 +95,13 @@ export function PersoneScreen() {
 
   const { data: tuttePersone = [], isLoading, isError, error } = usePersone()
 
+  // ricerca estesa (diario, profilo, documenti, servizi…): finché non risponde il server si filtra sui campi dell'elenco
+  const trovati = useRicercaEstesa('persone', query)
   const persone = tuttePersone
     .filter(p => filtro === 'tutti' || p.ruolo === filtro)
     .filter(p => {
       if (!query) return true
+      if (trovati) return trovati.has(p.id)
       const q = query.toLowerCase()
       return (
         p.nome?.toLowerCase().includes(q) ||
@@ -129,7 +135,7 @@ export function PersoneScreen() {
         </div>
 
         {/* Search */}
-        <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca nome, soprannome, tag…" />
+        <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca nome, tag, diario, note, servizi…" />
         <ConteggioRisultati mostrati={persone.length} totali={tuttePersone.length} singolare="persona" plurale="persone" />
 
         {/* Filtri ruolo */}
@@ -163,7 +169,7 @@ export function PersoneScreen() {
             ? <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-accent)', fontSize: 14 }}>Errore di caricamento<div style={{ fontSize: 12, color: 'var(--prox-ink3)', marginTop: 6 }}>{(error as Error)?.message}</div></div>
             : persone.length === 0
               ? <div style={{ padding: 40, textAlign: 'center', color: 'var(--prox-ink3)', fontSize: 14 }}>Nessun risultato</div>
-              : persone.map(p => <PersonaRow key={p.id} persona={p} />)
+              : persone.map(p => <PersonaRow key={p.id} persona={p} trovato={trovati?.get(p.id)} />)
         }
       </div>
       {isNuovoOpen ? (
