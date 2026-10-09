@@ -20,13 +20,13 @@ class RicercaController extends Controller
         ]);
 
         $trovati = Ricerca::esegui($request->user()->institution_id, $dati['ambito'], $dati['q']);
-        if ($dati['ambito'] === 'persone') $this->registraLetture($request, $trovati);
+        if ($dati['ambito'] === 'persone' && mb_strlen(trim($dati['q'])) >= 3) $this->registraLetture($request, $trovati);
 
         return response()->json(collect($trovati)->map(fn ($trovato, $id) => ['id' => (int) $id, 'trovato' => $trovato])->values());
     }
 
     // Se l'elenco mostra pezzi di diario, profilo, note o documenti è una lettura come aprire la scheda: va nel registro
-    // (una riga per utente e persona ogni 10 minuti, come per le schede).
+    // (una riga per utente e persona ogni 10 minuti, come per le schede). Sotto le 3 lettere non si registra: sono ricerche in corso di digitazione.
     private const RISERVATI = ['Diario', 'Profilo', 'Note e bisogni', 'Documenti'];
 
     private function registraLetture(Request $request, array $trovati): void

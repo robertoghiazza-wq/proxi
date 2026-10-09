@@ -17,6 +17,7 @@ import { Plus, Check, CircleDashed, Calendar } from 'lucide-react'
 import { CampoRicerca, ConteggioRisultati } from '../components/CampoRicerca'
 import { useRicercaEstesa } from '../hooks/useRicerca'
 import { TrovatoIn } from '../components/TrovatoIn'
+import { passaFiltri, type FiltroCat } from '../lib/filtriCategoria'
 
 type Filtro = 'tutti' | StatoEvento | 'incompleti'
 
@@ -40,12 +41,17 @@ function fmtData(d: string) {
 }
 
 export function EventiScreen() {
-  const { label: tipoLabel, colore: colorForTipo } = useTipiEvento()
+  const { label: tipoLabel, colore: colorForTipo, tipi: tipiEvento, categorie: categorieEvento, categoriaDi } = useTipiEvento()
   const navigate = useNavigate()
   const isNuovoOpen  = !!useMatch('/eventi/nuovo')
   const isDetailOpen = !!useMatch('/eventi/:id/*') && !isNuovoOpen
   const [filtro, setFiltro] = useState<Filtro>('tutti')
   const [query, setQuery] = useState('')
+  const [filtriCat, setFiltriCat] = useState<FiltroCat[]>([])
+  const candidati: FiltroCat[] = [
+    ...tipiEvento.filter(t => t.attivo).map(t => ({ gruppo: 'Tipo', id: t.chiave, label: t.nome })),
+    ...categorieEvento.map(c => ({ gruppo: 'Categoria', id: String(c.id), label: c.nome })),
+  ]
   const [daEliminare, setDaEliminare] = useState<Evento | null>(null)
   const eliminaEvento = useDeleteEvento()
 
@@ -64,6 +70,7 @@ export function EventiScreen() {
   const filtrati = tuttiEventi
     .filter(e => filtro === 'tutti'
       || (filtro === 'incompleti' ? daCompletare(e) : e.stato === filtro))
+    .filter(e => passaFiltri(e, filtriCat, (x, f) => f.gruppo === 'Tipo' ? x.tipo === f.id : String(categoriaDi(x.tipo)?.id) === f.id))
     .filter(corrisponde)
   const nIncompleti = tuttiEventi.filter(daCompletare).length
 
@@ -88,7 +95,7 @@ export function EventiScreen() {
             <Plus size={18} strokeWidth={2.5} />
           </button>
         </div>
-        <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca persona, luogo, tipo, note, data…" />
+        <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca persona, luogo, tipo, note, data…" candidati={candidati} filtri={filtriCat} onFiltri={setFiltriCat} />
         <ConteggioRisultati mostrati={filtrati.length} totali={tuttiEventi.length} singolare="evento" plurale="eventi" style={{ marginBottom: 10 }} />
         <div style={{ display: 'flex', gap: 6, overflowX: 'auto', margin: '0 -16px', padding: '0 16px', scrollbarWidth: 'none' }}>
           {FILTRI.map(({ key, label }) => {

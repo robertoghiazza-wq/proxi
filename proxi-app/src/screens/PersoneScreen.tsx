@@ -15,6 +15,7 @@ import type { Persona, RuoloPersona } from '../types'
 import { CampoRicerca, ConteggioRisultati } from '../components/CampoRicerca'
 import { useRicercaEstesa, type Trovato } from '../hooks/useRicerca'
 import { TrovatoIn } from '../components/TrovatoIn'
+import { passaFiltri, type FiltroCat } from '../lib/filtriCategoria'
 
 const TAG_VULNERABILI = ['senza fissa dimora', 'minore', 'dipendenza']
 
@@ -94,11 +95,20 @@ export function PersoneScreen() {
   const [filtro, setFiltro] = useState<Filtro>('tutti')
 
   const { data: tuttePersone = [], isLoading, isError, error } = usePersone()
+  const { data: ruoliElenco = [] } = useRuoli()
+  const [filtriCat, setFiltriCat] = useState<FiltroCat[]>([])
+  // categorie suggerite mentre si scrive: tipo di persona, ruolo, tag in uso
+  const candidati: FiltroCat[] = [
+    { gruppo: 'Tipo', id: 'utente', label: 'Utente' }, { gruppo: 'Tipo', id: 'dipendente', label: 'Dipendente' }, { gruppo: 'Tipo', id: 'rete', label: 'Contatto' },
+    ...ruoliElenco.map(r => ({ gruppo: 'Ruolo', id: String(r.id), label: r.nome_misto ?? (r.nome_f ? `${r.nome_m} / ${r.nome_f}` : r.nome_m) })),
+    ...[...new Set(tuttePersone.flatMap(p => p.tag ?? []))].map(t => ({ gruppo: 'Tag', id: t, label: t })),
+  ]
 
   // ricerca estesa (diario, profilo, documenti, servizi…): finché non risponde il server si filtra sui campi dell'elenco
   const trovati = useRicercaEstesa('persone', query)
   const persone = tuttePersone
     .filter(p => filtro === 'tutti' || p.ruolo === filtro)
+    .filter(p => passaFiltri(p, filtriCat, (x, f) => f.gruppo === 'Tipo' ? x.ruolo === f.id : f.gruppo === 'Ruolo' ? String(x.ruolo_id) === f.id : !!x.tag?.includes(f.id)))
     .filter(p => {
       if (!query) return true
       if (trovati) return trovati.has(p.id)
@@ -135,7 +145,7 @@ export function PersoneScreen() {
         </div>
 
         {/* Search */}
-        <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca nome, tag, diario, note, servizi…" />
+        <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca nome, tag, diario, note, servizi…" candidati={candidati} filtri={filtriCat} onFiltri={setFiltriCat} />
         <ConteggioRisultati mostrati={persone.length} totali={tuttePersone.length} singolare="persona" plurale="persone" />
 
         {/* Filtri ruolo */}

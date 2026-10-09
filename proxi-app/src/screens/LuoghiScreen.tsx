@@ -15,6 +15,7 @@ import { useLuoghi } from '../hooks/useLuoghi'
 import { CampoRicerca, ConteggioRisultati } from '../components/CampoRicerca'
 import { useRicercaEstesa } from '../hooks/useRicerca'
 import { TrovatoIn } from '../components/TrovatoIn'
+import { passaFiltri, type FiltroCat } from '../lib/filtriCategoria'
 
 
 export function LuoghiScreen() {
@@ -44,6 +45,8 @@ export function LuoghiScreen() {
   useEffect(() => { if (vista === 'mappa') document.getElementById('area-scorrevole')?.scrollTo(0, 0) }, [vista])
 
   const { data: tuttiLuoghi = [], isLoading, isError, error } = useLuoghi()
+  const [filtriCat, setFiltriCat] = useState<FiltroCat[]>([])
+  const candidati: FiltroCat[] = tipiLuogo.filter(t => t.attivo).map(t => ({ gruppo: 'Categoria', id: t.chiave, label: t.nome }))
 
   const [soloDaControllare, setSoloDaControllare] = useState(false)
   const nDaControllare = tuttiLuoghi.filter(l => l.posizione_da_controllare).length
@@ -51,6 +54,7 @@ export function LuoghiScreen() {
   const trovati = useRicercaEstesa('luoghi', query)
   const luoghi = tuttiLuoghi.filter(l => {
     if (soloDaControllare && !l.posizione_da_controllare) return false
+    if (!passaFiltri(l, filtriCat, (x, f) => x.tipo === f.id)) return false
     if (!query) return true
     if (trovati) return trovati.has(l.id)
     const q = query.toLowerCase()
@@ -76,7 +80,7 @@ export function LuoghiScreen() {
           </button>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca nome, indirizzo, note, orari…" style={{ flex: 1 }} />
+          <CampoRicerca value={query} onChange={setQuery} placeholder="Cerca nome, indirizzo, note, orari…" style={{ flex: 1 }} candidati={candidati} filtri={filtriCat} onFiltri={setFiltriCat} />
           <div style={{ display: 'flex', background: 'var(--prox-surface)', borderRadius: 10, padding: 2, border: '1px solid var(--prox-line)' }}>
             {(['lista', 'mappa'] as const).map(v => (
               <button

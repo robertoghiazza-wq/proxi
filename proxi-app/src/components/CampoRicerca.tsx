@@ -2,8 +2,11 @@
 
 import type { CSSProperties, ReactNode } from 'react'
 import { Search, X } from 'lucide-react'
+import { suggerisci, ultimaParola, type FiltroCat } from '../lib/filtriCategoria'
 
-export function CampoRicerca({ value, onChange, placeholder, fondo = 'surface', compatto, autoFocus, icona, style }: {
+// Con `candidati` il campo suggerisce, dopo 4 lettere, le categorie che coincidono (come pill sotto la barra);
+// scelta una, il pill va dentro la barra e diventa un filtro (`filtri` / `onFiltri`).
+export function CampoRicerca({ value, onChange, placeholder, fondo = 'surface', compatto, autoFocus, icona, style, candidati, filtri = [], onFiltri }: {
   value: string
   onChange: (v: string) => void
   placeholder: string
@@ -12,21 +15,44 @@ export function CampoRicerca({ value, onChange, placeholder, fondo = 'surface', 
   autoFocus?: boolean
   icona?: ReactNode
   style?: CSSProperties
+  candidati?: FiltroCat[]
+  filtri?: FiltroCat[]
+  onFiltri?: (f: FiltroCat[]) => void
 }) {
+  const suggeriti = candidati && onFiltri ? suggerisci(value, candidati, filtri) : []
+  const scegli = (f: FiltroCat) => {
+    onFiltri?.([...filtri, f])
+    onChange(ultimaParola(value).prima.trimEnd())
+  }
   return (
+    <div style={{ minWidth: 0, ...style }}>
     <div style={{
-      display: 'flex', alignItems: 'center', gap: 8, minWidth: 0,
+      display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flexWrap: 'wrap',
       background: `var(--prox-${fondo})`, borderRadius: 12,
       padding: compatto ? '9px 12px' : '8px 12px', border: '1px solid var(--prox-line)',
-      ...style,
     }}>
       {icona ?? <Search size={compatto ? 15 : 16} color="var(--prox-ink3)" strokeWidth={1.75} style={{ flexShrink: 0 }} />}
+      {filtri.map(f => (
+        <span key={`${f.gruppo}:${f.id}`} style={{
+          display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, padding: '2px 4px 2px 9px', borderRadius: 999,
+          fontSize: 12, fontWeight: 600, background: 'var(--prox-accent-soft)', color: 'var(--prox-accent)',
+        }}>
+          <span style={{ opacity: 0.7, fontWeight: 500 }}>{f.gruppo}:</span> {f.label}
+          <button
+            type="button" aria-label={`Togli il filtro ${f.label}`}
+            onMouseDown={e => e.preventDefault()}
+            onClick={() => onFiltri?.(filtri.filter(x => x !== f))}
+            style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 2, display: 'flex', color: 'inherit' }}
+          ><X size={12} strokeWidth={2.5} /></button>
+        </span>
+      ))}
       <input
         value={value}
         onChange={e => onChange(e.target.value)}
+        onKeyDown={e => { if (e.key === 'Backspace' && !value && filtri.length) onFiltri?.(filtri.slice(0, -1)) }}
         placeholder={placeholder}
         autoFocus={autoFocus}
-        style={{ flex: 1, minWidth: 0, border: 'none', background: 'none', fontSize: 14, color: 'var(--prox-ink)', outline: 'none' }}
+        style={{ flex: 1, minWidth: filtri.length ? 90 : 0, border: 'none', background: 'none', fontSize: 14, color: 'var(--prox-ink)', outline: 'none' }}
       />
       {value && (
         <button
@@ -41,6 +67,23 @@ export function CampoRicerca({ value, onChange, placeholder, fondo = 'surface', 
           }}
         ><X size={12} strokeWidth={2.5} /></button>
       )}
+    </div>
+    {suggeriti.length > 0 && (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+        <span style={{ fontSize: 11.5, color: 'var(--prox-ink3)' }}>Filtra per</span>
+        {suggeriti.map(f => (
+          <button
+            key={`${f.gruppo}:${f.id}`} type="button"
+            onMouseDown={e => e.preventDefault()}
+            onClick={() => scegli(f)}
+            style={{
+              padding: '3px 10px', borderRadius: 999, cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
+              border: '1px dashed var(--prox-accent)', background: 'transparent', color: 'var(--prox-accent)',
+            }}
+          ><span style={{ opacity: 0.7, fontWeight: 500 }}>{f.gruppo}:</span> {f.label}</button>
+        ))}
+      </div>
+    )}
     </div>
   )
 }

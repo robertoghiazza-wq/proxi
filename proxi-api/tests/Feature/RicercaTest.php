@@ -64,6 +64,9 @@ class RicercaTest extends TestCase
         $this->assertSame('ricerca: diario', $riga->meta['sezione']);
         $this->assertSame($this->user->id, $riga->user_id);
 
+        $this->cerca('persone', 'ha');                                             // con meno di 3 lettere non si registra mai
+        $this->assertSame(1, AuditLog::where('action', 'viewed')->count());
+
         $this->cerca('persone', 'cane');                                           // di nuovo entro 10 minuti: nessuna riga in più
         $this->assertSame(1, AuditLog::where('action', 'viewed')->count());
     }
