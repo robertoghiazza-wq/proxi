@@ -70,6 +70,8 @@ export function ComandoRotazione() {
 export function GestiTrackpad() {
   const map = useMap() as MappaRuotabile
   useEffect(() => {
+    // su telefono e tablet iOS genera gli stessi eventi «gesture» con due dita: lì decide solo il tasto di rotazione, qui non si interviene
+    if (sulTocco()) return
     const el = map.getContainer()
     let rot0 = 0, zoom0 = 0
     const inizio = (e: Event) => { e.preventDefault(); rot0 = map.getBearing?.() ?? 0; zoom0 = map.getZoom() }
