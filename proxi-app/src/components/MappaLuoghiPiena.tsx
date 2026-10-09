@@ -8,6 +8,7 @@ import { CampoRicerca } from './CampoRicerca'
 import { LuoghiMap } from './LuoghiMap'
 import { useIsDesktop } from '../hooks/useIsDesktop'
 import { useEsc } from '../lib/esc'
+import type { FiltroCat } from '../lib/filtriCategoria'
 import type { Luogo } from '../types'
 
 interface Props {
@@ -52,11 +53,14 @@ export function MappaConOcchio({ luoghi, colors, onOpen, onSchermoIntero }: Prop
 }
 
 // Mappa a schermo intero (come il dettaglio di un luogo) con la freccia per chiuderla e la ricerca nella barra in alto: su telefono è la vista mappa, su desktop si apre dal tasto sulla mappa
-export function MappaLuoghiPiena({ luoghi, colors, onOpen, onChiudi, etichettaChiudi = 'Luoghi', query, onQuery }: Props & {
+export function MappaLuoghiPiena({ luoghi, colors, onOpen, onChiudi, etichettaChiudi = 'Luoghi', query, onQuery, candidati, filtri, onFiltri }: Props & {
   onChiudi: () => void
   etichettaChiudi?: string
   query: string
   onQuery: (q: string) => void
+  candidati: FiltroCat[]
+  filtri: FiltroCat[]
+  onFiltri: (f: FiltroCat[]) => void
 }) {
   const isDesktop = useIsDesktop()
   useEsc(true, onChiudi)
@@ -71,9 +75,9 @@ export function MappaLuoghiPiena({ luoghi, colors, onOpen, onChiudi, etichettaCh
       <BarraScheda
         lista="/luoghi" etichettaLista="Luoghi"
         indietroPersonalizzato={{ etichetta: etichettaChiudi, onClick: onChiudi }}
-        centro={<CampoRicerca value={query} onChange={onQuery} placeholder={`Cerca in ${luoghi.length} luoghi…`} compatto fondo="surface2" />}
+        centro={<CampoRicerca value={query} onChange={onQuery} placeholder={`Cerca in ${luoghi.length} luoghi…`} compatto fondo="surface2" candidati={candidati} filtri={filtri} onFiltri={onFiltri} pillDentro />}
       />
-      <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+      <div style={{ flex: 1, minHeight: 0, position: 'relative', zIndex: 0, isolation: 'isolate' }}>
         <MappaConOcchio luoghi={luoghi} colors={colors} onOpen={onOpen} />
       </div>
     </div>,

@@ -186,6 +186,7 @@ export function LuoghiScreen() {
         : (
           <MappaLuoghiPiena
             luoghi={luoghi} colors={TIPO_COLOR} onOpen={id => navigate(`/luoghi/${id}`)} query={query} onQuery={setQuery}
+            candidati={candidati} filtri={filtriCat} onFiltri={setFiltriCat}
             etichettaChiudi={isDesktop ? 'Indietro' : 'Luoghi'}
             onChiudi={() => { if (isDesktop) setPienaDesktop(false); else setVista('lista') }}
           />
