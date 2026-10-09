@@ -10,6 +10,7 @@ import { Card } from '../components/Card'
 import { LuogoThumb } from '../components/LuogoThumb'
 import { LuoghiMap } from '../components/LuoghiMap'
 import { useTipiLuogo } from '../hooks/useTipi'
+import type { Luogo } from '../types'
 import { useIsDesktop } from '../hooks/useIsDesktop'
 import { useLuoghi } from '../hooks/useLuoghi'
 import { CampoRicerca, ConteggioRisultati } from '../components/CampoRicerca'
@@ -17,6 +18,16 @@ import { useRicercaEstesa } from '../hooks/useRicerca'
 import { TrovatoIn } from '../components/TrovatoIn'
 import { passaFiltri, type FiltroCat } from '../lib/filtriCategoria'
 
+
+const senzaAccenti = (t: string) => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
+
+// «Via Campagne, Bosco Luganese (Bioggio)»: il comune politico si aggiunge solo se è diverso dalla località mostrata
+function doveSiTrova(l: Luogo): string {
+  const comune = l.comune_politico?.trim()
+  const loc = l.localita?.trim()
+  const diverso = comune && (!loc || senzaAccenti(comune) !== senzaAccenti(loc))
+  return [l.indirizzo, loc ? (diverso ? `${loc} (${comune})` : loc) : comune].filter(Boolean).join(', ')
+}
 
 export function LuoghiScreen() {
   const navigate = useNavigate()
@@ -151,8 +162,8 @@ export function LuoghiScreen() {
                 }}>
                   {l.visibilita === 'riservato' && <Lock size={11} strokeWidth={2.2} style={{ flexShrink: 0 }} aria-label="Riservato" />}
                   <span style={{ flexShrink: 0 }}>{tipoLuogoLabel(l.tipo)}</span>
-                  {(l.indirizzo || l.localita) && <><span>·</span>
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[l.indirizzo, l.localita].filter(Boolean).join(', ')}</span></>}
+                  {(l.indirizzo || l.localita || l.comune_politico) && <><span>·</span>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doveSiTrova(l)}</span></>}
                 </div>
                 <TrovatoIn trovato={query ? trovati?.get(l.id) : undefined} nascondi={['Nome', 'Indirizzo', 'Tipo']} />
               </div>
