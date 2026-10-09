@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useIsDesktop } from '../hooks/useIsDesktop'
+import { useEsc } from '../lib/esc'
 
 interface ModalProps {
   open: boolean
@@ -16,6 +17,7 @@ export function Modal(props: ModalProps) {
 
 function ModalInterno({ open, onClose, children, width = 600 }: ModalProps) {
   const isDesktop = useIsDesktop()
+  useEsc(open, onClose)
 
   useEffect(() => {
     if (!open) return

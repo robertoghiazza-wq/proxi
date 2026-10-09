@@ -1,4 +1,5 @@
 import { useIsDesktop } from '../hooks/useIsDesktop'
+import { useEsc } from '../lib/esc'
 
 interface DrawerProps {
   open: boolean
@@ -9,6 +10,7 @@ interface DrawerProps {
 
 export function Drawer({ open, onClose, children, width = 600 }: DrawerProps) {
   const isDesktop = useIsDesktop()
+  useEsc(open && !!onClose, onClose)
 
   if (!open) return null
 

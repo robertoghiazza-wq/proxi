@@ -2,6 +2,7 @@
 
 import type { CSSProperties, ReactNode } from 'react'
 import { Search, X } from 'lucide-react'
+import { useEsc } from '../lib/esc'
 import { suggerisci, ultimaParola, type FiltroCat } from '../lib/filtriCategoria'
 
 // Con `candidati` il campo suggerisce, dopo 4 lettere, le categorie che coincidono (come pill sotto la barra);
@@ -19,6 +20,7 @@ export function CampoRicerca({ value, onChange, placeholder, fondo = 'surface', 
   filtri?: FiltroCat[]
   onFiltri?: (f: FiltroCat[]) => void
 }) {
+  useEsc(value.length > 0, () => onChange(''))      // Esc svuota il campo (l'ultimo aperto), poi chiude il drawer
   const suggeriti = candidati && onFiltri ? suggerisci(value, candidati, filtri) : []
   const scegli = (f: FiltroCat) => {
     onFiltri?.([...filtri, f])

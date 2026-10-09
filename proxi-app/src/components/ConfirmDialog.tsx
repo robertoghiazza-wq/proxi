@@ -1,6 +1,6 @@
 // Dialogo di conferma (azioni distruttive)
 
-import { useEffect } from 'react'
+import { useEsc } from '../lib/esc'
 import { createPortal } from 'react-dom'
 
 interface Props {
@@ -20,12 +20,7 @@ export function ConfirmDialog({
   open, title, message, confirmLabel = 'Conferma', cancelLabel = 'Annulla',
   danger, loading, error, onConfirm, onCancel,
 }: Props) {
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel() }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open, onCancel])
+  useEsc(open, onCancel)
 
   if (!open) return null
 
