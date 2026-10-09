@@ -36,6 +36,7 @@ export function LuoghiScreen() {
   const [query, setQuery] = useState('')
   const [vista, setVista] = useState<'lista' | 'mappa'>('lista')
   const isDesktop = useIsDesktop()
+  const [pienaDesktop, setPienaDesktop] = useState(false)   // su desktop la mappa a schermo intero si apre dal tasto sulla mappa
   // Desktop: la mappa occupa tutto il corpo, sotto l'intestazione con ricerca e filtri (che si misura)
   const headerRef = useRef<HTMLDivElement>(null)
   const [sotto, setSotto] = useState(0)
@@ -49,7 +50,7 @@ export function LuoghiScreen() {
     window.addEventListener('resize', misura)
     return () => { ro.disconnect(); window.removeEventListener('resize', misura) }
   }, [])
-  useEffect(() => { if (vista === 'mappa') document.getElementById('area-scorrevole')?.scrollTo(0, 0) }, [vista])
+  useEffect(() => { if (vista === 'mappa') document.getElementById('area-scorrevole')?.scrollTo(0, 0); else setPienaDesktop(false) }, [vista])
   const { tipi: tipiLuogo, label: tipoLuogoLabel, colore: coloreLuogo } = useTipiLuogo()
   const TIPO_COLOR: Record<string, string> = Object.fromEntries(tipiLuogo.map(t => [t.chiave, coloreLuogo(t.chiave)]))
 
@@ -176,13 +177,19 @@ export function LuoghiScreen() {
           )
         })}
       </div>
-      {vista === 'mappa' && !isLoading && (isDesktop
+      {vista === 'mappa' && !isLoading && (isDesktop && !pienaDesktop
         ? sotto > 0 && (
           <div style={{ position: 'fixed', left: 0, right: 0, top: sotto, bottom: 0, zIndex: 5 }}>
-            <MappaConOcchio luoghi={luoghi} colors={TIPO_COLOR} onOpen={id => navigate(`/luoghi/${id}`)} />
+            <MappaConOcchio luoghi={luoghi} colors={TIPO_COLOR} onOpen={id => navigate(`/luoghi/${id}`)} onSchermoIntero={() => setPienaDesktop(true)} />
           </div>
         )
-        : <MappaLuoghiPiena luoghi={luoghi} colors={TIPO_COLOR} onOpen={id => navigate(`/luoghi/${id}`)} onChiudi={() => setVista('lista')} query={query} onQuery={setQuery} />
+        : (
+          <MappaLuoghiPiena
+            luoghi={luoghi} colors={TIPO_COLOR} onOpen={id => navigate(`/luoghi/${id}`)} query={query} onQuery={setQuery}
+            etichettaChiudi={isDesktop ? 'Indietro' : 'Luoghi'}
+            onChiudi={() => { if (isDesktop) setPienaDesktop(false); else setVista('lista') }}
+          />
+        )
       )}
       {isNuovoOpen ? (
         <Modal open onClose={() => navigate('/luoghi')}>

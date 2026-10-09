@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, Maximize2 } from 'lucide-react'
 import { BarraScheda } from './BarraScheda'
 import { CampoRicerca } from './CampoRicerca'
 import { LuoghiMap } from './LuoghiMap'
+import { useIsDesktop } from '../hooks/useIsDesktop'
 import { useEsc } from '../lib/esc'
 import type { Luogo } from '../types'
 
@@ -16,7 +17,7 @@ interface Props {
 }
 
 // La mappa vera e propria: riempie il contenitore che la ospita
-export function MappaConOcchio({ luoghi, colors, onOpen }: Props) {
+export function MappaConOcchio({ luoghi, colors, onOpen, onSchermoIntero }: Props & { onSchermoIntero?: () => void }) {
   const [mostraRiservati, setMostraRiservati] = useState(false)
   const visibili = luoghi.filter(l => mostraRiservati || l.visibilita !== 'riservato')
   const nRiservati = luoghi.filter(l => l.visibilita === 'riservato').length
@@ -37,27 +38,39 @@ export function MappaConOcchio({ luoghi, colors, onOpen }: Props) {
     </button>
   )
 
-  return <LuoghiMap luoghi={visibili} colors={colors} onOpen={onOpen} extra={occhio} />
+  const schermoIntero = onSchermoIntero && (
+    <button
+      onClick={onSchermoIntero} aria-label="Mappa a schermo intero" title="Mappa a schermo intero"
+      style={{
+        position: 'absolute', right: 10, bottom: 'calc(var(--sab) + 40px)', zIndex: 500, width: 34, height: 34, borderRadius: 10, border: 'none', cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--prox-surface)', color: 'var(--prox-ink2)', boxShadow: '0 2px 8px rgba(0,0,0,0.22)',
+      }}
+    ><Maximize2 size={17} strokeWidth={1.9} /></button>
+  )
+
+  return <LuoghiMap luoghi={visibili} colors={colors} onOpen={onOpen} extra={<>{occhio}{schermoIntero}</>} />
 }
 
-// Telefono: mappa a schermo intero (come il dettaglio di un luogo) con «‹ Luoghi» per chiuderla e la ricerca nella barra in alto
-export function MappaLuoghiPiena({ luoghi, colors, onOpen, onChiudi, query, onQuery }: Props & {
+// Mappa a schermo intero (come il dettaglio di un luogo) con la freccia per chiuderla e la ricerca nella barra in alto: su telefono è la vista mappa, su desktop si apre dal tasto sulla mappa
+export function MappaLuoghiPiena({ luoghi, colors, onOpen, onChiudi, etichettaChiudi = 'Luoghi', query, onQuery }: Props & {
   onChiudi: () => void
+  etichettaChiudi?: string
   query: string
   onQuery: (q: string) => void
 }) {
+  const isDesktop = useIsDesktop()
   useEsc(true, onChiudi)
 
   return createPortal(
     <div style={{
       position: 'fixed', top: 'var(--fascia)', left: 0, right: 0, bottom: 0,
-      // sopra la barra dei tab; sotto le schede (drawer) che si aprono dai pin
-      zIndex: 100,
+      // sopra il menu e la barra dei tab; sotto le schede (drawer) che si aprono dai pin
+      zIndex: isDesktop ? 85 : 100,
       background: 'var(--prox-bg)', display: 'flex', flexDirection: 'column', paddingTop: 'var(--sat)', boxSizing: 'border-box',
     }}>
       <BarraScheda
         lista="/luoghi" etichettaLista="Luoghi"
-        indietroPersonalizzato={{ etichetta: 'Luoghi', onClick: onChiudi }}
+        indietroPersonalizzato={{ etichetta: etichettaChiudi, onClick: onChiudi }}
         centro={<CampoRicerca value={query} onChange={onQuery} placeholder={`Cerca in ${luoghi.length} luoghi…`} compatto fondo="surface2" />}
       />
       <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
